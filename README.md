@@ -34,8 +34,8 @@ You need to create a `custom` directory inside n8n if it does not exist
 
 ```
 # In ~/.n8n directory run
-mkdir custom 
-cd custom 
+mkdir custom
+cd custom
 npm init
 ```
 

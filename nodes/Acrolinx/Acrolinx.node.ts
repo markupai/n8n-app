@@ -14,7 +14,7 @@ import {
 	StyleAnalysisRewriteResp,
 	styleRewrite,
 } from '@acrolinx/typescript-sdk';
-import { generateEmailHTMLReport } from './utils/email.html.generator';
+import { generateEmailHTMLReport } from './utils/EmailGenerator';
 
 type OmitIssues<T> = T extends { issues: Issue[] } ? Omit<T, 'issues'> : T;
 
