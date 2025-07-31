@@ -65,27 +65,27 @@ export class Acrolinx implements INodeType {
 				default: {},
 				options: [
 					{
-                        displayName: 'Document Name',
-                        name: 'documentName',
-                        type: 'string',
-                        required: false,
-                        default: '',
-                    },
-                    {
-                        displayName: 'Document Owner',
-                        name: 'documentOwner',
-                        type: 'string',
-                        required: false,
-                        default: '',
-                    },
-                    {
-                        displayName: 'Document Link',
-                        name: 'documentLink',
-                        type: 'string',
-                        required: false,
-                        default: '',
-                    },
-                ],
+						displayName: 'Document Name',
+						name: 'documentName',
+						type: 'string',
+						required: false,
+						default: '',
+					},
+					{
+						displayName: 'Document Owner',
+						name: 'documentOwner',
+						type: 'string',
+						required: false,
+						default: '',
+					},
+					{
+						displayName: 'Document Link',
+						name: 'documentLink',
+						type: 'string',
+						required: false,
+						default: '',
+					},
+				],
 			},
 		],
 		version: 1,
@@ -121,11 +121,11 @@ export class Acrolinx implements INodeType {
 			const styleGuide = this.getNodeParameter('styleGuide', 0) as string;
 			const tone = this.getNodeParameter('tone', 0) as string;
 			const dialect = this.getNodeParameter('dialect', 0) as string;
-            const additionalOptions = this.getNodeParameter('additionalOptions', 0) as {
-                documentName: string;
-                documentOwner: string;
-                documentLink: string;
-            };
+			const additionalOptions = this.getNodeParameter('additionalOptions', 0) as {
+				documentName: string;
+				documentOwner: string;
+				documentLink: string;
+			};
 
 			const config = await getConfig(this);
 
@@ -140,10 +140,10 @@ export class Acrolinx implements INodeType {
 			);
 
 			const htmlReport: string = generateEmailHTMLReport(result, {
-                document_name: additionalOptions?.documentName,
-                document_owner: additionalOptions?.documentOwner,
-                document_link: additionalOptions?.documentLink,
-            });
+				document_name: additionalOptions?.documentName,
+				document_owner: additionalOptions?.documentOwner,
+				document_link: additionalOptions?.documentLink,
+			});
 
 			const resultWithoutIssues = Object.fromEntries(
 				Object.entries(result).filter(([key]) => key !== 'issues'),
