@@ -104,7 +104,7 @@ export class Acrolinx implements INodeType {
 		description: 'Acrolinx AI Content Checker',
 		credentials: [
 			{
-				name: 'AcrolinxApi',
+				name: 'acrolinxApi',
 				required: true,
 			},
 		],

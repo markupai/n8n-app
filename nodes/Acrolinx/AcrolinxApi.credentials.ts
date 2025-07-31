@@ -1,8 +1,8 @@
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class AcrolinxApi implements ICredentialType {
-	name = 'AcrolinxApi';
-	displayName = 'Acrolinx Rewrite API';
+	name = 'acrolinxApi';
+	displayName = 'Acrolinx API';
 	documentationUrl = 'https://docs.acrolinx.com/overview';
 	properties: INodeProperties[] = [
 		{

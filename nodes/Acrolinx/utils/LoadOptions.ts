@@ -37,7 +37,7 @@ const DEFAULT_CONSTANTS = {
 };
 
 export async function getConfig(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<Config> {
-	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('AcrolinxApi')) as {
+	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('acrolinxApi')) as {
 		apiKey: string;
 	};
 
