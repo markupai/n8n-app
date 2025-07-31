@@ -10,17 +10,35 @@ import {
 import { getConfig, loadDialects, loadStyleGuides, loadTones } from './utils/LoadOptions';
 import {
 	AcrolinxError,
-	Issue,
 	StyleAnalysisRewriteResp,
+	StyleAnalysisSuccessResp,
+	styleCheck,
 	styleRewrite,
 } from '@acrolinx/typescript-sdk';
 import { generateEmailHTMLReport } from './utils/EmailGenerator';
 
-type OmitIssues<T> = T extends { issues: Issue[] } ? Omit<T, 'issues'> : T;
+type OperationType = 'styleCheck' | 'rewrite';
 
 export class Acrolinx implements INodeType {
 	description: INodeTypeDescription = {
 		properties: [
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Style Check',
+						value: 'styleCheck',
+					},
+					{
+						name: 'Rewrite',
+						value: 'rewrite',
+					},
+				],
+				default: 'styleCheck',
+			},
 			{
 				displayName: 'Content',
 				name: 'content',
@@ -120,6 +138,7 @@ export class Acrolinx implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		try {
+			const operation = this.getNodeParameter('operation', 0) as OperationType;
 			const content = this.getNodeParameter('content', 0) as string;
 			const styleGuide = this.getNodeParameter('styleGuide', 0) as string;
 			const tone = this.getNodeParameter('tone', 0) as string;
@@ -130,38 +149,45 @@ export class Acrolinx implements INodeType {
 				documentLink: string;
 			};
 
+			const parameters = {
+				content,
+				style_guide: styleGuide,
+				tone,
+				dialect,
+			};
+
 			const config = await getConfig(this);
 
-			const result: StyleAnalysisRewriteResp = await styleRewrite(
-				{
-					content: content,
-					style_guide: styleGuide,
-					tone: tone,
-					dialect: dialect,
-				},
-				config,
-			);
+			let executionData: INodeExecutionData[];
 
-			const htmlReport: string = generateEmailHTMLReport(result, {
-				document_name: additionalOptions?.documentName,
-				document_owner: additionalOptions?.documentOwner,
-				document_link: additionalOptions?.documentLink,
-			});
-
-			const resultWithoutIssues = Object.fromEntries(
-				Object.entries(result).filter(([key]) => key !== 'issues'),
-			) as OmitIssues<typeof result>;
-
-			const returnData: INodeExecutionData[] = [];
-
-			returnData.push({
-				json: {
+			if (operation === 'rewrite') {
+				const result: StyleAnalysisRewriteResp = await styleRewrite(parameters, config);
+				const documentMetadata = {
+					document_name: additionalOptions?.documentName,
+					document_owner: additionalOptions?.documentOwner,
+					document_link: additionalOptions?.documentLink,
+				};
+				const htmlReport = generateEmailHTMLReport(result, documentMetadata);
+				const { issues, ...resultWithoutIssues } = result;
+				const responseData = {
 					...resultWithoutIssues,
 					html_email: htmlReport,
-				},
-			});
+				};
 
-			return [this.helpers.returnJsonArray(returnData)];
+				executionData = [{ json: responseData }];
+			} else {
+				const result: StyleAnalysisSuccessResp = await styleCheck(parameters, config);
+
+				executionData = [
+					{
+						json: {
+							...result,
+						},
+					},
+				];
+			}
+
+			return [this.helpers.returnJsonArray(executionData)];
 		} catch (error) {
 			if (error instanceof AcrolinxError) {
 				throw new NodeApiError(this.getNode(), {
@@ -170,7 +196,6 @@ export class Acrolinx implements INodeType {
 					type: error.type as string,
 				});
 			}
-
 			throw new NodeApiError(this.getNode(), error as JsonObject);
 		}
 	}
