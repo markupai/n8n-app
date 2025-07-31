@@ -5,7 +5,6 @@
 	"keywords": [
 		"n8n-community-node-package"
 	],
-	"license": "MIT",
 	"homepage": "https://docs.acrolinx.com/overview",
 	"author": {
 		"name": "Acrolinx",
@@ -22,9 +21,9 @@
 	"scripts": {
 		"build": "tsc && gulp build:icons",
 		"dev": "tsc --watch",
-		"format": "prettier nodes credentials --write",
-		"lint": "eslint nodes credentials package.json",
-		"lintfix": "eslint nodes credentials package.json --fix",
+		"format": "prettier nodes . --write",
+		"lint": "eslint nodes . package.json",
+		"lintfix": "eslint nodes .ts package.json --fix",
 		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
 	},
 	"files": [

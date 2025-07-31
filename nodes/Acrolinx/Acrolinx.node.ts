@@ -28,9 +28,11 @@ export class Acrolinx implements INodeType {
 				default: '',
 			},
 			{
-				displayName: 'Style Guide',
+				displayName: 'Style Guide Name or ID',
 				name: 'styleGuide',
 				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -38,9 +40,11 @@ export class Acrolinx implements INodeType {
 				},
 			},
 			{
-				displayName: 'Tone',
+				displayName: 'Tone Name or ID',
 				name: 'tone',
 				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -48,9 +52,11 @@ export class Acrolinx implements INodeType {
 				},
 			},
 			{
-				displayName: 'Dialect',
+				displayName: 'Dialect Name or ID',
 				name: 'dialect',
 				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -68,21 +74,18 @@ export class Acrolinx implements INodeType {
 						displayName: 'Document Name',
 						name: 'documentName',
 						type: 'string',
-						required: false,
 						default: '',
 					},
 					{
 						displayName: 'Document Owner',
 						name: 'documentOwner',
 						type: 'string',
-						required: false,
 						default: '',
 					},
 					{
 						displayName: 'Document Link',
 						name: 'documentLink',
 						type: 'string',
-						required: false,
 						default: '',
 					},
 				],
@@ -95,7 +98,7 @@ export class Acrolinx implements INodeType {
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
 		displayName: 'Acrolinx',
-		name: 'Acrolinx',
+		name: 'acrolinx',
 		icon: 'file:acrolinx.png',
 		group: [],
 		description: 'Acrolinx AI Content Checker',
