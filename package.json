@@ -4,14 +4,14 @@
 	"description": "n8n node for Acrolinx",
 	"keywords": [
 		"n8n-community-node-package",
-    "n8n",
-    "acrolinx",
-    "text-analysis",
-    "writing-assistant",
-    "style-guide",
-    "content-quality",
-    "grammar-checker",
-    "ai-writing"
+		"n8n",
+		"acrolinx",
+		"text-analysis",
+		"writing-assistant",
+		"style-guide",
+		"content-quality",
+		"grammar-checker",
+		"ai-writing"
 	],
 	"license": "MIT",
 	"homepage": "https://docs.acrolinx.com/overview",
