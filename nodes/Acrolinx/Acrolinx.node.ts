@@ -117,7 +117,7 @@ export class Acrolinx implements INodeType {
 		outputs: [NodeConnectionType.Main],
 		displayName: 'Acrolinx',
 		name: 'acrolinx',
-		icon: 'file:acrolinx.png',
+		icon: 'file:acrolinx.svg',
 		group: [],
 		description: 'Acrolinx AI Content Checker',
 		credentials: [
