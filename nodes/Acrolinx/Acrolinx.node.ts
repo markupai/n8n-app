@@ -7,20 +7,30 @@ import {
 	NodeApiError,
 	NodeConnectionType,
 } from 'n8n-workflow';
-import { getConfig, loadDialects, loadStyleGuides, loadTones } from './utils/LoadOptions';
-import {
-	AcrolinxError,
-	StyleAnalysisRewriteResp,
-	StyleAnalysisSuccessResp,
-	styleCheck,
-	styleRewrite,
-} from '@acrolinx/typescript-sdk';
-import { generateEmailHTMLReport } from './utils/EmailGenerator';
-
-type OperationType = 'styleCheck' | 'rewrite';
+import { loadDialects, loadStyleGuides, loadTones } from './utils/load.options';
+import { FormDataDetails, getPath, styleRequest } from './utils/style.api.utils';
+import { generateEmailHTMLReport } from './utils/email.generator';
+import { GetStyleRewriteResponse } from './Acrolinx.api.types';
 
 export class Acrolinx implements INodeType {
 	description: INodeTypeDescription = {
+		displayName: 'Acrolinx',
+		name: 'acrolinx',
+		description: 'Acrolinx AI Content Checker',
+		icon: 'file:acrolinx.svg',
+		version: 1,
+		defaults: {
+			name: 'Acrolinx',
+		},
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
+		group: [],
+		credentials: [
+			{
+				name: 'acrolinxApi',
+				required: true,
+			},
+		],
 		properties: [
 			{
 				displayName: 'Operation',
@@ -89,6 +99,12 @@ export class Acrolinx implements INodeType {
 				default: {},
 				options: [
 					{
+						displayName: 'Document Link',
+						name: 'documentLink',
+						type: 'string',
+						default: '',
+					},
+					{
 						displayName: 'Document Name',
 						name: 'documentName',
 						type: 'string',
@@ -101,29 +117,25 @@ export class Acrolinx implements INodeType {
 						default: '',
 					},
 					{
-						displayName: 'Document Link',
-						name: 'documentLink',
-						type: 'string',
-						default: '',
+						displayName: 'Polling Timeout (Ms)',
+						name: 'pollingTimeout',
+						type: 'number',
+						default: 60000,
+						description: 'Maximum time to wait for workflow completion in milliseconds',
+						displayOptions: {
+							show: {
+								waitForCompletion: [true],
+							},
+						},
+					},
+					{
+						displayName: 'Wait For Completion',
+						name: 'waitForCompletion',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to wait for the workflow to complete before returning',
 					},
 				],
-			},
-		],
-		version: 1,
-		defaults: {
-			name: 'Acrolinx',
-		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
-		displayName: 'Acrolinx',
-		name: 'acrolinx',
-		icon: 'file:acrolinx.svg',
-		group: [],
-		description: 'Acrolinx AI Content Checker',
-		credentials: [
-			{
-				name: 'acrolinxApi',
-				required: true,
 			},
 		],
 	};
@@ -138,64 +150,58 @@ export class Acrolinx implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		try {
-			const operation = this.getNodeParameter('operation', 0) as OperationType;
-			const content = this.getNodeParameter('content', 0) as string;
-			const styleGuide = this.getNodeParameter('styleGuide', 0) as string;
-			const tone = this.getNodeParameter('tone', 0) as string;
-			const dialect = this.getNodeParameter('dialect', 0) as string;
-			const additionalOptions = this.getNodeParameter('additionalOptions', 0) as {
-				documentName: string;
-				documentOwner: string;
-				documentLink: string;
-			};
+			const items = this.getInputData();
+			const returnData: INodeExecutionData[] = [];
 
-			const parameters = {
-				content,
-				style_guide: styleGuide,
-				tone,
-				dialect,
-			};
-
-			const config = await getConfig(this);
-
-			let executionData: INodeExecutionData[];
-
-			if (operation === 'rewrite') {
-				const result: StyleAnalysisRewriteResp = await styleRewrite(parameters, config);
-				const documentMetadata = {
-					document_name: additionalOptions?.documentName,
-					document_owner: additionalOptions?.documentOwner,
-					document_link: additionalOptions?.documentLink,
+			for (let i = 0; i < items.length; i++) {
+				const operation = this.getNodeParameter('operation', i) as string;
+				const content = this.getNodeParameter('content', i) as string;
+				const styleGuide = this.getNodeParameter('styleGuide', i) as string;
+				const tone = this.getNodeParameter('tone', i) as string;
+				const dialect = this.getNodeParameter('dialect', i) as string;
+				const additionalOptions = this.getNodeParameter('additionalOptions', 0) as {
+					waitForCompletion?: boolean;
+					pollingTimeout?: number;
+					documentName?: string;
+					documentOwner?: string;
+					documentLink?: string;
 				};
-				const htmlReport = generateEmailHTMLReport(result, documentMetadata);
-				const { issues, ...resultWithoutIssues } = result;
-				const responseData = {
-					...resultWithoutIssues,
-					html_email: htmlReport,
+				const waitForCompletion = additionalOptions.waitForCompletion || true;
+				const pollingTimeout = additionalOptions.pollingTimeout || 60000;
+				const extendedInputData = {
+					document_name: additionalOptions.documentName,
+					document_owner: additionalOptions.documentOwner,
+					document_link: additionalOptions.documentLink,
 				};
 
-				executionData = [{ json: responseData }];
-			} else {
-				const result: StyleAnalysisSuccessResp = await styleCheck(parameters, config);
+				const formDataDetails = {
+					content,
+					styleGuide,
+					tone,
+					dialect,
+					waitForCompletion,
+					pollingTimeout,
+				} as FormDataDetails;
 
-				executionData = [
-					{
-						json: {
-							...result,
-						},
+				const path = getPath(operation);
+
+				const result = await styleRequest(this, formDataDetails, path, i);
+				const emailHTMLReport = generateEmailHTMLReport(
+					result[0].json as unknown as GetStyleRewriteResponse,
+					extendedInputData,
+				);
+
+				returnData.push({
+					json: {
+						...result[0].json,
+						html_email: emailHTMLReport,
 					},
-				];
-			}
-
-			return [this.helpers.returnJsonArray(executionData)];
-		} catch (error) {
-			if (error instanceof AcrolinxError) {
-				throw new NodeApiError(this.getNode(), {
-					message: error.message as string,
-					statusCode: error.statusCode as number,
-					type: error.type as string,
+					itemData: i,
 				});
 			}
+
+			return [this.helpers.returnJsonArray(returnData)];
+		} catch (error) {
 			throw new NodeApiError(this.getNode(), error as JsonObject);
 		}
 	}

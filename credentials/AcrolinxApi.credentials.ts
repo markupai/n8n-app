@@ -6,11 +6,20 @@ export class AcrolinxApi implements ICredentialType {
 	documentationUrl = 'https://docs.acrolinx.com/overview';
 	properties: INodeProperties[] = [
 		{
-			displayName: 'API Key',
+			displayName: 'Acrolinx API Key',
 			name: 'apiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
+			required: true,
+		},
+		{
+			displayName: 'Base URL',
+			name: 'baseUrl',
+			type: 'string',
+			default: 'https://app.acrolinx.cloud',
+			description: 'The base URL for the Acrolinx API',
+			placeholder: 'https://app.acrolinx.cloud',
 		},
 	];
 }

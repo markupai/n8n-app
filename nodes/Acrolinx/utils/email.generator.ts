@@ -1,4 +1,5 @@
-import { categorizeIssues, StyleAnalysisRewriteResp } from '@acrolinx/typescript-sdk';
+import { GetStyleRewriteResponse } from '../Acrolinx.api.types';
+import { categorizeIssues } from './issues';
 
 interface ExtendedInputData {
 	document_name?: string;
@@ -17,10 +18,10 @@ function getScoreColor(score: number): string {
 }
 
 export function generateEmailHTMLReport(
-	result: StyleAnalysisRewriteResp,
+	result: GetStyleRewriteResponse,
 	inputData: ExtendedInputData,
 ): string {
-	const categorizedIssues = categorizeIssues(result.issues);
+	const categorizedIssues = categorizeIssues(result.issues || []);
 
 	return `<!DOCTYPE html>
 <html><br>
@@ -73,11 +74,11 @@ export function generateEmailHTMLReport(
             </td>
             <td align="right" style="padding-left:16px;">
               <table cellpadding="0" cellspacing="0" style="background-color:${getScoreColor(
-								result.scores.quality.score,
+								result.scores?.quality.score || 0,
 							)}; border-radius:12px; padding:16px; width:200px;">
                 <tr>
                   <td align="center" style="font-size:28px; font-weight:600; color:#000;">${
-										result.scores.quality.score
+										result.scores?.quality.score
 									}</td>
                 </tr>
                 <tr>
@@ -97,41 +98,41 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="8">
                 <tr>
                   <td style="background:${getScoreColor(
-										result.scores.clarity.score,
+										result.scores?.clarity.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores.clarity.score
+											result.scores?.clarity.score || 0
 										}</div>
                     <div style="font-size:14px;">Clarity</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores.grammar.score,
+										result.scores?.grammar.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores.grammar.score
+											result.scores?.grammar.score || 0
 										}</div>
                     <div style="font-size:14px;">Grammar</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores.style_guide.score,
+										result.scores?.style_guide.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores.style_guide.score
+											result.scores?.style_guide.score || 0
 										}</div>
                     <div style="font-size:14px;">Style</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores.terminology.score,
+										result.scores?.terminology.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores.terminology.score
+											result.scores?.terminology.score || 0
 										}</div>
                     <div style="font-size:14px;">Terminology</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores.tone.score,
+										result.scores?.tone.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px;">
-                    <div style="font-size:18px; font-weight:700;">${result.scores.tone.score}</div>
+                    <div style="font-size:18px; font-weight:700;">${result.scores?.tone.score || 0}</div>
                     <div style="font-size:14px;">Tone</div>
                   </td>
                 </tr>
@@ -149,13 +150,13 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="text-align:center;"><span style="font-size:18px;"><strong>${
-										result.scores.clarity.word_count
+										result.scores?.clarity.word_count || 0
 									}</strong></span><br><span style="font-size:14px;">Words Analyzed</span></td>
                   <td style="text-align:center;"><span style="font-size:18px;"><strong>${
-										result.scores.clarity.sentence_count
+										result.scores?.clarity.sentence_count || 0
 									}</strong></span><br><span style="font-size:14px;">Total Sentences</span></td>
                   <td style="text-align:center;"><span style="font-size:18px;"><strong>${
-										result.scores.clarity.average_sentence_length
+										result.scores?.clarity.average_sentence_length || 0
 									}</strong></span><br><span style="font-size:14px;">Average Sentence Length</span></td>
                 </tr>
               </table>
@@ -170,7 +171,7 @@ export function generateEmailHTMLReport(
             <td colspan="2" style="padding:16px; border:1px solid #eee; border-radius:12px;">
               <div style="font-weight:500; padding-bottom:12px;font-size:20px;">Issues found</div>
               <div style="font-size:14px; color:#555; text-align:left;">Total issues found: <strong>${
-								result.issues.length
+								result.issues?.length || 0
 							}</strong></div><br>
               <table width="100%" cellpadding="8" cellspacing="0">
                 <tr>
