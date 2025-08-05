@@ -96,7 +96,7 @@ export async function pollResponse(
 				typeof statusResp.body === 'string' ? statusResp.body : JSON.stringify(statusResp.body);
 
 			result = {
-                workflow_id: styleRewriteResponse.workflow_id,
+				workflow_id: styleRewriteResponse.workflow_id,
 				...JSON.parse(statusResponse),
 			};
 		}
