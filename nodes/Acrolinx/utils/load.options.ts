@@ -101,7 +101,7 @@ async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Prom
 	const response = await fn.helpers.httpRequest(requestOptions);
 
 	if (response.statusCode !== 200) {
-		console.log("error loading constants: ", response.body);
+		console.log('error loading constants: ', response.body);
 		throw new Error(JSON.parse(response.body as string).error);
 	}
 
