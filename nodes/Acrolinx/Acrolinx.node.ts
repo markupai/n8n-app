@@ -53,6 +53,10 @@ export class Acrolinx implements INodeType {
 				displayName: 'Content',
 				name: 'content',
 				type: 'string',
+				typeOptions: {
+					rows: 10,
+				},
+				required: true,
 				default: '',
 			},
 			{
