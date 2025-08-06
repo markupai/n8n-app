@@ -163,7 +163,7 @@ export class Acrolinx implements INodeType {
 				const styleGuide = this.getNodeParameter('styleGuide', i) as string;
 				const tone = this.getNodeParameter('tone', i) as string;
 				const dialect = this.getNodeParameter('dialect', i) as string;
-				const additionalOptions = this.getNodeParameter('additionalOptions', 0) as {
+				const additionalOptions = this.getNodeParameter('additionalOptions', i) as {
 					waitForCompletion?: boolean;
 					pollingTimeout?: number;
 					documentName?: string;

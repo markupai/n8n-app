@@ -66,7 +66,7 @@ export async function pollResponse(
 ): Promise<GetStyleRewriteResponse> {
 	const baseUrl = await getBaseUrl(fn);
 	const apiKey = await getApiKey(fn);
-	let result = JSON.parse(JSON.stringify(styleRewriteResponse));
+	let result = JSON.parse(styleRewriteResponse);
 
 	if (result.status === 'running' && waitForCompletion) {
 		const pollingInterval = 2000;
