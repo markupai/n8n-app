@@ -85,16 +85,57 @@ export async function loadStyleGuides(
 	}
 }
 
+async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
+	const apiKey = await getApiKey(fn);
+	const baseUrl = await getBaseUrl(fn);
+
+	const requestOptions: IHttpRequestOptions = {
+		method: 'GET',
+		url: `${baseUrl}/v1/internal/constants`,
+		headers: {
+			Authorization: `Bearer ${apiKey}`,
+		},
+		returnFullResponse: true,
+	};
+
+	const response = await fn.helpers.httpRequest(requestOptions);
+
+	if (response.statusCode !== 200) {
+		console.log("error loading constants: ", response.body);
+		throw new Error(JSON.parse(response.body as string).error);
+	}
+
+	return response.body as string;
+}
+
 export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	return DEFAULT_CONSTANTS.tones.map((tone: string) => ({
-		name: tone,
-		value: tone,
-	}));
+	try {
+		const constants = await getConstants(this);
+
+		return JSON.parse(constants).tones.map((tone: string) => ({
+			name: tone,
+			value: tone,
+		}));
+	} catch (error) {
+		return DEFAULT_CONSTANTS.tones.map((tone: string) => ({
+			name: tone,
+			value: tone,
+		}));
+	}
 }
 
 export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
-		name: dialect,
-		value: dialect,
-	}));
+	try {
+		const constants = await getConstants(this);
+
+		return JSON.parse(constants).dialects.map((dialect: string) => ({
+			name: dialect,
+			value: dialect,
+		}));
+	} catch (error) {
+		return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
+			name: dialect,
+			value: dialect,
+		}));
+	}
 }
