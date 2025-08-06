@@ -59,14 +59,16 @@ export async function postStyleRewrite(
 
 export async function pollResponse(
 	fn: IExecuteFunctions,
-	styleRewriteResponse: any,
+	styleRewriteResponse: GetStyleRewriteResponse,
 	waitForCompletion: boolean,
 	pollingTimeout: number,
 	path: string,
 ): Promise<GetStyleRewriteResponse> {
 	const baseUrl = await getBaseUrl(fn);
 	const apiKey = await getApiKey(fn);
-	let result = JSON.parse(styleRewriteResponse);
+	let result: any = {
+		...styleRewriteResponse,
+	};
 
 	if (result.status === 'running' && waitForCompletion) {
 		const pollingInterval = 2000;
