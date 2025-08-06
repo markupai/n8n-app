@@ -99,7 +99,7 @@ export function generateEmailHTMLReport(
                 <tr>
                   <td style="background:${getScoreColor(
 										result.scores?.clarity.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px;">
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
 											result.scores?.clarity.score || 0
 										}</div>
@@ -107,7 +107,7 @@ export function generateEmailHTMLReport(
                   </td>
                   <td style="background:${getScoreColor(
 										result.scores?.grammar.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px;">
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
 											result.scores?.grammar.score || 0
 										}</div>
@@ -115,7 +115,7 @@ export function generateEmailHTMLReport(
                   </td>
                   <td style="background:${getScoreColor(
 										result.scores?.style_guide.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px;">
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
 											result.scores?.style_guide.score || 0
 										}</div>
@@ -123,7 +123,7 @@ export function generateEmailHTMLReport(
                   </td>
                   <td style="background:${getScoreColor(
 										result.scores?.terminology.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px;">
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
 											result.scores?.terminology.score || 0
 										}</div>
@@ -131,7 +131,7 @@ export function generateEmailHTMLReport(
                   </td>
                   <td style="background:${getScoreColor(
 										result.scores?.tone.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px;">
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${result.scores?.tone.score || 0}</div>
                     <div style="font-size:14px;">Tone</div>
                   </td>
@@ -149,13 +149,13 @@ export function generateEmailHTMLReport(
               <div style="font-weight:500; padding-bottom:16px;font-size:20px;">Document statistics</div>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="text-align:center;"><span style="font-size:18px;"><strong>${
+                  <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
 										result.scores?.clarity.word_count || 0
 									}</strong></span><br><span style="font-size:14px;">Words Analyzed</span></td>
-                  <td style="text-align:center;"><span style="font-size:18px;"><strong>${
+                  <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
 										result.scores?.clarity.sentence_count || 0
 									}</strong></span><br><span style="font-size:14px;">Total Sentences</span></td>
-                  <td style="text-align:center;"><span style="font-size:18px;"><strong>${
+                  <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
 										result.scores?.clarity.average_sentence_length || 0
 									}</strong></span><br><span style="font-size:14px;">Average Sentence Length</span></td>
                 </tr>
@@ -175,25 +175,25 @@ export function generateEmailHTMLReport(
 							}</strong></div><br>
               <table width="100%" cellpadding="8" cellspacing="0">
                 <tr>
-					        <td align="center"><span style="font-size:18px;"><strong>${
+					        <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.grammar.length
 									}</strong></span><br><span style="font-size:14px;">Grammar &amp; Spelling</span></td>
-                  <td align="center"><span style="font-size:18px;"><strong>${
+                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.simple_vocab.length
 									}</strong></span><br><span style="font-size:14px;">Vocabulary</span></td>
-                  <td align="center"><span style="font-size:18px;"><strong>${
+                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.style_guide.length
 									}</strong></span><br><span style="font-size:14px;">Style Guide</span><br>
   </td>
                 </tr><td></td>
                 <tr>
-                  <td align="center"><span style="font-size:18px;"><strong>${
+                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.sentence_structure.length
 									}</strong></span><br><span style="font-size:14px;">Sentence Structure</span></td>
-                  <td align="center"><span style="font-size:18px;"><strong>${
+                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.tone.length
 									}</strong><br><span style="font-size:14px;">Tone &amp; Voice</span></td>
-                  <td align="center"><span style="font-size:18px;"><strong>${
+                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.sentence_length.length
 									}</strong><br><span style="font-size:14px;">Sentence Length</span></td>
                 </tr>
