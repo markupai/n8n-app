@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-base.acrolinx",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Miscellaneous"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.acrolinx.com/overview"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.acrolinx.com/overview"
+			}
+		]
+	}
+}
