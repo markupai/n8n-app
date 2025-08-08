@@ -170,7 +170,7 @@ export class Acrolinx implements INodeType {
 					documentOwner?: string;
 					documentLink?: string;
 				};
-				const waitForCompletion = additionalOptions.waitForCompletion || true;
+				const waitForCompletion = additionalOptions.waitForCompletion ?? true;
 				const pollingTimeout = additionalOptions.pollingTimeout || 60000;
 				const extendedInputData = {
 					document_name: additionalOptions.documentName,
@@ -190,18 +190,28 @@ export class Acrolinx implements INodeType {
 				const path = getPath(operation);
 
 				const result = await styleRequest(this, formDataDetails, path, i);
-				const emailHTMLReport = generateEmailHTMLReport(
-					result[0].json as unknown as GetStyleRewriteResponse,
-					extendedInputData,
-				);
 
-				returnData.push({
-					json: {
-						...result[0].json,
-						html_email: emailHTMLReport,
-					},
-					itemData: i,
-				});
+				if (waitForCompletion) {
+					const emailHTMLReport = generateEmailHTMLReport(
+						result[0].json as unknown as GetStyleRewriteResponse,
+						extendedInputData,
+					);
+
+					returnData.push({
+						json: {
+							...result[0].json,
+							html_email: emailHTMLReport,
+						},
+						itemData: i,
+					});
+				} else {
+					returnData.push({
+						json: {
+							...result[0].json,
+						},
+						itemData: i,
+					});
+				}
 			}
 
 			return [this.helpers.returnJsonArray(returnData)];

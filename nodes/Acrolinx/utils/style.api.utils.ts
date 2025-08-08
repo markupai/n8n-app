@@ -121,7 +121,7 @@ export async function styleRequest(
 	const postStyleRewriteResponse = await postStyleRewrite(fn, formDataDetails, path);
 
 	if (formDataDetails.waitForCompletion) {
-		const pollStyleRewriteResponse = await pollResponse(
+		const pollStyleRewriteResponseComplete = await pollResponse(
 			fn,
 			postStyleRewriteResponse,
 			formDataDetails.waitForCompletion,
@@ -130,12 +130,12 @@ export async function styleRequest(
 		);
 
 		returnData.push({
-			json: { ...pollStyleRewriteResponse },
+			json: { ...pollStyleRewriteResponseComplete },
 			itemData: itemIndex,
 		});
 	} else {
 		returnData.push({
-			json: { postStyleRewriteResponse },
+			json: { ...postStyleRewriteResponse },
 			itemData: itemIndex,
 		});
 	}
