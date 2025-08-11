@@ -18,6 +18,7 @@
 		"incremental": true,
 		"declaration": true,
 		"sourceMap": true,
+		"inlineSources": true,
 		"skipLibCheck": true,
 		"outDir": "./dist/"
 	},

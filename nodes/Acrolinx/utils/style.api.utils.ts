@@ -1,4 +1,4 @@
-import { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
 import { getApiKey, getBaseUrl } from './load.options';
 import { GetStyleRewriteResponse } from '../Acrolinx.api.types';
 import FormData from 'form-data';

@@ -1,14 +1,16 @@
-import {
+import type {
 	ICredentialDataDecryptedObject,
 	IExecuteFunctions,
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
-	INode,
 	INodePropertyOptions,
-	JsonObject,
-	NodeApiError,
 } from 'n8n-workflow';
 import { StyleGuides } from '../Acrolinx.api.types';
+
+type Constants = {
+	dialects: string[];
+	tones: string[];
+};
 
 const DEFAULT_CONSTANTS = {
 	dialects: [
@@ -49,8 +51,6 @@ export async function getBaseUrl(fn: ILoadOptionsFunctions | IExecuteFunctions):
 export async function loadStyleGuides(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-	const node: INode = this.getNode();
-
 	try {
 		const apiKey = await getApiKey(this);
 		const baseUrl = await getBaseUrl(this);
@@ -67,13 +67,13 @@ export async function loadStyleGuides(
 		const response = await this.helpers.httpRequest(requestOptions);
 
 		if (response.statusCode !== 200) {
-			throw new NodeApiError(node, JSON.parse(response.response.data as string).error);
+			throw new Error('Error loading style guides: ' + response.body);
 		}
 
 		const styleGuides = response.body as StyleGuides;
 
 		if (!styleGuides) {
-			throw new NodeApiError(node, response.body as JsonObject);
+			throw new Error('Error loading style guides: empty response');
 		}
 
 		return styleGuides.map((styleGuide) => ({
@@ -81,11 +81,11 @@ export async function loadStyleGuides(
 			value: styleGuide.id,
 		}));
 	} catch (error) {
-		throw new NodeApiError(node, error as JsonObject);
+		throw new Error('Error loading style guides', error as Error);
 	}
 }
 
-async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
+async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
 	const apiKey = await getApiKey(fn);
 	const baseUrl = await getBaseUrl(fn);
 
@@ -105,14 +105,16 @@ async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Prom
 		throw new Error(JSON.parse(response.body as string).error);
 	}
 
-	return response.body as string;
+	return {
+		...response.body,
+	} as Constants;
 }
 
 export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const constants = await getConstants(this);
 
-		return JSON.parse(constants).tones.map((tone: string) => ({
+		return constants.tones.map((tone: string) => ({
 			name: tone,
 			value: tone,
 		}));
@@ -128,7 +130,7 @@ export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePr
 	try {
 		const constants = await getConstants(this);
 
-		return JSON.parse(constants).dialects.map((dialect: string) => ({
+		return constants.dialects.map((dialect: string) => ({
 			name: dialect,
 			value: dialect,
 		}));
