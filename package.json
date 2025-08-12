@@ -1,5 +1,5 @@
 {
-	"name": "n8n-nodes-acrolinx",
+	"name": "@acrolinx/n8n-nodes-acrolinx",
 	"version": "0.1.0",
 	"description": "n8n node for Acrolinx",
 	"keywords": [
