@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
 import { getApiKey, getBaseUrl } from './load.options';
-import { GetStyleRewriteResponse } from '../Acrolinx.api.types';
+import { GetStyleRewriteResponse } from '../Markupai.api.types';
 import FormData from 'form-data';
 
 export interface FormDataDetails {

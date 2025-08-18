@@ -1,20 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AcrolinxApi } from '../../credentials/AcrolinxApi.credentials';
+import { MarkupAiApi } from '../../credentials/MarkupAiApi.credentials';
 
-describe('AcrolinxApi credentials', () => {
-	describe('AcrolinxApi class', () => {
-		let credentials: AcrolinxApi;
+describe('MarkupAiApi credentials', () => {
+	describe('MarkupAiApi class', () => {
+		let credentials: MarkupAiApi;
 
 		beforeEach(() => {
-			credentials = new AcrolinxApi();
+			credentials = new MarkupAiApi();
 		});
 
 		it('should have correct name', () => {
-			expect(credentials.name).toBe('acrolinxApi');
+			expect(credentials.name).toBe('markupaiApi');
 		});
 
 		it('should have correct display name', () => {
-			expect(credentials.displayName).toBe('Acrolinx API');
+			expect(credentials.displayName).toBe('MarkupAI API');
 		});
 
 		it('should have correct documentation URL', () => {
@@ -27,7 +27,7 @@ describe('AcrolinxApi credentials', () => {
 			// Check API Key property
 			const apiKeyProperty = credentials.properties.find((p) => p.name === 'apiKey');
 			expect(apiKeyProperty).toBeDefined();
-			expect(apiKeyProperty?.displayName).toBe('Acrolinx API Key');
+			expect(apiKeyProperty?.displayName).toBe('MarkupAI API Key');
 			expect(apiKeyProperty?.type).toBe('string');
 			expect(apiKeyProperty?.required).toBe(true);
 			expect(apiKeyProperty?.typeOptions?.password).toBe(true);
@@ -39,7 +39,7 @@ describe('AcrolinxApi credentials', () => {
 			expect(baseUrlProperty?.displayName).toBe('Base URL');
 			expect(baseUrlProperty?.type).toBe('string');
 			expect(baseUrlProperty?.default).toBe('https://app.acrolinx.cloud');
-			expect(baseUrlProperty?.description).toBe('The base URL for the Acrolinx API');
+			expect(baseUrlProperty?.description).toBe('The base URL for the MarkupAI API');
 			expect(baseUrlProperty?.placeholder).toBe('https://app.acrolinx.cloud');
 			expect(baseUrlProperty?.required).toBeUndefined(); // Not required
 		});
@@ -58,7 +58,7 @@ describe('AcrolinxApi credentials', () => {
 		it('should have API key as first property', () => {
 			const firstProperty = credentials.properties[0];
 			expect(firstProperty.name).toBe('apiKey');
-			expect(firstProperty.displayName).toBe('Acrolinx API Key');
+			expect(firstProperty.displayName).toBe('MarkupAI API Key');
 		});
 
 		it('should have base URL as second property', () => {

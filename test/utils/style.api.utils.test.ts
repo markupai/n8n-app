@@ -4,9 +4,9 @@ import {
 	pollResponse,
 	styleRequest,
 	getPath,
-} from '../../nodes/Acrolinx/utils/style.api.utils';
+} from '../../nodes/Markupai/utils/style.api.utils';
 
-vi.mock('../../nodes/Acrolinx/utils/load.options', () => ({
+vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getApiKey: vi.fn(),
 	getBaseUrl: vi.fn(),
 }));
@@ -47,7 +47,7 @@ describe('style.api.utils', () => {
 				},
 			});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -101,7 +101,7 @@ describe('style.api.utils', () => {
 			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
 			const mockHttpRequest = vi.fn().mockRejectedValue(new Error('Network error'));
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -146,7 +146,7 @@ describe('style.api.utils', () => {
 				},
 			});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -200,7 +200,7 @@ describe('style.api.utils', () => {
 				},
 			});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -239,7 +239,7 @@ describe('style.api.utils', () => {
 				},
 			});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -304,7 +304,7 @@ describe('style.api.utils', () => {
 					},
 				});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 
@@ -347,7 +347,7 @@ describe('style.api.utils', () => {
 				},
 			});
 
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Acrolinx/utils/load.options');
+			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 

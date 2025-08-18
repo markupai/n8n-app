@@ -5,7 +5,7 @@ import {
 	loadDialects,
 	loadStyleGuides,
 	loadTones,
-} from '../../nodes/Acrolinx/utils/load.options';
+} from '../../nodes/Markupai/utils/load.options';
 
 describe('load.options', () => {
 	beforeEach(() => {
@@ -21,7 +21,7 @@ describe('load.options', () => {
 			const result = await getApiKey(fn as any);
 
 			expect(result).toBe('mocked-key-123');
-			expect(fn.getCredentials).toHaveBeenCalledWith('acrolinxApi');
+			expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
 		});
 	});
 
@@ -34,7 +34,7 @@ describe('load.options', () => {
 			const result = await getBaseUrl(fn as any);
 
 			expect(result).toBe('https://api.acrolinx.com');
-			expect(fn.getCredentials).toHaveBeenCalledWith('acrolinxApi');
+			expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
 		});
 	});
 
@@ -61,7 +61,7 @@ describe('load.options', () => {
 				{ name: 'Style Guide 1', value: '1' },
 				{ name: 'Style Guide 2', value: '2' },
 			]);
-			expect(fn.getCredentials).toHaveBeenCalledWith('acrolinxApi');
+			expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
 		});
 
 		it('throws an error if the API key is not found', async () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateEmailHTMLReport } from '../../nodes/Acrolinx/utils/email.generator';
+import { generateEmailHTMLReport } from '../../nodes/Markupai/utils/email.generator';
 
 const mockResult = {
 	workflow_id: 'test-workflow-id',
@@ -60,7 +60,7 @@ describe('email.generator', () => {
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
 			expect(result).toContain('<!DOCTYPE html>');
-			expect(result).toContain('<title>Acrolinx Document Analysis Report</title>');
+			expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
 			expect(result).toContain('Test Document');
 			expect(result).toContain('John Doe');
 			expect(result).toContain('https://example.com/doc');
@@ -77,7 +77,7 @@ describe('email.generator', () => {
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
 			expect(result).toContain('<!DOCTYPE html>');
-			expect(result).toContain('<title>Acrolinx Document Analysis Report</title>');
+			expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
 			expect(result).toContain('85');
 			expect(result).toContain('Quality Score');
 			expect(result).toContain('Standard');

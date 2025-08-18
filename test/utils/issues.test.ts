@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { categorizeIssues } from '../../nodes/Acrolinx/utils/issues';
-import { Issue, IssueCategory } from '../../nodes/Acrolinx/Acrolinx.api.types';
+import { categorizeIssues } from '../../nodes/Markupai/utils/issues';
+import { Issue, IssueCategory } from '../../nodes/Markupai/Markupai.api.types';
 
 describe('issues', () => {
 	describe('categorizeIssues', () => {

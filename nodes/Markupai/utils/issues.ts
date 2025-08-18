@@ -1,4 +1,4 @@
-import { Issue, IssueCategory } from '../Acrolinx.api.types';
+import { Issue, IssueCategory } from '../Markupai.api.types';
 
 /**
  * Base interface for categorized issues

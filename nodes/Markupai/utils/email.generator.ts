@@ -1,4 +1,4 @@
-import { GetStyleRewriteResponse } from '../Acrolinx.api.types';
+import { GetStyleRewriteResponse } from '../Markupai.api.types';
 import { categorizeIssues } from './issues';
 
 interface ExtendedInputData {
@@ -27,7 +27,7 @@ export function generateEmailHTMLReport(
 <html><br>
 <head>
   <meta charset="utf-8">
-  <title>Acrolinx Document Analysis Report</title>
+  <title>MarkupAI Document Analysis Report</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
@@ -225,8 +225,8 @@ export function generateEmailHTMLReport(
 
           <!-- Footer -->
           <tr>
-            <td colspan="2" style="font-size:12px; color:#888; text-align:center; padding-top:24px;"><img src="https://cdn.acrolinx.cloud/logo-v1.png" width="160"  alt="Logo Acrolinx"/><br><br>
-              <p>© 2025 Acrolinx Content Quality Platform</p>
+            <td colspan="2" style="font-size:12px; color:#888; text-align:center; padding-top:24px;"><img src="" width="160"  alt="Logo Markup AI"/><br><br>
+              <p>© 2025 Markup AI</p>
               This report was automatically generated
             </td>
           </tr>

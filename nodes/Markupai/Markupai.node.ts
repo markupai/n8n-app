@@ -10,24 +10,24 @@ import {
 import { loadDialects, loadStyleGuides, loadTones } from './utils/load.options';
 import { FormDataDetails, getPath, styleRequest } from './utils/style.api.utils';
 import { generateEmailHTMLReport } from './utils/email.generator';
-import { GetStyleRewriteResponse } from './Acrolinx.api.types';
+import { GetStyleRewriteResponse } from './Markupai.api.types';
 
-export class Acrolinx implements INodeType {
+export class MarkupAi implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Acrolinx',
-		name: 'acrolinx',
-		description: 'Acrolinx AI Content Checker',
-		icon: 'file:acrolinx.svg',
+		displayName: 'MarkupAI',
+		name: 'markupai',
+		description: 'MarkupAI AI Content Checker',
+		icon: 'file:markupai.svg',
 		version: 1,
 		defaults: {
-			name: 'Acrolinx',
+			name: 'MarkupAI',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
 		group: [],
 		credentials: [
 			{
-				name: 'acrolinxApi',
+				name: 'markupaiApi',
 				required: true,
 			},
 		],

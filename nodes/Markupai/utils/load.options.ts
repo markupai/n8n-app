@@ -5,7 +5,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
 } from 'n8n-workflow';
-import { StyleGuides } from '../Acrolinx.api.types';
+import { StyleGuides } from '../Markupai.api.types';
 
 type Constants = {
 	dialects: string[];
@@ -33,7 +33,7 @@ const DEFAULT_CONSTANTS = {
 };
 
 export async function getApiKey(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('acrolinxApi')) as {
+	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('markupaiApi')) as {
 		apiKey: string;
 	};
 
@@ -41,7 +41,7 @@ export async function getApiKey(fn: ILoadOptionsFunctions | IExecuteFunctions): 
 }
 
 export async function getBaseUrl(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('acrolinxApi')) as {
+	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('markupaiApi')) as {
 		baseUrl: string;
 	};
 

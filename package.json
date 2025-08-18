@@ -1,11 +1,11 @@
 {
-	"name": "@acrolinx/n8n-nodes-acrolinx",
+	"name": "@acrolinx/n8n-nodes-markupai",
 	"version": "0.1.0",
-	"description": "n8n node for Acrolinx",
+	"description": "n8n node for MarkupAI",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
-		"acrolinx",
+		"markupai",
 		"text-analysis",
 		"writing-assistant",
 		"style-guide",
@@ -16,8 +16,8 @@
 	"license": "MIT",
 	"homepage": "https://docs.acrolinx.com/overview",
 	"author": {
-		"name": "Acrolinx",
-		"email": "support@acrolinx.com"
+		"name": "MarkupAI",
+		"email": "support@markupai.com"
 	},
 	"repository": {
 		"type": "git",
@@ -46,10 +46,10 @@
 	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"credentials": [
-			"dist/credentials/AcrolinxApi.credentials.js"
+			"dist/credentials/MarkupAiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Acrolinx/Acrolinx.node.js"
+			"dist/nodes/Markupai/MarkupAi.node.js"
 		]
 	},
 	"devDependencies": {
