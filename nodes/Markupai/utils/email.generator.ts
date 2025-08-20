@@ -225,7 +225,7 @@ export function generateEmailHTMLReport(
 
           <!-- Footer -->
           <tr>
-            <td colspan="2" style="font-size:12px; color:#888; text-align:center; padding-top:24px;"><img src="" width="160"  alt="Logo Markup AI"/><br><br>
+            <td colspan="2" style="font-size:12px; color:#888; text-align:center; padding-top:24px;"><img src="https://cdn.markup.ai/markup-logo-horz-coral.png" width="160"  alt="Logo Markup AI"/>
               <p>© 2025 Markup AI</p>
               This report was automatically generated
             </td>
