@@ -24,7 +24,7 @@ export function generateEmailHTMLReport(
 	const categorizedIssues = categorizeIssues(result.issues || []);
 
 	return `<!DOCTYPE html>
-<html><br>
+<html>
 <head>
   <meta charset="utf-8">
   <title>MarkupAI Document Analysis Report</title>
@@ -98,41 +98,41 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="8">
                 <tr>
                   <td style="background:${getScoreColor(
-										result.scores?.clarity.score || 0,
+										result.scores?.analysis.clarity.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.clarity.score || 0
+											result.scores?.analysis.clarity.score || 0
 										}</div>
                     <div style="font-size:14px;">Clarity</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.grammar.score || 0,
+										result.scores?.quality.grammar.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.grammar.score || 0
+											result.scores?.quality.grammar.score || 0
 										}</div>
                     <div style="font-size:14px;">Grammar</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.style_guide.score || 0,
+										result.scores?.quality.style_guide.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.style_guide.score || 0
+											result.scores?.quality.style_guide.score || 0
 										}</div>
                     <div style="font-size:14px;">Style</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.terminology.score || 0,
+										result.scores?.quality.terminology.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.terminology.score || 0
+											result.scores?.quality.terminology.score || 0
 										}</div>
                     <div style="font-size:14px;">Terminology</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.tone.score || 0,
+										result.scores?.analysis.tone.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
-                    <div style="font-size:18px; font-weight:700;">${result.scores?.tone.score || 0}</div>
+                    <div style="font-size:18px; font-weight:700;">${result.scores?.analysis.tone.score || 0}</div>
                     <div style="font-size:14px;">Tone</div>
                   </td>
                 </tr>
@@ -150,13 +150,13 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.clarity.word_count || 0
+										result.scores?.analysis.clarity.word_count || 0
 									}</strong></span><br><span style="font-size:14px;">Words Analyzed</span></td>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.clarity.sentence_count || 0
+										result.scores?.analysis.clarity.sentence_count || 0
 									}</strong></span><br><span style="font-size:14px;">Total Sentences</span></td>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.clarity.average_sentence_length || 0
+										result.scores?.analysis.clarity.average_sentence_length || 0
 									}</strong></span><br><span style="font-size:14px;">Average Sentence Length</span></td>
                 </tr>
               </table>
@@ -183,19 +183,18 @@ export function generateEmailHTMLReport(
 									}</strong></span><br><span style="font-size:14px;">Vocabulary</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.style_guide.length
-									}</strong></span><br><span style="font-size:14px;">Style Guide</span><br>
-  </td>
-                </tr><td></td>
+									}</strong></span><br><span style="font-size:14px;">Style Guide</span></td>
+                </tr>
                 <tr>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.sentence_structure.length
 									}</strong></span><br><span style="font-size:14px;">Sentence Structure</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.tone.length
-									}</strong><br><span style="font-size:14px;">Tone &amp; Voice</span></td>
+									}</strong></span><br><span style="font-size:14px;">Tone &amp; Voice</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.sentence_length.length
-									}</strong><br><span style="font-size:14px;">Sentence Length</span></td>
+									}</strong></span><br><span style="font-size:14px;">Sentence Length</span></td>
                 </tr>
               </table>
             </td>

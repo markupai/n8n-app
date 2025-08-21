@@ -7,34 +7,36 @@ const mockResult = {
 	scores: {
 		quality: {
 			score: 85,
+			grammar: {
+				score: 90,
+				issues: 2,
+			},
+			style_guide: {
+				score: 85,
+				issues: 1,
+			},
+			terminology: {
+				score: 92,
+				issues: 0,
+			},
 		},
-		clarity: {
-			score: 80,
-			word_count: 150,
-			sentence_count: 10,
-			average_sentence_length: 15,
-			flesch_reading_ease: 70,
-			vocabulary_complexity: 0.6,
-			flesch_kincaid_grade: 8,
-			lexical_diversity: 0.7,
-			sentence_complexity: 0.5,
-		},
-		grammar: {
-			score: 90,
-			issues: 2,
-		},
-		style_guide: {
-			score: 85,
-			issues: 1,
-		},
-		tone: {
-			score: 88,
-			informality: 0.3,
-			liveliness: 0.4,
-		},
-		terminology: {
-			score: 92,
-			issues: 0,
+		analysis: {
+			clarity: {
+				score: 80,
+				word_count: 150,
+				sentence_count: 10,
+				average_sentence_length: 15,
+				flesch_reading_ease: 70,
+				vocabulary_complexity: 0.6,
+				sentence_complexity: 0.5,
+			},
+			tone: {
+				score: 88,
+				informality: 0.3,
+				liveliness: 0.4,
+				informality_alignment: 150.0,
+				liveliness_alignment: 120.0,
+			},
 		},
 	},
 	issues: [],
