@@ -18,7 +18,7 @@ describe('MarkupAiApi credentials', () => {
 		});
 
 		it('should have correct documentation URL', () => {
-			expect(credentials.documentationUrl).toBe('https://docs.acrolinx.com/overview');
+			expect(credentials.documentationUrl).toBe('https://docs.markup.ai/');
 		});
 
 		it('should have required properties', () => {
@@ -38,9 +38,9 @@ describe('MarkupAiApi credentials', () => {
 			expect(baseUrlProperty).toBeDefined();
 			expect(baseUrlProperty?.displayName).toBe('Base URL');
 			expect(baseUrlProperty?.type).toBe('string');
-			expect(baseUrlProperty?.default).toBe('https://app.acrolinx.cloud');
+			expect(baseUrlProperty?.default).toBe('https://api.markup.ai');
 			expect(baseUrlProperty?.description).toBe('The base URL for the MarkupAI API');
-			expect(baseUrlProperty?.placeholder).toBe('https://app.acrolinx.cloud');
+			expect(baseUrlProperty?.placeholder).toBe('https://api.markup.ai');
 			expect(baseUrlProperty?.required).toBeUndefined(); // Not required
 		});
 
@@ -74,7 +74,7 @@ describe('MarkupAiApi credentials', () => {
 
 		it('should have correct base URL default value', () => {
 			const baseUrlProperty = credentials.properties.find((p) => p.name === 'baseUrl');
-			expect(baseUrlProperty?.default).toBe('https://app.acrolinx.cloud');
+			expect(baseUrlProperty?.default).toBe('https://api.markup.ai');
 		});
 	});
 });

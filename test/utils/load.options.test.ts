@@ -28,12 +28,12 @@ describe('load.options', () => {
 	describe('getBaseUrl', () => {
 		it('returns the base URL from credentials', async () => {
 			const fn = {
-				getCredentials: vi.fn().mockResolvedValue({ baseUrl: 'https://api.acrolinx.com' }),
+				getCredentials: vi.fn().mockResolvedValue({ baseUrl: 'https://api.markup.ai' }),
 			};
 
 			const result = await getBaseUrl(fn as any);
 
-			expect(result).toBe('https://api.acrolinx.com');
+			expect(result).toBe('https://api.markup.ai');
 			expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
 		});
 	});
@@ -43,7 +43,7 @@ describe('load.options', () => {
 			const fn = {
 				getCredentials: vi
 					.fn()
-					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.acrolinx.com' }),
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
 						body: [
@@ -76,7 +76,7 @@ describe('load.options', () => {
 			const fn = {
 				getCredentials: vi
 					.fn()
-					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.acrolinx.com' }),
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
 						body: { error: 'Bad Request' },
@@ -94,7 +94,7 @@ describe('load.options', () => {
 			const fn = {
 				getCredentials: vi
 					.fn()
-					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.acrolinx.com' }),
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
 						body: { tones: ['tone_1', 'tone_2'] },
@@ -142,7 +142,7 @@ describe('load.options', () => {
 			const fn = {
 				getCredentials: vi
 					.fn()
-					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.acrolinx.com' }),
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
 						body: { dialects: ['english_uk', 'english_us'] },
@@ -163,7 +163,7 @@ describe('load.options', () => {
 			const fn = {
 				getCredentials: vi
 					.fn()
-					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.acrolinx.com' }),
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
 						body: { error: 'Bad Request' },

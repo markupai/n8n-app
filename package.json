@@ -1,5 +1,5 @@
 {
-	"name": "@acrolinx/n8n-nodes-markupai",
+	"name": "@markupai/n8n-nodes-markupai",
 	"version": "0.1.0",
 	"description": "n8n node for MarkupAI",
 	"keywords": [
@@ -14,14 +14,14 @@
 		"ai-writing"
 	],
 	"license": "MIT",
-	"homepage": "https://docs.acrolinx.com/overview",
+	"homepage": "https://docs.markup.ai/",
 	"author": {
 		"name": "MarkupAI",
 		"email": "support@markupai.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/acrolinx/n8n"
+		"url": "https://github.com/markupai/n8n"
 	},
 	"engines": {
 		"node": ">=20.15"

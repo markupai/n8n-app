@@ -14,13 +14,13 @@ import { GetStyleRewriteResponse } from './Markupai.api.types';
 
 export class MarkupAi implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'MarkupAI',
+		displayName: 'Markup AI',
 		name: 'markupai',
 		description: 'MarkupAI AI Content Checker',
 		icon: 'file:markupai.svg',
 		version: 1,
 		defaults: {
-			name: 'MarkupAI',
+			name: 'Markup AI',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],

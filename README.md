@@ -1,10 +1,10 @@
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# Acrolinx for n8n
+# MarkupAI for n8n
 
-This is an n8n community node that integrates [Acrolinx](https://www.acrolinx.com/) text quality and governance platform into your n8n workflows.
+This is an n8n community node that integrates [MarkupAI](https://markup.ai/) text quality and governance platform into your n8n workflows.
 
-[Acrolinx](https://www.acrolinx.com/) helps create compliant, consistent, and engaging content by providing AI-powered text analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
+[MarkupAI](https://markup.ai/) helps create compliant, consistent, and engaging content by providing AI-powered text analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -17,26 +17,26 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 In n8n, go to **Settings** > **Community Nodes** and install:
 
 ```
-n8n-nodes-acrolinx
+n8n-nodes-markupai
 ```
 
 ### Manual Install
 
 ```bash
-npm install n8n-nodes-acrolinx
+npm install n8n-nodes-markupai
 ```
 
 ## Credentials
 
-You'll need an Acrolinx API key:
+You'll need an MarkupApi API key:
 
-1. Sign up for an [Acrolinx account](https://www.acrolinx.com/)
+1. Sign up for an [MarkupAI account](https://markup.ai/)
 2. Get your API key from your account settings
 3. In n8n, add credentials:
    - Go to **Credentials** > **New**
-   - Select **Acrolinx API**
+   - Select **MarkupAI API**
    - Enter your API key
-   - Set base URL (default: `https://app.acrolinx.cloud`)
+   - Set base URL (default: `https://api.markup.ai`)
 
 ## Actions
 
@@ -85,15 +85,15 @@ All text operations support:
 			"documentOwner": "={{ $('Google Drive').item.json.owners[0].displayName }}"
 		}
 	},
-	"type": "CUSTOM.acrolinx",
+	"type": "CUSTOM.markupai",
 	"typeVersion": 1,
-	"position": [660, -440],
-	"id": "8a6d86a0-d601-495c-9cc8-6e8d8939d71d",
-	"name": "Acrolinx",
+	"position": [660, -580],
+	"id": "cafc53cf-2ab6-4cac-804a-740387ac22dc",
+	"name": "MarkupAI",
 	"credentials": {
-		"acrolinxApi": {
-			"id": "wWJ3Q94oynVivIbw",
-			"name": "Acrolinx account"
+		"markupaiApi": {
+			"id": "TAA9j2TwvdpSkqC8",
+			"name": "MarkupAI account"
 		}
 	}
 }
@@ -146,7 +146,7 @@ npm init
 Link the custom folder to the build
 
 ```
-npm link n8n-nodes-acrolinx
+npm link n8n-nodes-markupai
 ```
 
 Start n8n
@@ -155,4 +155,4 @@ Start n8n
 n8n start
 ```
 
-You should now see Acrolinx in the list of nodes. Happy hacking!
+You should now see MarkupAI in the list of nodes. Happy hacking!

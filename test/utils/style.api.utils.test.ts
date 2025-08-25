@@ -31,7 +31,7 @@ describe('style.api.utils', () => {
 	describe('postStyleRewrite', () => {
 		it('should post style rewrite request successfully', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
 					workflow_id: 'test-workflow-id',
@@ -87,7 +87,7 @@ describe('style.api.utils', () => {
 			expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
 			expect(mockHttpRequest).toHaveBeenCalledWith({
 				method: 'POST',
-				url: 'https://api.acrolinx.com/v1/style/rewrite',
+				url: 'https://api.markup.ai/v1/style/rewrite',
 				headers: expect.objectContaining({
 					Authorization: 'Bearer mocked-api-key-123',
 				}),
@@ -98,7 +98,7 @@ describe('style.api.utils', () => {
 
 		it('should throw an error if httpRequest fails', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockHttpRequest = vi.fn().mockRejectedValue(new Error('Network error'));
 
 			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
@@ -128,7 +128,7 @@ describe('style.api.utils', () => {
 
 	describe('pollResponse', () => {
 		it('should poll until completion', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
@@ -181,7 +181,7 @@ describe('style.api.utils', () => {
 			expect(result.rewrite).toBe('test-result');
 			expect(mockHttpRequest).toHaveBeenCalledWith({
 				method: 'GET',
-				url: 'https://api.acrolinx.com/v1/style/rewrite/test-workflow-id',
+				url: 'https://api.markup.ai/v1/style/rewrite/test-workflow-id',
 				headers: {
 					Authorization: 'Bearer mocked-api-key-123',
 				},
@@ -190,7 +190,7 @@ describe('style.api.utils', () => {
 		});
 
 		it('should throw error on workflow failure', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
@@ -229,7 +229,7 @@ describe('style.api.utils', () => {
 		});
 
 		it('should throw error on timeout', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 
 			const mockHttpRequest = vi.fn().mockResolvedValue({
@@ -287,7 +287,7 @@ describe('style.api.utils', () => {
 	describe('styleRequest', () => {
 		it('should process style request successfully with completion', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockHttpRequest = vi
 				.fn()
 				.mockResolvedValueOnce({
@@ -339,7 +339,7 @@ describe('style.api.utils', () => {
 
 		it('should process style request without waiting for completion', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.acrolinx.com');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
 					workflow_id: 'test-workflow-id',
