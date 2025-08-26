@@ -98,14 +98,6 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="8">
                 <tr>
                   <td style="background:${getScoreColor(
-										result.scores?.analysis.clarity.score || 0,
-									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
-                    <div style="font-size:18px; font-weight:700;">${
-											result.scores?.analysis.clarity.score || 0
-										}</div>
-                    <div style="font-size:14px;">Clarity</div>
-                  </td>
-                  <td style="background:${getScoreColor(
 										result.scores?.quality.grammar.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
@@ -128,6 +120,14 @@ export function generateEmailHTMLReport(
 											result.scores?.quality.terminology.score || 0
 										}</div>
                     <div style="font-size:14px;">Terminology</div>
+                  </td>
+                  <td style="background:${getScoreColor(
+										result.scores?.analysis.clarity.score || 0,
+									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
+                    <div style="font-size:18px; font-weight:700;">${
+											result.scores?.analysis.clarity.score || 0
+										}</div>
+                    <div style="font-size:14px;">Clarity</div>
                   </td>
                   <td style="background:${getScoreColor(
 										result.scores?.analysis.tone.score || 0,
