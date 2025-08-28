@@ -12,7 +12,7 @@ import { FormDataDetails, getPath, styleRequest } from './utils/style.api.utils'
 import { generateEmailHTMLReport } from './utils/email.generator';
 import { GetStyleRewriteResponse } from './Markupai.api.types';
 
-export class MarkupAi implements INodeType {
+export class Markupai implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Markup AI',
 		name: 'markupai',

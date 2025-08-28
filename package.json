@@ -49,7 +49,7 @@
 			"dist/credentials/MarkupAiApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Markupai/MarkupAi.node.js"
+			"dist/nodes/Markupai/Markupai.node.js"
 		]
 	},
 	"devDependencies": {
