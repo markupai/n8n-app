@@ -31,7 +31,7 @@ describe('style.api.utils', () => {
 	describe('postStyleRewrite', () => {
 		it('should post style rewrite request successfully', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
 					workflow_id: 'test-workflow-id',
@@ -66,7 +66,7 @@ describe('style.api.utils', () => {
 				documentOwner: 'test-owner',
 				documentLink: 'https://test.com',
 				waitForCompletion: true,
-				pollingTimeout: 30000,
+				pollingTimeout: 30_000,
 			};
 
 			const result = await postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite');
@@ -98,7 +98,7 @@ describe('style.api.utils', () => {
 
 		it('should throw an error if httpRequest fails', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockHttpRequest = vi.fn().mockRejectedValue(new Error('Network error'));
 
 			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
@@ -117,7 +117,7 @@ describe('style.api.utils', () => {
 				tone: 'business',
 				styleGuide: 'test-style-guide',
 				waitForCompletion: true,
-				pollingTimeout: 30000,
+				pollingTimeout: 30_000,
 			};
 
 			await expect(
@@ -128,7 +128,7 @@ describe('style.api.utils', () => {
 
 	describe('pollResponse', () => {
 		it('should poll until completion', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
@@ -173,7 +173,7 @@ describe('style.api.utils', () => {
 				fn as any,
 				styleRewriteResponse,
 				true,
-				30000,
+				30_000,
 				'v1/style/rewrite',
 			);
 
@@ -190,7 +190,7 @@ describe('style.api.utils', () => {
 		});
 
 		it('should throw error on workflow failure', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
@@ -224,12 +224,12 @@ describe('style.api.utils', () => {
 			};
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30000, 'v1/style/rewrite'),
+				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
 			).rejects.toThrow('Workflow failed: Workflow processing failed');
 		});
 
 		it('should throw error on timeout', async () => {
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
 
 			const mockHttpRequest = vi.fn().mockResolvedValue({
@@ -276,7 +276,7 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30000, 'v1/style/rewrite'),
+				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
 			).rejects.toThrow('Workflow timeout after 30000ms. Workflow ID: test-workflow-id');
 
 			Date.now = originalDateNow;
@@ -287,7 +287,7 @@ describe('style.api.utils', () => {
 	describe('styleRequest', () => {
 		it('should process style request successfully with completion', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockHttpRequest = vi
 				.fn()
 				.mockResolvedValueOnce({
@@ -320,7 +320,7 @@ describe('style.api.utils', () => {
 				tone: 'business',
 				styleGuide: 'test-style-guide',
 				waitForCompletion: true,
-				pollingTimeout: 30000,
+				pollingTimeout: 30_000,
 			};
 
 			const result = await styleRequest(fn as any, formDataDetails, 'v1/style/rewrite', 0);
@@ -339,7 +339,7 @@ describe('style.api.utils', () => {
 
 		it('should process style request without waiting for completion', async () => {
 			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai');
+			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
 			const mockHttpRequest = vi.fn().mockResolvedValue({
 				body: {
 					workflow_id: 'test-workflow-id',
@@ -363,7 +363,7 @@ describe('style.api.utils', () => {
 				tone: 'business',
 				styleGuide: 'test-style-guide',
 				waitForCompletion: false,
-				pollingTimeout: 30000,
+				pollingTimeout: 30_000,
 			};
 
 			const result = await styleRequest(fn as any, formDataDetails, 'v1/style/rewrite', 0);

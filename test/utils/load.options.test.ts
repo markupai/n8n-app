@@ -26,16 +26,19 @@ describe('load.options', () => {
 	});
 
 	describe('getBaseUrl', () => {
-		it('returns the base URL from credentials', async () => {
-			const fn = {
-				getCredentials: vi.fn().mockResolvedValue({ baseUrl: 'https://api.markup.ai' }),
-			};
+		it.each(['https://api.markup.ai', 'https://api.markup.ai/'])(
+			'normalizes URL from "%s" to "https://api.markup.ai/"',
+			async (input) => {
+				const fn = {
+					getCredentials: vi.fn().mockResolvedValue({ baseUrl: input }),
+				};
 
-			const result = await getBaseUrl(fn as any);
+				const result = await getBaseUrl(fn as any);
 
-			expect(result).toBe('https://api.markup.ai');
-			expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
-		});
+				expect(result.toString()).toBe('https://api.markup.ai/');
+				expect(fn.getCredentials).toHaveBeenCalledWith('markupaiApi');
+			},
+		);
 	});
 
 	describe('loadStyleGuides', () => {
