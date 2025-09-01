@@ -35,7 +35,7 @@ export async function postStyleRewrite(
 	try {
 		const requestOptions: IHttpRequestOptions = {
 			method: 'POST',
-			url: `${baseUrl}/${path}`,
+			url: `${baseUrl.toString()}${path}`,
 			headers: {
 				Authorization: `Bearer ${apiKey}`,
 				...formData.getHeaders(),
@@ -86,7 +86,7 @@ export async function pollResponse(
 
 			const statusOptions: IHttpRequestOptions = {
 				method: 'GET',
-				url: `${baseUrl}/${path}/${styleRewriteResponse.workflow_id}`,
+				url: `${baseUrl.toString()}${path}/${styleRewriteResponse.workflow_id}`,
 				headers: {
 					Authorization: `Bearer ${apiKey}`,
 				},

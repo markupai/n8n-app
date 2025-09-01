@@ -1,4 +1,5 @@
 import type {
+	FunctionsBase,
 	ICredentialDataDecryptedObject,
 	IExecuteFunctions,
 	IHttpRequestOptions,
@@ -32,20 +33,20 @@ const DEFAULT_CONSTANTS = {
 	],
 };
 
-export async function getApiKey(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('markupaiApi')) as {
+export async function getApiKey(functionsBase: FunctionsBase): Promise<string> {
+	const credentials: ICredentialDataDecryptedObject = (await functionsBase.getCredentials(
+		'markupaiApi',
+	)) as {
 		apiKey: string;
 	};
 
 	return credentials.apiKey as string;
 }
 
-export async function getBaseUrl(fn: ILoadOptionsFunctions | IExecuteFunctions): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await fn.getCredentials('markupaiApi')) as {
-		baseUrl: string;
-	};
+export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
+	const credentials = (await functionsBase.getCredentials('markupaiApi')) as { baseUrl: string };
 
-	return credentials.baseUrl as string;
+	return new URL(credentials.baseUrl);
 }
 
 export async function loadStyleGuides(
@@ -55,16 +56,16 @@ export async function loadStyleGuides(
 		const apiKey = await getApiKey(this);
 		const baseUrl = await getBaseUrl(this);
 
-		const requestOptions: IHttpRequestOptions = {
+		const httpRequestOptions: IHttpRequestOptions = {
 			method: 'GET',
-			url: `${baseUrl}/v1/style-guides`,
+			url: `${baseUrl.toString()}v1/style-guides`,
 			headers: {
 				Authorization: `Bearer ${apiKey}`,
 			},
 			returnFullResponse: true,
 		};
 
-		const response = await this.helpers.httpRequest(requestOptions);
+		const response = await this.helpers.httpRequest(httpRequestOptions);
 
 		if (response.statusCode !== 200) {
 			throw new Error('Error loading style guides: ' + response.body);
@@ -91,7 +92,7 @@ async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Prom
 
 	const requestOptions: IHttpRequestOptions = {
 		method: 'GET',
-		url: `${baseUrl}/v1/internal/constants`,
+		url: `${baseUrl.toString()}v1/internal/constants`,
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
 		},
