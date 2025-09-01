@@ -1,4 +1,9 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class MarkupAiApi implements ICredentialType {
 	name = 'markupaiApi';
@@ -22,4 +27,21 @@ export class MarkupAiApi implements ICredentialType {
 			placeholder: 'https://api.markup.ai',
 		},
 	];
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				Authorization: '=Bearer {{$credentials.apiKey}}',
+				'OpenAI-Organization': '={{$credentials.organizationId}}',
+			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl}}',
+			url: '/v1/internal/constants',
+		},
+	};
 }
