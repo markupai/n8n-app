@@ -1,15 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { IExecuteFunctions, IHttpRequestOptions, FunctionsBase } from 'n8n-workflow';
 import {
 	postStyleRewrite,
 	pollResponse,
 	styleRequest,
 	getPath,
+	FormDataDetails,
 } from '../../nodes/Markupai/utils/style.api.utils';
+import type { GetStyleRewriteResponse } from '../../nodes/Markupai/Markupai.api.types';
 
 vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getApiKey: vi.fn(),
 	getBaseUrl: vi.fn(),
 }));
+
+// Extended type for failed responses that include error property
+interface FailedStyleRewriteResponse extends GetStyleRewriteResponse {
+	error: string;
+}
+
+// Type definitions for mocks
+interface MockHttpRequest extends ReturnType<typeof vi.fn> {
+	(body: IHttpRequestOptions): Promise<{ body: GetStyleRewriteResponse }>;
+}
+
+interface MockGetApiKey extends ReturnType<typeof vi.fn> {
+	(fn: FunctionsBase): Promise<string>;
+}
+
+interface MockGetBaseUrl extends ReturnType<typeof vi.fn> {
+	(fn: FunctionsBase): Promise<URL>;
+}
+
+interface MockFnObject {
+	helpers: {
+		httpRequest: MockHttpRequest;
+	};
+}
 
 describe('style.api.utils', () => {
 	beforeEach(() => {
@@ -30,26 +57,28 @@ describe('style.api.utils', () => {
 
 	describe('postStyleRewrite', () => {
 		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
-			const mockHttpRequest = vi.fn();
+			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
+			const mockGetBaseUrl = vi
+				.fn()
+				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
+			const mockHttpRequest = vi.fn() as MockHttpRequest;
 
 			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
 		};
 
-		const setupMocks = async (mockGetApiKey: any, mockGetBaseUrl: any) => {
+		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
 			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 		};
 
-		const createFnObject = (mockHttpRequest: any) => ({
+		const createFnObject = (mockHttpRequest: MockHttpRequest): MockFnObject => ({
 			helpers: {
 				httpRequest: mockHttpRequest,
 			},
 		});
 
-		const createFormDataDetails = (overrides: any = {}) => ({
+		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
 			content: 'test content',
 			dialect: 'american_english',
 			tone: 'business',
@@ -62,7 +91,7 @@ describe('style.api.utils', () => {
 			...overrides,
 		});
 
-		const mockResponseBody = {
+		const mockResponseBody: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'running',
 			check_options: {
@@ -77,6 +106,7 @@ describe('style.api.utils', () => {
 
 		it('should post style rewrite request successfully', async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
+
 			mockHttpRequest.mockResolvedValue({
 				body: mockResponseBody,
 			});
@@ -85,7 +115,11 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 			const formDataDetails = createFormDataDetails();
 
-			const result = await postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite');
+			const result = await postStyleRewrite(
+				fn as unknown as IExecuteFunctions,
+				formDataDetails,
+				'v1/style/rewrite',
+			);
 
 			expect(result).toEqual(mockResponseBody);
 			expect(mockGetApiKey).toHaveBeenCalledWith(fn);
@@ -114,35 +148,37 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite'),
+				postStyleRewrite(fn as unknown as IExecuteFunctions, formDataDetails, 'v1/style/rewrite'),
 			).rejects.toThrow('Network error');
 		});
 	});
 
 	describe('pollResponse', () => {
 		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
-			const mockHttpRequest = vi.fn();
+			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
+			const mockGetBaseUrl = vi
+				.fn()
+				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
+			const mockHttpRequest = vi.fn() as MockHttpRequest;
 
 			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
 		};
 
-		const setupMocks = async (mockGetApiKey: any, mockGetBaseUrl: any) => {
+		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
 			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 		};
 
-		const createFnObject = (mockHttpRequest: any) => ({
+		const createFnObject = (mockHttpRequest: MockHttpRequest): MockFnObject => ({
 			helpers: {
 				httpRequest: mockHttpRequest,
 			},
 		});
 
-		const styleRewriteResponse = {
+		const styleRewriteResponse: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
-			status: 'running' as const,
+			status: 'running',
 			check_options: {
 				style_guide: {
 					style_guide_type: 'test',
@@ -153,7 +189,7 @@ describe('style.api.utils', () => {
 			},
 		};
 
-		const completedResponseBody = {
+		const completedResponseBody: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'completed',
 			rewrite: 'test-result',
@@ -167,15 +203,31 @@ describe('style.api.utils', () => {
 			},
 		};
 
-		const failedResponseBody = {
+		const failedResponseBody: FailedStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'failed',
 			error: 'Workflow processing failed',
+			check_options: {
+				style_guide: {
+					style_guide_type: 'test',
+					style_guide_id: 'test-style-guide',
+				},
+				dialect: 'american_english',
+				tone: 'business',
+			},
 		};
 
-		const runningResponseBody = {
+		const runningResponseBody: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'running',
+			check_options: {
+				style_guide: {
+					style_guide_type: 'test',
+					style_guide_id: 'test-style-guide',
+				},
+				dialect: 'american_english',
+				tone: 'business',
+			},
 		};
 
 		it('should poll until completion', async () => {
@@ -188,7 +240,7 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			const result = await pollResponse(
-				fn as any,
+				fn as unknown as IExecuteFunctions,
 				styleRewriteResponse,
 				true,
 				30_000,
@@ -217,7 +269,13 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
+				pollResponse(
+					fn as unknown as IExecuteFunctions,
+					styleRewriteResponse,
+					true,
+					30_000,
+					'v1/style/rewrite',
+				),
 			).rejects.toThrow('Workflow failed: Workflow processing failed');
 		});
 
@@ -231,10 +289,10 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			const originalSetTimeout = global.setTimeout;
-			global.setTimeout = vi.fn((callback: any) => {
+			global.setTimeout = vi.fn((callback: () => void) => {
 				callback();
-				return 1 as any;
-			}) as any;
+				return 1 as unknown as NodeJS.Timeout;
+			}) as unknown as typeof global.setTimeout;
 
 			let timeValue = Date.now();
 			const originalDateNow = Date.now;
@@ -244,7 +302,13 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
+				pollResponse(
+					fn as unknown as IExecuteFunctions,
+					styleRewriteResponse,
+					true,
+					30_000,
+					'v1/style/rewrite',
+				),
 			).rejects.toThrow('Workflow timeout after 30000ms. Workflow ID: test-workflow-id');
 
 			Date.now = originalDateNow;
@@ -254,26 +318,28 @@ describe('style.api.utils', () => {
 
 	describe('styleRequest', () => {
 		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123');
-			const mockGetBaseUrl = vi.fn().mockResolvedValue('https://api.markup.ai/');
-			const mockHttpRequest = vi.fn();
+			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
+			const mockGetBaseUrl = vi
+				.fn()
+				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
+			const mockHttpRequest = vi.fn() as MockHttpRequest;
 
 			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
 		};
 
-		const setupMocks = async (mockGetApiKey: any, mockGetBaseUrl: any) => {
+		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
 			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
 			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 		};
 
-		const fn = {
+		const fn: MockFnObject = {
 			helpers: {
-				httpRequest: null as any,
+				httpRequest: null as unknown as MockHttpRequest,
 			},
 		};
 
-		const formDataDetails = {
+		const formDataDetails: FormDataDetails = {
 			content: 'test content',
 			dialect: 'american_english',
 			tone: 'business',
@@ -282,15 +348,31 @@ describe('style.api.utils', () => {
 			pollingTimeout: 30_000,
 		};
 
-		const runningResponseBody = {
+		const runningResponseBody: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'running',
+			check_options: {
+				style_guide: {
+					style_guide_type: 'test',
+					style_guide_id: 'test-style-guide',
+				},
+				dialect: 'american_english',
+				tone: 'business',
+			},
 		};
 
-		const completedResponseBody = {
+		const completedResponseBody: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'completed',
 			rewrite: 'test-result',
+			check_options: {
+				style_guide: {
+					style_guide_type: 'test',
+					style_guide_id: 'test-style-guide',
+				},
+				dialect: 'american_english',
+				tone: 'business',
+			},
 		};
 
 		it('should process style request successfully with completion', async () => {
@@ -306,7 +388,12 @@ describe('style.api.utils', () => {
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			fn.helpers.httpRequest = mockHttpRequest;
 
-			const result = await styleRequest(fn as any, formDataDetails, 'v1/style/rewrite', 0);
+			const result = await styleRequest(
+				fn as unknown as IExecuteFunctions,
+				formDataDetails,
+				'v1/style/rewrite',
+				0,
+			);
 
 			expect(result).toEqual([
 				{
@@ -324,13 +411,13 @@ describe('style.api.utils', () => {
 
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			fn.helpers.httpRequest = mockHttpRequest;
-			const formDataDetailsWithoutCompletion = {
+			const formDataDetailsWithoutCompletion: FormDataDetails = {
 				...formDataDetails,
 				waitForCompletion: false,
 			};
 
 			const result = await styleRequest(
-				fn as any,
+				fn as unknown as IExecuteFunctions,
 				formDataDetailsWithoutCompletion,
 				'v1/style/rewrite',
 				0,
