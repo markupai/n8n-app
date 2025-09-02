@@ -29,7 +29,6 @@ export class Markupai implements INodeType {
 			{
 				name: 'markupaiApi',
 				required: true,
-				testedBy: 'markupaiApiTest',
 			},
 		],
 		properties: [
