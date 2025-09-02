@@ -153,7 +153,7 @@ describe('issues', () => {
 					original: 'unknown issue',
 					char_index: 0,
 					subcategory: 'unknown',
-					category: 'unknown_category' as string,
+					category: 'unknown_category',
 				},
 				{
 					original: 'grammar issue',
