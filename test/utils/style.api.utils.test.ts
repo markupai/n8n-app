@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { IExecuteFunctions, IHttpRequestOptions, FunctionsBase } from 'n8n-workflow';
+import type { IHttpRequestOptions, FunctionsBase } from 'n8n-workflow';
 import {
 	postStyleRewrite,
 	pollResponse,
@@ -14,12 +14,10 @@ vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getBaseUrl: vi.fn(),
 }));
 
-// Extended type for failed responses that include error property
 interface FailedStyleRewriteResponse extends GetStyleRewriteResponse {
 	error: string;
 }
 
-// Type definitions for mocks
 interface MockHttpRequest extends ReturnType<typeof vi.fn> {
 	(body: IHttpRequestOptions): Promise<{ body: GetStyleRewriteResponse }>;
 }
@@ -115,11 +113,7 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 			const formDataDetails = createFormDataDetails();
 
-			const result = await postStyleRewrite(
-				fn as unknown as IExecuteFunctions,
-				formDataDetails,
-				'v1/style/rewrite',
-			);
+			const result = await postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite');
 
 			expect(result).toEqual(mockResponseBody);
 			expect(mockGetApiKey).toHaveBeenCalledWith(fn);
@@ -148,7 +142,7 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				postStyleRewrite(fn as unknown as IExecuteFunctions, formDataDetails, 'v1/style/rewrite'),
+				postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite'),
 			).rejects.toThrow('Network error');
 		});
 	});
@@ -240,7 +234,7 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			const result = await pollResponse(
-				fn as unknown as IExecuteFunctions,
+				fn as any,
 				styleRewriteResponse,
 				true,
 				30_000,
@@ -269,13 +263,7 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			await expect(
-				pollResponse(
-					fn as unknown as IExecuteFunctions,
-					styleRewriteResponse,
-					true,
-					30_000,
-					'v1/style/rewrite',
-				),
+				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
 			).rejects.toThrow('Workflow failed: Workflow processing failed');
 		});
 
@@ -291,8 +279,8 @@ describe('style.api.utils', () => {
 			const originalSetTimeout = global.setTimeout;
 			global.setTimeout = vi.fn((callback: () => void) => {
 				callback();
-				return 1 as unknown as NodeJS.Timeout;
-			}) as unknown as typeof global.setTimeout;
+				return 1 as any;
+			}) as any;
 
 			let timeValue = Date.now();
 			const originalDateNow = Date.now;
@@ -302,13 +290,7 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				pollResponse(
-					fn as unknown as IExecuteFunctions,
-					styleRewriteResponse,
-					true,
-					30_000,
-					'v1/style/rewrite',
-				),
+				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
 			).rejects.toThrow('Workflow timeout after 30000ms. Workflow ID: test-workflow-id');
 
 			Date.now = originalDateNow;
@@ -335,7 +317,7 @@ describe('style.api.utils', () => {
 
 		const fn: MockFnObject = {
 			helpers: {
-				httpRequest: null as unknown as MockHttpRequest,
+				httpRequest: {} as MockHttpRequest,
 			},
 		};
 
@@ -388,12 +370,7 @@ describe('style.api.utils', () => {
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			fn.helpers.httpRequest = mockHttpRequest;
 
-			const result = await styleRequest(
-				fn as unknown as IExecuteFunctions,
-				formDataDetails,
-				'v1/style/rewrite',
-				0,
-			);
+			const result = await styleRequest(fn as any, formDataDetails, 'v1/style/rewrite', 0);
 
 			expect(result).toEqual([
 				{
@@ -417,7 +394,7 @@ describe('style.api.utils', () => {
 			};
 
 			const result = await styleRequest(
-				fn as unknown as IExecuteFunctions,
+				fn as any,
 				formDataDetailsWithoutCompletion,
 				'v1/style/rewrite',
 				0,
