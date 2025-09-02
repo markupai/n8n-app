@@ -50,6 +50,17 @@ const mockResult = {
 	},
 };
 
+function validateCommonFields(result: string) {
+	expect(result).toContain('<!DOCTYPE html>');
+	expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
+	expect(result).toContain('85');
+	expect(result).toContain('Quality Score');
+	expect(result).toContain('Standard');
+	expect(result).toContain('US English');
+	expect(result).toContain('Professional');
+	expect(result).toContain('test-workflow-id');
+}
+
 describe('email.generator', () => {
 	describe('generateEmailHTMLReport', () => {
 		it('should generate HTML report with basic data', () => {
@@ -61,31 +72,17 @@ describe('email.generator', () => {
 
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
-			expect(result).toContain('<!DOCTYPE html>');
-			expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
+			validateCommonFields(result);
 			expect(result).toContain('Test Document');
 			expect(result).toContain('John Doe');
 			expect(result).toContain('https://example.com/doc');
-			expect(result).toContain('85');
-			expect(result).toContain('Quality Score');
-			expect(result).toContain('Standard');
-			expect(result).toContain('US English');
-			expect(result).toContain('Professional');
-			expect(result).toContain('test-workflow-id');
 		});
 
 		it('should handle missing optional fields', () => {
 			const mockInputData = {};
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
-			expect(result).toContain('<!DOCTYPE html>');
-			expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
-			expect(result).toContain('85');
-			expect(result).toContain('Quality Score');
-			expect(result).toContain('Standard');
-			expect(result).toContain('US English');
-			expect(result).toContain('Professional');
-			expect(result).toContain('test-workflow-id');
+			validateCommonFields(result);
 
 			expect(result).toContain('Title: <strong>undefined</strong>');
 			expect(result).toContain('Owner: <strong>undefined</strong>');
@@ -101,16 +98,9 @@ describe('email.generator', () => {
 
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
-			expect(result).toContain('<!DOCTYPE html>');
-			expect(result).toContain('Technical Report');
+			validateCommonFields(result);
 			expect(result).toContain('Jane Smith');
 			expect(result).toContain('https://example.com/tech-report');
-			expect(result).toContain('85');
-			expect(result).toContain('Quality Score');
-			expect(result).toContain('Standard');
-			expect(result).toContain('US English');
-			expect(result).toContain('Professional');
-			expect(result).toContain('test-workflow-id');
 			expect(result).toContain('Total issues found: <strong>0</strong>');
 		});
 	});

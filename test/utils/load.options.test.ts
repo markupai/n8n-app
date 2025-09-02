@@ -42,6 +42,11 @@ describe('load.options', () => {
 	});
 
 	describe('loadStyleGuides', () => {
+		const styleGuidesResponse = [
+			{ id: '1', name: 'Style Guide 1' },
+			{ id: '2', name: 'Style Guide 2' },
+		];
+
 		it('returns the style guides from the API', async () => {
 			const fn = {
 				getCredentials: vi
@@ -49,10 +54,7 @@ describe('load.options', () => {
 					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
-						body: [
-							{ id: '1', name: 'Style Guide 1' },
-							{ id: '2', name: 'Style Guide 2' },
-						],
+						body: styleGuidesResponse,
 						statusCode: 200,
 					}),
 				},
@@ -93,6 +95,7 @@ describe('load.options', () => {
 	});
 
 	describe('loadTones', () => {
+		const tonesResponse = { tones: ['tone_1', 'tone_2'] };
 		it('returns the tones from the API', async () => {
 			const fn = {
 				getCredentials: vi
@@ -100,7 +103,7 @@ describe('load.options', () => {
 					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
 				helpers: {
 					httpRequest: vi.fn().mockResolvedValue({
-						body: { tones: ['tone_1', 'tone_2'] },
+						body: tonesResponse,
 						statusCode: 200,
 					}),
 				},
