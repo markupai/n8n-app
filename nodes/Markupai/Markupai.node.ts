@@ -85,8 +85,9 @@ export class Markupai implements INodeType {
 				displayName: 'Style Guide Name or ID',
 				name: 'styleGuide',
 				type: 'options',
+				noDataExpression: true,
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Select style guide. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -97,8 +98,9 @@ export class Markupai implements INodeType {
 				displayName: 'Tone Name or ID',
 				name: 'tone',
 				type: 'options',
+				noDataExpression: true,
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+					'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -110,7 +112,8 @@ export class Markupai implements INodeType {
 				name: 'dialect',
 				type: 'options',
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Select dialect. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				noDataExpression: true,
 				options: [],
 				default: '',
 				typeOptions: {
