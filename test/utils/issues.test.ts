@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { categorizeIssues } from '../../nodes/Markupai/utils/issues';
+import { CategorizedIssues, categorizeIssues } from '../../nodes/Markupai/utils/issues';
 import { Issue, IssueCategory } from '../../nodes/Markupai/Markupai.api.types';
+
+function validateEmptyIssues(result: CategorizedIssues) {
+	expect(result.simple_vocab).toHaveLength(0);
+	expect(result.sentence_structure).toHaveLength(0);
+	expect(result.sentence_length).toHaveLength(0);
+	expect(result.tone).toHaveLength(0);
+	expect(result.style_guide).toHaveLength(0);
+	expect(result.terminology).toHaveLength(0);
+}
 
 describe('issues', () => {
 	describe('categorizeIssues', () => {
@@ -48,12 +57,7 @@ describe('issues', () => {
 			const result = categorizeIssues([]);
 
 			expect(result.grammar).toHaveLength(0);
-			expect(result.simple_vocab).toHaveLength(0);
-			expect(result.sentence_structure).toHaveLength(0);
-			expect(result.sentence_length).toHaveLength(0);
-			expect(result.tone).toHaveLength(0);
-			expect(result.style_guide).toHaveLength(0);
-			expect(result.terminology).toHaveLength(0);
+			validateEmptyIssues(result);
 		});
 
 		it('should handle issues with all categories', () => {
@@ -149,7 +153,7 @@ describe('issues', () => {
 					original: 'unknown issue',
 					char_index: 0,
 					subcategory: 'unknown',
-					category: 'unknown_category' as any,
+					category: 'unknown_category',
 				},
 				{
 					original: 'grammar issue',
@@ -163,12 +167,7 @@ describe('issues', () => {
 
 			expect(result.grammar).toHaveLength(1);
 			expect(result.grammar[0].original).toBe('grammar issue');
-			expect(result.simple_vocab).toHaveLength(0);
-			expect(result.sentence_structure).toHaveLength(0);
-			expect(result.sentence_length).toHaveLength(0);
-			expect(result.tone).toHaveLength(0);
-			expect(result.style_guide).toHaveLength(0);
-			expect(result.terminology).toHaveLength(0);
+			validateEmptyIssues(result);
 		});
 	});
 });
