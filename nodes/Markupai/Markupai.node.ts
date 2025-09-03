@@ -59,14 +59,14 @@ export class Markupai implements INodeType {
 					{
 						name: 'Check',
 						value: 'check',
-						action: 'Check content',
-						description: 'Check the content style without making changes',
+						action: 'Content style check',
+						description: 'Check the content against your style and branding guidelines',
 					},
 					{
 						name: 'Rewrite',
 						value: 'rewrite',
-						action: 'Rewrite content',
-						description: 'Rewrite the content with the style guide, tone, and dialect',
+						action: 'Content style rewrite',
+						description: 'Rewrite the content against your style and branding guidelines',
 					},
 				],
 				default: 'check',
@@ -98,7 +98,7 @@ export class Markupai implements INodeType {
 				name: 'tone',
 				type: 'options',
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -129,21 +129,21 @@ export class Markupai implements INodeType {
 						name: 'documentLink',
 						type: 'string',
 						default: '',
-						description: 'The link to the document being checked',
+						description: 'URL or link to the original document',
 					},
 					{
 						displayName: 'Document Name',
 						name: 'documentName',
 						type: 'string',
 						default: '',
-						description: 'The name of the document being checked',
+						description: 'Name of the document being checked',
 					},
 					{
 						displayName: 'Document Owner',
 						name: 'documentOwner',
 						type: 'string',
 						default: '',
-						description: 'The owner of the document being checked',
+						description: 'Name of the document owner',
 					},
 					{
 						displayName: 'Polling Timeout (Ms)',
