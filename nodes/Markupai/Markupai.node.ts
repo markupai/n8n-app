@@ -24,7 +24,7 @@ export class Markupai implements INodeType {
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
-		group: ['transform'],
+		group: [],
 		credentials: [
 			{
 				name: 'markupaiApi',
