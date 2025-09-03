@@ -18,13 +18,13 @@ export class Markupai implements INodeType {
 		name: 'markupai',
 		description: 'Markup AI Content Checker',
 		icon: 'file:markupai.svg',
-		version: 1,
+		version: [1, 0, 0],
 		defaults: {
 			name: 'Markup AI',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
-		group: [],
+		group: ['transform'],
 		credentials: [
 			{
 				name: 'markupaiApi',
@@ -39,15 +39,19 @@ export class Markupai implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Style Check',
-						value: 'styleCheck',
+						name: 'Check',
+						value: 'check',
+						action: 'Check text style',
+						description: 'Check the text style of the content without making changes',
 					},
 					{
 						name: 'Rewrite',
 						value: 'rewrite',
+						action: 'Rewrite text with style',
+						description: 'Rewrite the text with the style guide, tone, and dialect',
 					},
 				],
-				default: 'styleCheck',
+				default: 'check',
 			},
 			{
 				displayName: 'Content',
@@ -60,7 +64,7 @@ export class Markupai implements INodeType {
 				default: '',
 			},
 			{
-				displayName: 'Style Guide Name or ID',
+				displayName: 'Style Guide',
 				name: 'styleGuide',
 				type: 'options',
 				description:
@@ -72,7 +76,7 @@ export class Markupai implements INodeType {
 				},
 			},
 			{
-				displayName: 'Tone Name or ID',
+				displayName: 'Tone',
 				name: 'tone',
 				type: 'options',
 				description:
@@ -84,7 +88,7 @@ export class Markupai implements INodeType {
 				},
 			},
 			{
-				displayName: 'Dialect Name or ID',
+				displayName: 'Dialect',
 				name: 'dialect',
 				type: 'options',
 				description:
@@ -107,18 +111,21 @@ export class Markupai implements INodeType {
 						name: 'documentLink',
 						type: 'string',
 						default: '',
+						description: 'The link to the document being checked',
 					},
 					{
 						displayName: 'Document Name',
 						name: 'documentName',
 						type: 'string',
 						default: '',
+						description: 'The name of the document being checked',
 					},
 					{
 						displayName: 'Document Owner',
 						name: 'documentOwner',
 						type: 'string',
 						default: '',
+						description: 'The owner of the document being checked',
 					},
 					{
 						displayName: 'Polling Timeout (Ms)',
@@ -158,11 +165,11 @@ export class Markupai implements INodeType {
 			const returnData: INodeExecutionData[] = [];
 
 			for (let i = 0; i < items.length; i++) {
-				const operation = this.getNodeParameter('operation', i) as string;
-				const content = this.getNodeParameter('content', i) as string;
-				const styleGuide = this.getNodeParameter('styleGuide', i) as string;
-				const tone = this.getNodeParameter('tone', i) as string;
-				const dialect = this.getNodeParameter('dialect', i) as string;
+				const operation = this.getNodeParameter('operation', i);
+				const content = this.getNodeParameter('content', i);
+				const styleGuide = this.getNodeParameter('styleGuide', i);
+				const tone = this.getNodeParameter('tone', i);
+				const dialect = this.getNodeParameter('dialect', i);
 				const additionalOptions = this.getNodeParameter('additionalOptions', i) as {
 					waitForCompletion?: boolean;
 					pollingTimeout?: number;
@@ -177,7 +184,6 @@ export class Markupai implements INodeType {
 					document_owner: additionalOptions.documentOwner,
 					document_link: additionalOptions.documentLink,
 				};
-
 				const formDataDetails = {
 					content,
 					styleGuide,
@@ -187,9 +193,7 @@ export class Markupai implements INodeType {
 					pollingTimeout,
 				} as FormDataDetails;
 
-				const path = getPath(operation);
-
-				const result = await styleRequest(this, formDataDetails, path, i);
+				const result = await styleRequest(this, formDataDetails, getPath(operation), i);
 
 				if (waitForCompletion) {
 					const emailHTMLReport = generateEmailHTMLReport(
