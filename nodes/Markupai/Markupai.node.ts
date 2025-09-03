@@ -64,7 +64,7 @@ export class Markupai implements INodeType {
 				default: '',
 			},
 			{
-				displayName: 'Style Guide',
+				displayName: 'Style Guide Name or ID',
 				name: 'styleGuide',
 				type: 'options',
 				description:
@@ -76,7 +76,7 @@ export class Markupai implements INodeType {
 				},
 			},
 			{
-				displayName: 'Tone',
+				displayName: 'Tone Name or ID',
 				name: 'tone',
 				type: 'options',
 				description:
@@ -88,7 +88,7 @@ export class Markupai implements INodeType {
 				},
 			},
 			{
-				displayName: 'Dialect',
+				displayName: 'Dialect Name or ID',
 				name: 'dialect',
 				type: 'options',
 				description:
