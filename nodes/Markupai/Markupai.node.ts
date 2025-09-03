@@ -18,7 +18,7 @@ export class Markupai implements INodeType {
 		name: 'markupai',
 		description: 'Markup AI Content Checker',
 		icon: 'file:markupai.svg',
-		version: [1, 0, 0],
+		version: 1,
 		defaults: {
 			name: 'Markup AI',
 		},
