@@ -22,9 +22,9 @@ export class MarkupAiApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.markup.ai',
+			default: 'https://api.markup.ai/',
 			description: 'The base URL for the MarkupAI API',
-			placeholder: 'https://api.markup.ai',
+			placeholder: 'e.g. https://api.markup.ai/',
 		},
 	];
 

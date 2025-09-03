@@ -33,22 +33,40 @@ export class Markupai implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Operation',
-				name: 'operation',
+				displayName: 'Resource',
+				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Content',
+						value: 'content',
+					},
+				],
+				default: 'content',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['content'],
+					},
+				},
+				options: [
+					{
 						name: 'Check',
 						value: 'check',
-						action: 'Check text style',
-						description: 'Check the text style of the content without making changes',
+						action: 'Check content',
+						description: 'Check the content style without making changes',
 					},
 					{
 						name: 'Rewrite',
 						value: 'rewrite',
-						action: 'Rewrite text with style',
-						description: 'Rewrite the text with the style guide, tone, and dialect',
+						action: 'Rewrite content',
+						description: 'Rewrite the content with the style guide, tone, and dialect',
 					},
 				],
 				default: 'check',
