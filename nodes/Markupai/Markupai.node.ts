@@ -57,19 +57,19 @@ export class Markupai implements INodeType {
 				},
 				options: [
 					{
-						name: 'Check',
-						value: 'check',
+						name: 'Style Check',
+						value: 'styleCheck',
 						action: 'Content style check',
 						description: 'Check the content against your style and branding guidelines',
 					},
 					{
-						name: 'Rewrite',
-						value: 'rewrite',
+						name: 'Style Rewrite',
+						value: 'styleRewrite',
 						action: 'Content style rewrite',
 						description: 'Rewrite the content against your style and branding guidelines',
 					},
 				],
-				default: 'check',
+				default: 'styleCheck',
 			},
 			{
 				displayName: 'Content',

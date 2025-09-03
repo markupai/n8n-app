@@ -48,7 +48,7 @@ describe('style.api.utils', () => {
 		});
 
 		it('should return correct path for rewrite operation', () => {
-			const result = getPath('rewrite');
+			const result = getPath('styleRewrite');
 			expect(result).toBe('v1/style/rewrites');
 		});
 	});
