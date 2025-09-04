@@ -33,18 +33,40 @@ export class Markupai implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Operation',
-				name: 'operation',
+				displayName: 'Resource',
+				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Content',
+						value: 'content',
+					},
+				],
+				default: 'content',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['content'],
+					},
+				},
+				options: [
+					{
 						name: 'Style Check',
 						value: 'styleCheck',
+						action: 'Content style check',
+						description: 'Check the content against your style and branding guidelines',
 					},
 					{
-						name: 'Rewrite',
-						value: 'rewrite',
+						name: 'Style Rewrite',
+						value: 'styleRewrite',
+						action: 'Content style rewrite',
+						description: 'Rewrite the content against your style and branding guidelines',
 					},
 				],
 				default: 'styleCheck',
@@ -63,8 +85,9 @@ export class Markupai implements INodeType {
 				displayName: 'Style Guide Name or ID',
 				name: 'styleGuide',
 				type: 'options',
+				noDataExpression: true,
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Select style guide. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -75,8 +98,9 @@ export class Markupai implements INodeType {
 				displayName: 'Tone Name or ID',
 				name: 'tone',
 				type: 'options',
+				noDataExpression: true,
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [],
 				default: '',
 				typeOptions: {
@@ -88,7 +112,8 @@ export class Markupai implements INodeType {
 				name: 'dialect',
 				type: 'options',
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Select dialect. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				noDataExpression: true,
 				options: [],
 				default: '',
 				typeOptions: {
@@ -107,18 +132,21 @@ export class Markupai implements INodeType {
 						name: 'documentLink',
 						type: 'string',
 						default: '',
+						description: 'URL or link to the original document',
 					},
 					{
 						displayName: 'Document Name',
 						name: 'documentName',
 						type: 'string',
 						default: '',
+						description: 'Name of the document being checked',
 					},
 					{
 						displayName: 'Document Owner',
 						name: 'documentOwner',
 						type: 'string',
 						default: '',
+						description: 'Name of the document owner',
 					},
 					{
 						displayName: 'Polling Timeout (Ms)',
@@ -158,11 +186,11 @@ export class Markupai implements INodeType {
 			const returnData: INodeExecutionData[] = [];
 
 			for (let i = 0; i < items.length; i++) {
-				const operation = this.getNodeParameter('operation', i) as string;
-				const content = this.getNodeParameter('content', i) as string;
-				const styleGuide = this.getNodeParameter('styleGuide', i) as string;
-				const tone = this.getNodeParameter('tone', i) as string;
-				const dialect = this.getNodeParameter('dialect', i) as string;
+				const operation = this.getNodeParameter('operation', i);
+				const content = this.getNodeParameter('content', i);
+				const styleGuide = this.getNodeParameter('styleGuide', i);
+				const tone = this.getNodeParameter('tone', i);
+				const dialect = this.getNodeParameter('dialect', i);
 				const additionalOptions = this.getNodeParameter('additionalOptions', i) as {
 					waitForCompletion?: boolean;
 					pollingTimeout?: number;
@@ -177,7 +205,6 @@ export class Markupai implements INodeType {
 					document_owner: additionalOptions.documentOwner,
 					document_link: additionalOptions.documentLink,
 				};
-
 				const formDataDetails = {
 					content,
 					styleGuide,
@@ -187,9 +214,7 @@ export class Markupai implements INodeType {
 					pollingTimeout,
 				} as FormDataDetails;
 
-				const path = getPath(operation);
-
-				const result = await styleRequest(this, formDataDetails, path, i);
+				const result = await styleRequest(this, formDataDetails, getPath(operation), i);
 
 				if (waitForCompletion) {
 					const emailHTMLReport = generateEmailHTMLReport(

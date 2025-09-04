@@ -24,7 +24,6 @@ describe('MarkupAiApi credentials', () => {
 		it('should have required properties', () => {
 			expect(credentials.properties).toHaveLength(2);
 
-			// Check API Key property
 			const apiKeyProperty = credentials.properties.find((p) => p.name === 'apiKey');
 			expect(apiKeyProperty).toBeDefined();
 			expect(apiKeyProperty?.displayName).toBe('MarkupAI API Key');
@@ -33,21 +32,18 @@ describe('MarkupAiApi credentials', () => {
 			expect(apiKeyProperty?.typeOptions?.password).toBe(true);
 			expect(apiKeyProperty?.default).toBe('');
 
-			// Check Base URL property
 			const baseUrlProperty = credentials.properties.find((p) => p.name === 'baseUrl');
 			expect(baseUrlProperty).toBeDefined();
 			expect(baseUrlProperty?.displayName).toBe('Base URL');
 			expect(baseUrlProperty?.type).toBe('string');
-			expect(baseUrlProperty?.default).toBe('https://api.markup.ai');
+			expect(baseUrlProperty?.default).toBe('https://api.markup.ai/');
 			expect(baseUrlProperty?.description).toBe('The base URL for the MarkupAI API');
-			expect(baseUrlProperty?.placeholder).toBe('https://api.markup.ai');
-			expect(baseUrlProperty?.required).toBeUndefined(); // Not required
+			expect(baseUrlProperty?.placeholder).toBe('e.g. https://api.markup.ai/');
 		});
 
 		it('should have correct property structure', () => {
 			const properties = credentials.properties;
 
-			// Check that all properties have required fields
 			properties.forEach((property) => {
 				expect(property).toHaveProperty('displayName');
 				expect(property).toHaveProperty('name');
@@ -74,7 +70,7 @@ describe('MarkupAiApi credentials', () => {
 
 		it('should have correct base URL default value', () => {
 			const baseUrlProperty = credentials.properties.find((p) => p.name === 'baseUrl');
-			expect(baseUrlProperty?.default).toBe('https://api.markup.ai');
+			expect(baseUrlProperty?.default).toBe('https://api.markup.ai/');
 		});
 	});
 });

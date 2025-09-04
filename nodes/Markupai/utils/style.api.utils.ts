@@ -143,7 +143,7 @@ export async function styleRequest(
 }
 
 export function getPath(operation: string): string {
-	if (operation === 'rewrite') {
+	if (operation === 'styleRewrite') {
 		return 'v1/style/rewrites';
 	} else {
 		return 'v1/style/checks';
