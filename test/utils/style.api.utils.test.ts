@@ -14,7 +14,7 @@ vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getBaseUrl: vi.fn(),
 }));
 
-interface FailedStyleRewriteResponse extends GetStyleRewriteResponse {
+interface FailedGetStyleRewriteResponse extends GetStyleRewriteResponse {
 	error: string;
 }
 
@@ -41,6 +41,28 @@ describe('style.api.utils', () => {
 		vi.clearAllMocks();
 	});
 
+	const createMockFunctions = () => {
+		const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
+		const mockGetBaseUrl = vi
+			.fn()
+			.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
+		const mockHttpRequest = vi.fn() as MockHttpRequest;
+
+		return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
+	};
+
+	const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
+		const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
+		vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
+		vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
+	};
+
+	const createFnObject = (mockHttpRequest: MockHttpRequest): MockFnObject => ({
+		helpers: {
+			httpRequest: mockHttpRequest,
+		},
+	});
+
 	describe('getPath', () => {
 		it('should return correct path for styleCheck operation', () => {
 			const result = getPath('styleCheck');
@@ -54,28 +76,6 @@ describe('style.api.utils', () => {
 	});
 
 	describe('postStyleRewrite', () => {
-		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
-			const mockGetBaseUrl = vi
-				.fn()
-				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
-			const mockHttpRequest = vi.fn() as MockHttpRequest;
-
-			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
-		};
-
-		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
-			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
-			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
-		};
-
-		const createFnObject = (mockHttpRequest: MockHttpRequest): MockFnObject => ({
-			helpers: {
-				httpRequest: mockHttpRequest,
-			},
-		});
-
 		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
 			content: 'test content',
 			dialect: 'american_english',
@@ -148,28 +148,6 @@ describe('style.api.utils', () => {
 	});
 
 	describe('pollResponse', () => {
-		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
-			const mockGetBaseUrl = vi
-				.fn()
-				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
-			const mockHttpRequest = vi.fn() as MockHttpRequest;
-
-			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
-		};
-
-		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
-			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
-			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
-		};
-
-		const createFnObject = (mockHttpRequest: MockHttpRequest): MockFnObject => ({
-			helpers: {
-				httpRequest: mockHttpRequest,
-			},
-		});
-
 		const styleRewriteResponse: GetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'running',
@@ -197,7 +175,7 @@ describe('style.api.utils', () => {
 			},
 		};
 
-		const failedResponseBody: FailedStyleRewriteResponse = {
+		const failedResponseBody: FailedGetStyleRewriteResponse = {
 			workflow_id: 'test-workflow-id',
 			status: 'failed',
 			error: 'Workflow processing failed',
@@ -299,22 +277,6 @@ describe('style.api.utils', () => {
 	});
 
 	describe('styleRequest', () => {
-		const createMockFunctions = () => {
-			const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
-			const mockGetBaseUrl = vi
-				.fn()
-				.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
-			const mockHttpRequest = vi.fn() as MockHttpRequest;
-
-			return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
-		};
-
-		const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
-			const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
-			vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
-			vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
-		};
-
 		const fn: MockFnObject = {
 			helpers: {
 				httpRequest: {} as MockHttpRequest,
