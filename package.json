@@ -13,7 +13,7 @@
 		"grammar-checker",
 		"ai-writing"
 	],
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"homepage": "https://docs.markup.ai/",
 	"author": {
 		"name": "MarkupAI",
