@@ -439,7 +439,6 @@ describe('style.api.utils', () => {
 			expect(result).toEqual([
 				{
 					json: {
-						status: 'completed',
 						...completedResponseBody,
 					},
 					itemData: 0,
