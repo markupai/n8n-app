@@ -125,8 +125,10 @@ export async function styleRequest(
 			path,
 		);
 
+		const { status, ...responseWithoutStatus } = pollStyleRewriteResponseComplete as any;
+
 		returnData.push({
-			json: { ...pollStyleRewriteResponseComplete },
+			json: { ...responseWithoutStatus },
 			itemData: itemIndex,
 		});
 	} else {

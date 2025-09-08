@@ -10,7 +10,7 @@ import {
 import { loadDialects, loadStyleGuides, loadTones } from './utils/load.options';
 import { FormDataDetails, getPath, styleRequest } from './utils/style.api.utils';
 import { generateEmailHTMLReport } from './utils/email.generator';
-import { GetStyleRewriteResponse } from './Markupai.api.types';
+import { GetStyleRewriteResponse, PostStyleRewriteResponse } from './Markupai.api.types';
 
 export class Markupai implements INodeType {
 	description: INodeTypeDescription = {
@@ -232,7 +232,7 @@ export class Markupai implements INodeType {
 				} else {
 					returnData.push({
 						json: {
-							...(result[0].json as unknown as GetStyleRewriteResponse),
+							...(result[0].json as unknown as PostStyleRewriteResponse),
 						},
 						itemData: i,
 					});
