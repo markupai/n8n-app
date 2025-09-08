@@ -111,7 +111,7 @@ export function generateEmailHTMLReport(
                     <div style="font-size:18px; font-weight:700;">${
 											result.original?.scores?.quality.consistency.score || 0
 										}</div>
-                    <div style="font-size:14px;">Style</div>
+                    <div style="font-size:14px;">Consistency</div>
                   </td>
                   <td style="background:${getScoreColor(
 										result.original?.scores?.quality.terminology.score || 0,
@@ -183,7 +183,7 @@ export function generateEmailHTMLReport(
 									}</strong></span><br><span style="font-size:14px;">Vocabulary</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.style_guide.length
-									}</strong></span><br><span style="font-size:14px;">Style Guide</span></td>
+									}</strong></span><br><span style="font-size:14px;">Consistency</span></td>
                 </tr>
                 <tr>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
