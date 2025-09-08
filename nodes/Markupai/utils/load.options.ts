@@ -28,17 +28,14 @@ const DEFAULT_CONSTANTS = {
 };
 
 export async function getApiKey(functionsBase: FunctionsBase): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await functionsBase.getCredentials(
-		'markupaiApi',
-	)) as {
-		apiKey: string,
-	};
+	const credentials: ICredentialDataDecryptedObject =
+		await functionsBase.getCredentials('markupaiApi');
 
-	return credentials.apiKey;
+	return credentials.apiKey as string;
 }
 
 export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
-	const credentials = (await functionsBase.getCredentials('markupaiApi')) as { baseUrl: string, };
+	const credentials = await functionsBase.getCredentials('markupaiApi');
 
 	return new URL(credentials.baseUrl);
 }
