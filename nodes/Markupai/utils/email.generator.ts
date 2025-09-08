@@ -21,7 +21,7 @@ export function generateEmailHTMLReport(
 	result: GetStyleRewriteResponse,
 	inputData: ExtendedInputData,
 ): string {
-	const categorizedIssues = categorizeIssues(result.issues || []);
+	const categorizedIssues = categorizeIssues(result.original?.issues || []);
 
 	return `<!DOCTYPE html>
 <html>
@@ -74,11 +74,11 @@ export function generateEmailHTMLReport(
             </td>
             <td align="right" style="padding-left:16px;">
               <table cellpadding="0" cellspacing="0" style="background-color:${getScoreColor(
-								result.scores?.quality.score || 0,
+								result.original?.scores?.quality.score || 0,
 							)}; border-radius:12px; padding:16px; width:200px;">
                 <tr>
                   <td align="center" style="font-size:28px; font-weight:600; color:#000;">${
-										result.scores?.quality.score
+										result.original?.scores?.quality.score
 									}</td>
                 </tr>
                 <tr>
@@ -98,41 +98,41 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="8">
                 <tr>
                   <td style="background:${getScoreColor(
-										result.scores?.quality.grammar.score || 0,
+										result.original?.scores?.quality.grammar.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.quality.grammar.score || 0
+											result.original?.scores?.quality.grammar.score || 0
 										}</div>
                     <div style="font-size:14px;">Grammar</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.quality.style_guide.score || 0,
+										result.original?.scores?.quality.consistency.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.quality.style_guide.score || 0
+											result.original?.scores?.quality.consistency.score || 0
 										}</div>
                     <div style="font-size:14px;">Style</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.quality.terminology.score || 0,
+										result.original?.scores?.quality.terminology.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.quality.terminology.score || 0
+											result.original?.scores?.quality.terminology.score || 0
 										}</div>
                     <div style="font-size:14px;">Terminology</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.analysis.clarity.score || 0,
+										result.original?.scores?.analysis.clarity.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
                     <div style="font-size:18px; font-weight:700;">${
-											result.scores?.analysis.clarity.score || 0
+											result.original?.scores?.analysis.clarity.score || 0
 										}</div>
                     <div style="font-size:14px;">Clarity</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.scores?.analysis.tone.score || 0,
+										result.original?.scores?.analysis.tone.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
-                    <div style="font-size:18px; font-weight:700;">${result.scores?.analysis.tone.score || 0}</div>
+                    <div style="font-size:18px; font-weight:700;">${result.original?.scores?.analysis.tone.score || 0}</div>
                     <div style="font-size:14px;">Tone</div>
                   </td>
                 </tr>
@@ -150,13 +150,13 @@ export function generateEmailHTMLReport(
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.analysis.clarity.word_count || 0
+										result.original?.scores?.analysis.clarity.word_count || 0
 									}</strong></span><br><span style="font-size:14px;">Words Analyzed</span></td>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.analysis.clarity.sentence_count || 0
+										result.original?.scores?.analysis.clarity.sentence_count || 0
 									}</strong></span><br><span style="font-size:14px;">Total Sentences</span></td>
                   <td style="text-align:center; width:33.33%;"><span style="font-size:18px;"><strong>${
-										result.scores?.analysis.clarity.average_sentence_length || 0
+										result.original?.scores?.analysis.clarity.average_sentence_length || 0
 									}</strong></span><br><span style="font-size:14px;">Average Sentence Length</span></td>
                 </tr>
               </table>
@@ -171,7 +171,7 @@ export function generateEmailHTMLReport(
             <td colspan="2" style="padding:16px; border:1px solid #eee; border-radius:12px;">
               <div style="font-weight:500; padding-bottom:12px;font-size:20px;">Issues found</div>
               <div style="font-size:14px; color:#555; text-align:left;">Total issues found: <strong>${
-								result.issues?.length || 0
+								result.original?.issues?.length || 0
 							}</strong></div><br>
               <table width="100%" cellpadding="8" cellspacing="0">
                 <tr>
@@ -208,16 +208,16 @@ export function generateEmailHTMLReport(
             <td colspan="2" style="padding:16px; border:1px solid #eee; border-radius:12px;">
               <div style="font-weight:500; padding-bottom:12px;font-size:20px;">Check and rewrite configuration</div>
               <div style="font-size:14px; line-height:21px;">Style Guide: <strong>${
-								result.check_options.style_guide.style_guide_type
+								result.config?.style_guide.style_guide_type
 							}</strong></div>
               <div style="font-size:14px; line-height:21px;">Dialect: <strong>${
-								result.check_options.dialect
+								result.config?.dialect
 							}</strong></div>
               <div style="font-size:14px; line-height:21px;">Tone: <strong>${
-								result.check_options.tone
+								result.config?.tone
 							}</strong></div>
               <div style="font-size:14px; line-height:21px;">Workflow ID: <strong>${
-								result.workflow_id
+								result.workflow.id || ''
 							}</strong></div>
             </td>
           </tr>

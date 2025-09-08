@@ -224,7 +224,7 @@ export class Markupai implements INodeType {
 
 					returnData.push({
 						json: {
-							...result[0].json,
+							...(result[0].json as unknown as GetStyleRewriteResponse),
 							html_email: emailHTMLReport,
 						},
 						itemData: i,
@@ -232,7 +232,7 @@ export class Markupai implements INodeType {
 				} else {
 					returnData.push({
 						json: {
-							...result[0].json,
+							...(result[0].json as unknown as GetStyleRewriteResponse),
 						},
 						itemData: i,
 					});

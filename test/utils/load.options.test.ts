@@ -144,12 +144,12 @@ describe('load.options', () => {
 
 			expect(result).toEqual([
 				{ name: 'academic', value: 'academic' },
-				{ name: 'business', value: 'business' },
-				{ name: 'casual', value: 'casual' },
+				{ name: 'confident', value: 'confident' },
 				{ name: 'conversational', value: 'conversational' },
-				{ name: 'formal', value: 'formal' },
-				{ name: 'gen-z', value: 'gen-z' },
-				{ name: 'informal', value: 'informal' },
+				{ name: 'empathetic', value: 'empathetic' },
+				{ name: 'engaging', value: 'engaging' },
+				{ name: 'friendly', value: 'friendly' },
+				{ name: 'professional', value: 'professional' },
 				{ name: 'technical', value: 'technical' },
 			]);
 		});
@@ -194,10 +194,8 @@ describe('load.options', () => {
 
 			expect(result).toEqual([
 				{ name: 'american_english', value: 'american_english' },
-				{ name: 'australian_english', value: 'australian_english' },
-				{ name: 'british_oxford', value: 'british_oxford' },
+				{ name: 'british_english', value: 'british_english' },
 				{ name: 'canadian_english', value: 'canadian_english' },
-				{ name: 'indian_english', value: 'indian_english' },
 			]);
 		});
 	});

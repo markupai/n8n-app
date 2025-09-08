@@ -7,16 +7,15 @@ import {
 	getPath,
 	FormDataDetails,
 } from '../../nodes/Markupai/utils/style.api.utils';
-import type { GetStyleRewriteResponse } from '../../nodes/Markupai/Markupai.api.types';
+import type {
+	GetStyleRewriteResponse,
+	PostStyleRewriteResponse,
+} from '../../nodes/Markupai/Markupai.api.types';
 
 vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getApiKey: vi.fn(),
 	getBaseUrl: vi.fn(),
 }));
-
-interface FailedGetStyleRewriteResponse extends GetStyleRewriteResponse {
-	error: string;
-}
 
 interface MockHttpRequest extends ReturnType<typeof vi.fn> {
 	(body: IHttpRequestOptions): Promise<{ body: GetStyleRewriteResponse }>;
@@ -90,15 +89,11 @@ describe('style.api.utils', () => {
 		});
 
 		const mockResponseBody: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'running',
-			check_options: {
-				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
-				},
-				dialect: 'american_english',
-				tone: 'business',
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'running',
+				api_version: '1.0.0',
+				type: 'rewrites',
 			},
 		};
 
@@ -148,24 +143,48 @@ describe('style.api.utils', () => {
 	});
 
 	describe('pollResponse', () => {
-		const styleRewriteResponse: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
+		const postStyleRewriteResponse: PostStyleRewriteResponse = {
 			status: 'running',
-			check_options: {
-				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
-				},
-				dialect: 'american_english',
-				tone: 'business',
-			},
+			workflow_id: 'test-workflow-id',
 		};
 
 		const completedResponseBody: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'completed',
-			rewrite: 'test-result',
-			check_options: {
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'completed',
+				api_version: '1.0.0',
+				type: 'rewrites',
+			},
+			rewrite: {
+				text: 'test-result',
+				scores: {
+					quality: {
+						score: 85,
+						grammar: { score: 90, issues: 2 },
+						consistency: { score: 85, issues: 1 },
+						terminology: { score: 92, issues: 0 },
+					},
+					analysis: {
+						clarity: {
+							score: 80,
+							word_count: 150,
+							sentence_count: 10,
+							average_sentence_length: 15,
+							flesch_reading_ease: 70,
+							vocabulary_complexity: 0.6,
+							sentence_complexity: 0.5,
+						},
+						tone: {
+							score: 88,
+							informality: 0.3,
+							liveliness: 0.4,
+							informality_alignment: 150.0,
+							liveliness_alignment: 120.0,
+						},
+					},
+				},
+			},
+			config: {
 				style_guide: {
 					style_guide_type: 'test',
 					style_guide_id: 'test-style-guide',
@@ -173,32 +192,52 @@ describe('style.api.utils', () => {
 				dialect: 'american_english',
 				tone: 'business',
 			},
+			original: {
+				issues: [],
+				scores: {
+					quality: {
+						score: 85,
+						grammar: { score: 90, issues: 2 },
+						consistency: { score: 85, issues: 1 },
+						terminology: { score: 92, issues: 0 },
+					},
+					analysis: {
+						clarity: {
+							score: 80,
+							word_count: 150,
+							sentence_count: 10,
+							average_sentence_length: 15,
+							flesch_reading_ease: 70,
+							vocabulary_complexity: 0.6,
+							sentence_complexity: 0.5,
+						},
+						tone: {
+							score: 88,
+							informality: 0.3,
+							liveliness: 0.4,
+							informality_alignment: 150.0,
+							liveliness_alignment: 120.0,
+						},
+					},
+				},
+			},
 		};
 
-		const failedResponseBody: FailedGetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'failed',
-			error: 'Workflow processing failed',
-			check_options: {
-				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
-				},
-				dialect: 'american_english',
-				tone: 'business',
+		const failedResponseBody: GetStyleRewriteResponse = {
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'failed',
+				api_version: '1.0.0',
+				type: 'rewrites',
 			},
 		};
 
 		const runningResponseBody: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'running',
-			check_options: {
-				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
-				},
-				dialect: 'american_english',
-				tone: 'business',
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'running',
+				api_version: '1.0.0',
+				type: 'rewrites',
 			},
 		};
 
@@ -213,14 +252,14 @@ describe('style.api.utils', () => {
 
 			const result = await pollResponse(
 				fn as any,
-				styleRewriteResponse,
+				postStyleRewriteResponse,
 				true,
 				30_000,
 				'v1/style/rewrite',
 			);
 
-			expect(result.status).toBe('completed');
-			expect(result.rewrite).toBe('test-result');
+			expect(result.workflow.status).toBe('completed');
+			expect(result.rewrite?.text).toBe('test-result');
 			expect(mockHttpRequest).toHaveBeenCalledWith({
 				method: 'GET',
 				url: 'https://api.markup.ai/v1/style/rewrite/test-workflow-id',
@@ -241,8 +280,8 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
-			).rejects.toThrow('Workflow failed: Workflow processing failed');
+				pollResponse(fn as any, postStyleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
+			).rejects.toThrow('Workflow failed: test-workflow-id');
 		});
 
 		it('should throw error on timeout', async () => {
@@ -268,7 +307,7 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				pollResponse(fn as any, styleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
+				pollResponse(fn as any, postStyleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
 			).rejects.toThrow('Workflow timeout after 30000ms. Workflow ID: test-workflow-id');
 
 			Date.now = originalDateNow;
@@ -293,9 +332,22 @@ describe('style.api.utils', () => {
 		};
 
 		const runningResponseBody: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'running',
-			check_options: {
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'running',
+				api_version: '1.0.0',
+				type: 'rewrites',
+			},
+		};
+
+		const completedResponseBody: GetStyleRewriteResponse = {
+			workflow: {
+				id: 'test-workflow-id',
+				status: 'completed',
+				api_version: '1.0.0',
+				type: 'rewrites',
+			},
+			config: {
 				style_guide: {
 					style_guide_type: 'test',
 					style_guide_id: 'test-style-guide',
@@ -303,25 +355,75 @@ describe('style.api.utils', () => {
 				dialect: 'american_english',
 				tone: 'business',
 			},
-		};
-
-		const completedResponseBody: GetStyleRewriteResponse = {
-			workflow_id: 'test-workflow-id',
-			status: 'completed',
-			rewrite: 'test-result',
-			check_options: {
-				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
+			original: {
+				issues: [],
+				scores: {
+					quality: {
+						score: 85,
+						grammar: { score: 90, issues: 2 },
+						consistency: { score: 85, issues: 1 },
+						terminology: { score: 92, issues: 0 },
+					},
+					analysis: {
+						clarity: {
+							score: 80,
+							word_count: 150,
+							sentence_count: 10,
+							average_sentence_length: 15,
+							flesch_reading_ease: 70,
+							vocabulary_complexity: 0.6,
+							sentence_complexity: 0.5,
+						},
+						tone: {
+							score: 88,
+							informality: 0.3,
+							liveliness: 0.4,
+							informality_alignment: 150.0,
+							liveliness_alignment: 120.0,
+						},
+					},
 				},
-				dialect: 'american_english',
-				tone: 'business',
+			},
+			rewrite: {
+				text: 'test-result',
+				scores: {
+					quality: {
+						score: 85,
+						grammar: { score: 90, issues: 2 },
+						consistency: { score: 85, issues: 1 },
+						terminology: { score: 92, issues: 0 },
+					},
+					analysis: {
+						clarity: {
+							score: 80,
+							word_count: 150,
+							sentence_count: 10,
+							average_sentence_length: 15,
+							flesch_reading_ease: 70,
+							vocabulary_complexity: 0.6,
+							sentence_complexity: 0.5,
+						},
+						tone: {
+							score: 88,
+							informality: 0.3,
+							liveliness: 0.4,
+							informality_alignment: 150.0,
+							liveliness_alignment: 120.0,
+						},
+					},
+				},
 			},
 		};
 
 		it('should process style request successfully with completion', async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest
+				.mockResolvedValueOnce({
+					body: {
+						status: 'running',
+						workflow_id: 'test-workflow-id',
+					},
+				})
 				.mockResolvedValueOnce({
 					body: runningResponseBody,
 				})
@@ -336,7 +438,10 @@ describe('style.api.utils', () => {
 
 			expect(result).toEqual([
 				{
-					json: completedResponseBody,
+					json: {
+						status: 'completed',
+						...completedResponseBody,
+					},
 					itemData: 0,
 				},
 			]);
