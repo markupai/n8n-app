@@ -110,6 +110,8 @@ export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePrope
 			value: tone,
 		}));
 	} catch (error) {
+		this.logger.error(error);
+
 		return DEFAULT_CONSTANTS.tones.map((tone: string) => ({
 			name: tone,
 			value: tone,
@@ -126,6 +128,8 @@ export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePr
 			value: dialect,
 		}));
 	} catch (error) {
+		this.logger.error(error);
+
 		return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
 			name: dialect,
 			value: dialect,
