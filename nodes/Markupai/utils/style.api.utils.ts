@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
 import { getApiKey, getBaseUrl } from './load.options';
-import { GetStyleRewriteResponse } from '../Markupai.api.types';
+import { GetStyleRewriteResponse, PostStyleRewriteResponse } from '../Markupai.api.types';
 import FormData from 'form-data';
 
 export interface FormDataDetails {
@@ -19,7 +19,7 @@ export async function postStyleRewrite(
 	fn: IExecuteFunctions,
 	formDataDetails: FormDataDetails,
 	path: string,
-): Promise<GetStyleRewriteResponse> {
+): Promise<PostStyleRewriteResponse> {
 	const formData = new FormData();
 	const apiKey = await getApiKey(fn);
 	const baseUrl = await getBaseUrl(fn);
@@ -32,34 +32,28 @@ export async function postStyleRewrite(
 	formData.append('tone', formDataDetails.tone);
 	formData.append('style_guide', formDataDetails.styleGuide);
 
-	try {
-		const requestOptions: IHttpRequestOptions = {
-			method: 'POST',
-			url: `${baseUrl.toString()}${path}`,
-			headers: {
-				Authorization: `Bearer ${apiKey}`,
-				...formData.getHeaders(),
-			},
-			body: formData,
-			returnFullResponse: true,
-		};
+	const requestOptions: IHttpRequestOptions = {
+		method: 'POST',
+		url: `${baseUrl.toString()}${path}`,
+		headers: {
+			Authorization: `Bearer ${apiKey}`,
+			...formData.getHeaders(),
+		},
+		body: formData,
+		returnFullResponse: true,
+	};
 
-		const response = await fn.helpers.httpRequest(requestOptions);
+	const response = await fn.helpers.httpRequest(requestOptions);
 
-		const submitResponse =
-			typeof response.body === 'string' ? response.body : JSON.stringify(response.body);
+	const submitResponse =
+		typeof response.body === 'string' ? response.body : JSON.stringify(response.body);
 
-		return JSON.parse(submitResponse);
-	} catch (error) {
-		console.error('Error submitting and polling style analysis:', error);
-
-		throw error;
-	}
+	return JSON.parse(submitResponse);
 }
 
 export async function pollResponse(
 	fn: IExecuteFunctions,
-	styleRewriteResponse: GetStyleRewriteResponse,
+	styleRewriteResponse: PostStyleRewriteResponse,
 	waitForCompletion: boolean,
 	pollingTimeout: number,
 	path: string,
@@ -97,13 +91,16 @@ export async function pollResponse(
 			const statusResponse =
 				typeof statusResp.body === 'string' ? statusResp.body : JSON.stringify(statusResp.body);
 
+			const responseBody = JSON.parse(statusResponse);
+
 			result = {
-				...JSON.parse(statusResponse),
+				status: responseBody.workflow.status,
+				...responseBody,
 			};
 		}
 
 		if (result.status === 'failed') {
-			throw new Error(`Workflow failed: ${result.error || 'Unknown error'}`);
+			throw new Error(`Workflow failed: ${result.workflow.id}}`);
 		}
 	}
 
@@ -128,8 +125,10 @@ export async function styleRequest(
 			path,
 		);
 
+		const { status, ...responseWithoutStatus } = pollStyleRewriteResponseComplete as any;
+
 		returnData.push({
-			json: { ...pollStyleRewriteResponseComplete },
+			json: { ...responseWithoutStatus },
 			itemData: itemIndex,
 		});
 	} else {

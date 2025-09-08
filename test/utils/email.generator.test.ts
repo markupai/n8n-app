@@ -1,46 +1,82 @@
 import { describe, it, expect } from 'vitest';
 import { generateEmailHTMLReport } from '../../nodes/Markupai/utils/email.generator';
+import { GetStyleRewriteResponse } from '../../nodes/Markupai/Markupai.api.types';
 
 const mockResult = {
-	workflow_id: 'test-workflow-id',
-	status: 'completed' as const,
-	scores: {
-		quality: {
-			score: 85,
-			grammar: {
-				score: 90,
-				issues: 2,
-			},
-			style_guide: {
+	workflow: {
+		id: 'test-workflow-id',
+		status: 'completed',
+		api_version: '1.0.0',
+		type: 'rewrites',
+	},
+	original: {
+		scores: {
+			quality: {
 				score: 85,
-				issues: 1,
+				grammar: {
+					score: 90,
+					issues: 2,
+				},
+				consistency: {
+					score: 85,
+					issues: 1,
+				},
+				terminology: {
+					score: 92,
+					issues: 0,
+				},
 			},
-			terminology: {
-				score: 92,
-				issues: 0,
+			analysis: {
+				clarity: {
+					score: 80,
+					word_count: 150,
+					sentence_count: 10,
+					average_sentence_length: 15,
+					flesch_reading_ease: 70,
+					vocabulary_complexity: 0.6,
+					sentence_complexity: 0.5,
+				},
+				tone: {
+					score: 88,
+					informality: 0.3,
+					liveliness: 0.4,
+					informality_alignment: 150.0,
+					liveliness_alignment: 120.0,
+				},
 			},
 		},
-		analysis: {
-			clarity: {
-				score: 80,
-				word_count: 150,
-				sentence_count: 10,
-				average_sentence_length: 15,
-				flesch_reading_ease: 70,
-				vocabulary_complexity: 0.6,
-				sentence_complexity: 0.5,
+		issues: [],
+	},
+	rewrite: {
+		text: 'Rewritten content',
+		scores: {
+			quality: {
+				score: 85,
+				grammar: { score: 90, issues: 2 },
+				consistency: { score: 85, issues: 1 },
+				terminology: { score: 92, issues: 0 },
 			},
-			tone: {
-				score: 88,
-				informality: 0.3,
-				liveliness: 0.4,
-				informality_alignment: 150.0,
-				liveliness_alignment: 120.0,
+			analysis: {
+				clarity: {
+					score: 80,
+					word_count: 150,
+					sentence_count: 10,
+					average_sentence_length: 15,
+					flesch_reading_ease: 70,
+					vocabulary_complexity: 0.6,
+					sentence_complexity: 0.5,
+				},
+				tone: {
+					score: 88,
+					informality: 0.3,
+					liveliness: 0.4,
+					informality_alignment: 150.0,
+					liveliness_alignment: 120.0,
+				},
 			},
 		},
 	},
-	issues: [],
-	check_options: {
+	config: {
 		style_guide: {
 			style_guide_type: 'Standard',
 			style_guide_id: 'sg-123',
@@ -48,7 +84,7 @@ const mockResult = {
 		dialect: 'US English',
 		tone: 'Professional',
 	},
-};
+} as GetStyleRewriteResponse;
 
 function validateCommonFields(result: string) {
 	expect(result).toContain('<!DOCTYPE html>');

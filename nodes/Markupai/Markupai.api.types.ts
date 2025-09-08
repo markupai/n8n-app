@@ -12,7 +12,7 @@ export interface Scores {
 			score: number;
 			issues: number;
 		};
-		style_guide: {
+		consistency: {
 			score: number;
 			issues: number;
 		};
@@ -42,12 +42,13 @@ export interface Scores {
 }
 
 export interface Issue {
-	category?: string;
-	subcategory?: string;
+	category: string;
+	subcategory: string;
 	original: string;
-	suggestion?: string;
-	modified?: string;
-	char_index: number;
+	suggestion: string;
+	position: {
+		start_index: number;
+	};
 }
 
 export enum IssueCategory {
@@ -60,22 +61,39 @@ export enum IssueCategory {
 	Terminology = 'terminology',
 }
 
-export interface GetStyleRewriteResponse {
+export interface PostStyleRewriteResponse {
+	status: string;
 	workflow_id: string;
-	status: 'running' | 'completed' | 'failed';
-	scores?: Scores;
-	rewrite_scores?: Scores;
-	issues?: Issue[];
-	rewrite?: string;
-	check_options: {
+}
+
+export interface GetStyleRewriteResponse {
+	config?: {
+		dialect: string;
 		style_guide: {
 			style_guide_type: string;
 			style_guide_id: string;
 		};
-		dialect: string;
 		tone: string;
 	};
-	webhook_response?: any;
+	original?: {
+		issues: Issue[];
+		scores: Scores;
+	};
+	rewrite?: {
+		text: string;
+		scores: Scores;
+	};
+	workflow: {
+		id: string;
+		api_version: string;
+		generated_at?: string;
+		status: 'running' | 'completed' | 'failed';
+		type: string;
+		webhook_response?: {
+			url: string;
+			status_code: number;
+		};
+	};
 }
 
 export interface StyleGuide {

@@ -14,37 +14,28 @@ type Constants = {
 };
 
 const DEFAULT_CONSTANTS = {
-	dialects: [
-		'american_english',
-		'australian_english',
-		'british_oxford',
-		'canadian_english',
-		'indian_english',
-	],
+	dialects: ['american_english', 'british_english', 'canadian_english'],
 	tones: [
 		'academic',
-		'business',
-		'casual',
+		'confident',
 		'conversational',
-		'formal',
-		'gen-z',
-		'informal',
+		'empathetic',
+		'engaging',
+		'friendly',
+		'professional',
 		'technical',
 	],
 };
 
 export async function getApiKey(functionsBase: FunctionsBase): Promise<string> {
-	const credentials: ICredentialDataDecryptedObject = (await functionsBase.getCredentials(
-		'markupaiApi',
-	)) as {
-		apiKey: string;
-	};
+	const credentials: ICredentialDataDecryptedObject =
+		await functionsBase.getCredentials('markupaiApi');
 
 	return credentials.apiKey as string;
 }
 
 export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
-	const credentials = (await functionsBase.getCredentials('markupaiApi')) as { baseUrl: string };
+	const credentials = await functionsBase.getCredentials('markupaiApi');
 
 	return new URL(credentials.baseUrl);
 }
@@ -102,7 +93,6 @@ async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Prom
 	const response = await fn.helpers.httpRequest(requestOptions);
 
 	if (response.statusCode !== 200) {
-		console.log('error loading constants: ', response.body);
 		throw new Error(JSON.parse(response.body as string).error);
 	}
 
