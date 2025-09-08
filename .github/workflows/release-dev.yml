@@ -36,6 +36,8 @@ jobs:
         uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_ACCESS_TOKEN }}
+          tag: dev
+          dry-run: true
 
       - name: Push tag
         uses: anothrNick/github-tag-action@v1
