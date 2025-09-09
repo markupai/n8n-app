@@ -9,48 +9,48 @@ function validateEmptyIssues(result: CategorizedIssues) {
 	expect(result.tone).toHaveLength(0);
 }
 
-const mockIssues: Issue[] = [
-	{
-		original: 'text',
-		position: {
-			start_index: 0,
-		},
-		subcategory: 'Capitalization',
-		category: IssueCategory.Grammar,
-		suggestion: 'Text',
-	},
-	{
-		original: 'word',
-		position: {
-			start_index: 5,
-		},
-		subcategory: 'Simpler Words',
-		category: IssueCategory.Clarity,
-		suggestion: 'term',
-	},
-	{
-		original: 'sentence',
-		position: {
-			start_index: 10,
-		},
-		subcategory: 'Brand Voice',
-		category: IssueCategory.Consistency,
-		suggestion: 'phrase',
-	},
-	{
-		original: 'tone',
-		position: {
-			start_index: 20,
-		},
-		subcategory: 'Transitions and Flow',
-		category: IssueCategory.Tone,
-		suggestion: 'style',
-	},
-];
-
 describe('issues', () => {
 	describe('categorizeIssues', () => {
 		it('should categorize issues by category', () => {
+			const mockIssues: Issue[] = [
+				{
+					original: 'text',
+					position: {
+						start_index: 0,
+					},
+					subcategory: 'Capitalization',
+					category: IssueCategory.Grammar,
+					suggestion: 'Text',
+				},
+				{
+					original: 'word',
+					position: {
+						start_index: 5,
+					},
+					subcategory: 'Simpler Words',
+					category: IssueCategory.Clarity,
+					suggestion: 'term',
+				},
+				{
+					original: 'sentence',
+					position: {
+						start_index: 10,
+					},
+					subcategory: 'Brand Voice',
+					category: IssueCategory.Consistency,
+					suggestion: 'phrase',
+				},
+				{
+					original: 'tone',
+					position: {
+						start_index: 20,
+					},
+					subcategory: 'Transitions and Flow',
+					category: IssueCategory.Tone,
+					suggestion: 'style',
+				},
+			];
+
 			const result = categorizeIssues(mockIssues);
 
 			expect(result.grammar).toHaveLength(1);
