@@ -52,13 +52,11 @@ export interface Issue {
 }
 
 export enum IssueCategory {
+	Clarity = 'clarity',
+	Consistency = 'consistency',
 	Grammar = 'grammar',
-	SimpleVocab = 'simple_vocab',
-	SentenceStructure = 'sentence_structure',
-	SentenceLength = 'sentence_length',
-	Tone = 'tone',
-	StyleGuide = 'style_guide',
 	Terminology = 'terminology',
+	Tone = 'tone',
 }
 
 export interface PostStyleRewriteResponse {
