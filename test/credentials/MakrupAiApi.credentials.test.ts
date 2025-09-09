@@ -14,7 +14,7 @@ describe('MarkupAiApi credentials', () => {
 		});
 
 		it('should have correct display name', () => {
-			expect(credentials.displayName).toBe('MarkupAI API');
+			expect(credentials.displayName).toBe('Markup AI API');
 		});
 
 		it('should have correct documentation URL', () => {
@@ -26,7 +26,7 @@ describe('MarkupAiApi credentials', () => {
 
 			const apiKeyProperty = credentials.properties.find((p) => p.name === 'apiKey');
 			expect(apiKeyProperty).toBeDefined();
-			expect(apiKeyProperty?.displayName).toBe('MarkupAI API Key');
+			expect(apiKeyProperty?.displayName).toBe('Markup AI API Key');
 			expect(apiKeyProperty?.type).toBe('string');
 			expect(apiKeyProperty?.required).toBe(true);
 			expect(apiKeyProperty?.typeOptions?.password).toBe(true);
@@ -54,7 +54,7 @@ describe('MarkupAiApi credentials', () => {
 		it('should have API key as first property', () => {
 			const firstProperty = credentials.properties[0];
 			expect(firstProperty.name).toBe('apiKey');
-			expect(firstProperty.displayName).toBe('MarkupAI API Key');
+			expect(firstProperty.displayName).toBe('Markup AI API Key');
 		});
 
 		it('should have base URL as second property', () => {

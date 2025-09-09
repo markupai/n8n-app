@@ -1,10 +1,10 @@
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# MarkupAI for n8n
+# Markup AI for n8n
 
-This is an n8n community node that integrates [MarkupAI](https://markup.ai/) text quality and governance platform into your n8n workflows.
+This is an n8n community node that integrates [Markup AI](https://markup.ai/) text quality and governance platform into your n8n workflows.
 
-[MarkupAI](https://markup.ai/) helps create compliant, consistent, and engaging content by providing AI-powered text analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
+[Markup AI](https://markup.ai/) helps create compliant, consistent, and engaging content by providing AI-powered text analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -34,7 +34,7 @@ You'll need a Markup AI API key:
 2. Get your API key from your account settings
 3. In n8n, add credentials:
    - Go to **Credentials** > **New**
-   - Select **MarkupAI API**
+   - Select **Markup AI API**
    - Enter your API key
    - Set base URL (default: `https://api.markup.ai`)
 
@@ -217,4 +217,4 @@ Start n8n
 n8n start
 ```
 
-You should now see MarkupAI in the list of nodes. Happy hacking!
+You should now see Markup AI in the list of nodes. Happy hacking!
