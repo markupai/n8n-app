@@ -1,6 +1,6 @@
 {
 	"name": "@markupai/n8n-nodes-markupai",
-	"version": "0.1.0-dev.2",
+	"version": "0.2.0",
 	"description": "n8n node for MarkupAI",
 	"keywords": [
 		"n8n-community-node-package",
@@ -37,7 +37,8 @@
 		"format": "prettier nodes . --write",
 		"lint": "eslint nodes . package.json",
 		"lintfix": "eslint nodes . package.json --fix",
-		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
+		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json && npm run check:stable-version",
+		"check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage",
