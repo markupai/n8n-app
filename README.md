@@ -73,7 +73,7 @@ All text operations support:
 
 ```json
 {
-	"name": "My workflow 2",
+	"name": "Markup AI workflow",
 	"nodes": [
 		{
 			"parameters": {
