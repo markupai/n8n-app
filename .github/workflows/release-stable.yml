@@ -28,7 +28,7 @@ jobs:
         run: npm run test:run
 
       - name: Build
-        run: npm run build
+        run: npm run prepublishOnly
 
       - name: Publish to NPM
         id: publish
