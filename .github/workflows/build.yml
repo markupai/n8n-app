@@ -10,8 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on:
-      group: dev-runners
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
