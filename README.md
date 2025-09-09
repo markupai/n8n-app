@@ -73,29 +73,100 @@ All text operations support:
 
 ```json
 {
-	"parameters": {
-		"operation": "rewrite",
-		"content": "={{ $json.data }}",
-		"styleGuide": "01971e03-dd27-75ee-9044-b48e654848cf",
-		"tone": "formal",
-		"dialect": "american_english",
-		"additionalOptions": {
-			"documentLink": "={{ $('Google Drive').item.json.webViewLink }}",
-			"documentName": "={{ $('Google Drive').item.json.name }}",
-			"documentOwner": "={{ $('Google Drive').item.json.owners[0].displayName }}"
-		}
-	},
-	"type": "CUSTOM.markupai",
-	"typeVersion": 1,
-	"position": [660, -580],
-	"id": "cafc53cf-2ab6-4cac-804a-740387ac22dc",
-	"name": "MarkupAI",
-	"credentials": {
-		"markupaiApi": {
-			"id": "TAA9j2TwvdpSkqC8",
-			"name": "MarkupAI account"
-		}
-	}
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "93ded2fe-e5ee-4dd8-939e-6fd5c3895efd",
+      "name": "When chat message received",
+      "webhookId": "0d21af3d-6b17-4a77-ac67-1fe92c86c914"
+    },
+    {
+      "parameters": {
+        "operation": "styleRewrite",
+        "content": "={{ $json.chatInput }}",
+        "styleGuide": "01971e03-dd27-779f-b3ec-b724a2cf809f",
+        "tone": "confident",
+        "dialect": "american_english",
+        "additionalOptions": {}
+      },
+      "type": "@markupai/n8n-nodes-markupai.markupai",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "2f83ee27-ceb9-4e40-b78d-6a51812fd3d1",
+      "name": "Content style rewrite",
+      "credentials": {
+        "markupaiApi": {
+          "id": "TAA9j2TwvdpSkqC8",
+          "name": "MarkupAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.rewrite.text }}",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "77a56b71-b36a-4358-8b19-4d961d869a7b",
+      "name": "Respond to Chat"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Content style rewrite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content style rewrite": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "72fe65f2-ace6-46ba-886d-11067a9234fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f44f64e02790168f34e20210cd9f8854fcab3cab729880c8fca1b193c90b5101"
+  },
+  "id": "iErjnWU83D47JIUG",
+  "tags": []
 }
 ```
 
