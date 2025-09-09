@@ -1,0 +1,47 @@
+name: Release Dev
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-dev:
+    runs-on:
+      group: dev-runners
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to NPM
+        id: publish
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_ACCESS_TOKEN }}
+          tag: dev
+          dry-run: true
+
+      - name: Push tag
+        uses: anothrNick/github-tag-action@v1
+        if: steps.publish.outputs.type
+        env:
+          CUSTOM_TAG: v${{ steps.publish.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

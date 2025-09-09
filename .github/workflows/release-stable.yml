@@ -1,4 +1,4 @@
-name: Release
+name: Release Stable
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  release-stable:
     runs-on:
       group: dev-runners
 
@@ -36,10 +36,10 @@ jobs:
         uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_ACCESS_TOKEN }}
-          tag: dev
 
       - name: Push tag
         uses: anothrNick/github-tag-action@v1
         if: steps.publish.outputs.type
         env:
           CUSTOM_TAG: v${{ steps.publish.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
