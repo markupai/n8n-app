@@ -105,7 +105,7 @@ All text operations support:
 			"credentials": {
 				"markupaiApi": {
 					"id": "TAA9j2TwvdpSkqC8",
-					"name": "MarkupAI account"
+					"name": "Markup AI account"
 				}
 			}
 		},
