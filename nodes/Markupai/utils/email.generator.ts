@@ -179,22 +179,19 @@ export function generateEmailHTMLReport(
 										categorizedIssues.grammar.length
 									}</strong></span><br><span style="font-size:14px;">Grammar &amp; Spelling</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
-										categorizedIssues.simple_vocab.length
-									}</strong></span><br><span style="font-size:14px;">Vocabulary</span></td>
+										categorizedIssues.terminology.length
+									}</strong></span><br><span style="font-size:14px;">Terminology</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
-										categorizedIssues.style_guide.length
+										categorizedIssues.consistency.length
 									}</strong></span><br><span style="font-size:14px;">Consistency</span></td>
                 </tr>
                 <tr>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
-										categorizedIssues.sentence_structure.length
-									}</strong></span><br><span style="font-size:14px;">Sentence Structure</span></td>
+										categorizedIssues.clarity.length
+									}</strong></span><br><span style="font-size:14px;">Clarity</span></td>
                   <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
 										categorizedIssues.tone.length
 									}</strong></span><br><span style="font-size:14px;">Tone &amp; Voice</span></td>
-                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${
-										categorizedIssues.sentence_length.length
-									}</strong></span><br><span style="font-size:14px;">Sentence Length</span></td>
                 </tr>
               </table>
             </td>

@@ -4,13 +4,11 @@ import { Issue, IssueCategory } from '../Markupai.api.types';
  * Base interface for categorized issues
  */
 export interface CategorizedIssues<T extends Issue = Issue> {
+	clarity: T[];
+	consistency: T[];
 	grammar: T[];
-	simple_vocab: T[];
-	sentence_structure: T[];
-	sentence_length: T[];
-	tone: T[];
-	style_guide: T[];
 	terminology: T[];
+	tone: T[];
 }
 
 /**
@@ -43,35 +41,27 @@ export interface CategorizedIssues<T extends Issue = Issue> {
 export function categorizeIssues<T extends Issue>(issues: T[]): CategorizedIssues<T> {
 	// Initialize empty arrays for each category
 	const categorized: CategorizedIssues<T> = {
+		clarity: [],
+		consistency: [],
 		grammar: [],
-		simple_vocab: [],
-		sentence_structure: [],
-		sentence_length: [],
-		tone: [],
-		style_guide: [],
 		terminology: [],
+		tone: [],
 	};
 
 	// Group issues by category using a single pass through the array
 	for (const issue of issues) {
 		switch (issue.category) {
+			case IssueCategory.Clarity:
+				categorized.clarity.push(issue);
+				break;
+			case IssueCategory.Consistency:
+				categorized.consistency.push(issue);
+				break;
 			case IssueCategory.Grammar:
 				categorized.grammar.push(issue);
 				break;
-			case IssueCategory.SimpleVocab:
-				categorized.simple_vocab.push(issue);
-				break;
-			case IssueCategory.SentenceStructure:
-				categorized.sentence_structure.push(issue);
-				break;
-			case IssueCategory.SentenceLength:
-				categorized.sentence_length.push(issue);
-				break;
 			case IssueCategory.Tone:
 				categorized.tone.push(issue);
-				break;
-			case IssueCategory.StyleGuide:
-				categorized.style_guide.push(issue);
 				break;
 			case IssueCategory.Terminology:
 				categorized.terminology.push(issue);
