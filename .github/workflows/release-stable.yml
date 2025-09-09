@@ -1,4 +1,4 @@
-name: Release
+name: Release Stable
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  release-stable:
     runs-on:
       group: dev-runners
 
