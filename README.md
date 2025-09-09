@@ -28,9 +28,9 @@ npm install n8n-nodes-markupai
 
 ## Credentials
 
-You'll need an Markup AI API key:
+You'll need a Markup AI API key:
 
-1. Sign up for an [MarkupAI account](https://markup.ai/)
+1. Sign up for a [Markup AI account](https://markup.ai/)
 2. Get your API key from your account settings
 3. In n8n, add credentials:
    - Go to **Credentials** > **New**
