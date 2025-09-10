@@ -39,8 +39,8 @@
 		"lintfix": "eslint nodes . package.json --fix",
 		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json && npm run check:stable-version",
 		"check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
-		"test": "vitest",
-		"test:run": "vitest run",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:debug": "node --inspect-brk node_modules/vitest/vitest.mjs run --no-file-parallelism",
 		"test:debug:watch": "node --inspect node_modules/vitest/vitest.mjs watch --no-file-parallelism"
