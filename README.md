@@ -62,9 +62,9 @@ Automatically rewrite and improve content using AI. Returns:
 
 All content operations support:
 
-- **Dialect**: American English, British English, Australian English, Canadian English
-- **Tone**: Academic, Business, Casual, Conversational, Formal, Gen-Z, Informal, Technical
-- **Style Guide**: AP, Chicago, Microsoft, Proofpoint
+- **Dialect**: The dialect to be used
+- **Tone**: The tone to be used
+- **Style Guide**: The style guide to be used
 - **Wait for Completion**: Auto-poll for results (default: true)
 - **Polling Timeout**: Max wait time in ms (default: 60000)
 - **Polling Interval**: Check frequency in ms (default: 2000)
