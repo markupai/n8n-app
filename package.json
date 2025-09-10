@@ -1,6 +1,6 @@
 {
 	"name": "@markupai/n8n-nodes-markupai",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "n8n node for MarkupAI",
 	"keywords": [
 		"n8n-community-node-package",
@@ -16,8 +16,7 @@
 	"license": "Apache-2.0",
 	"homepage": "https://docs.markup.ai/",
 	"publishConfig": {
-		"access": "public",
-		"tag": "dev"
+		"access": "public"
 	},
 	"author": {
 		"name": "MarkupAI",
