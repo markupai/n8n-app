@@ -7,11 +7,11 @@ import {
 
 export class MarkupAiApi implements ICredentialType {
 	name = 'markupaiApi';
-	displayName = 'MarkupAI API';
+	displayName = 'Markup AI API';
 	documentationUrl = 'https://docs.markup.ai/';
 	properties: INodeProperties[] = [
 		{
-			displayName: 'MarkupAI API Key',
+			displayName: 'Markup AI API Key',
 			name: 'apiKey',
 			type: 'string',
 			typeOptions: { password: true },
