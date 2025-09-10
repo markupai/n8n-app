@@ -1,6 +1,6 @@
 {
 	"name": "@markupai/n8n-nodes-markupai",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "n8n node for MarkupAI",
 	"keywords": [
 		"n8n-community-node-package",
@@ -13,7 +13,7 @@
 		"grammar-checker",
 		"ai-writing"
 	],
-	"license": "Apache-2.0",
+	"license": "MIT",
 	"homepage": "https://docs.markup.ai/",
 	"publishConfig": {
 		"access": "public"
