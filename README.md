@@ -2,15 +2,18 @@
 
 # Markup AI for n8n
 
-This is an n8n community node that integrates [Markup AI](https://markup.ai/) a content guardian platform into your n8n workflows.
+This is an n8n community node that integrates [Markup AI](https://markup.ai/) a content guardian platform into your n8n
+workflows.
 
-[Markup AI](https://markup.ai/) helps create compliant, consistent, and engaging content by providing AI-powered content analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
+[Markup AI](https://markup.ai/) helps create compliant, consistent, and engaging content by providing AI-powered content
+analysis, suggestions, and rewrites based on your organization's style guide and tone of voice.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community
+nodes documentation.
 
 ### Quick Install
 
@@ -71,12 +74,18 @@ All content operations support:
 
 ## Use Cases
 
-- **Content Quality Assurance**: Check blog posts, documentation, and marketing content
-- **Email Enhancement**: Improve business communication
-- **Documentation Consistency**: Ensure technical docs follow style guides
-- **Multilingual Content**: Adapt content for different English dialects
-- **Automated Editing**: Batch process content improvements
-- **Brand Voice Compliance**: Maintain consistent tone across content
+- **Content Compliance & Consistency**: Ensure all company content — from blogs and web pages to documentation and
+  marketing materials — aligns with brand and style guidelines while maintaining a consistent tone.
+- **Automated Quality Gates**: Ensuring content meets standards automatically. Keeping an eye on content changes in
+  real-time.
+- **Quality at the Source**: Quality at the Source: Create and maintain high-quality content right where it’s produced.
+  Proactively monitor consistency and compliance across CMS platforms like Google Drive and beyond.
+- **Early Issue Detection**: Automatically identify and flag potential issues or non-compliant content within workflows
+  before they become problems.
+- **Streamlined Content Compliance**: Minimize manual reviews by automating content compliance checks and review
+  processes.
+- **Actionable Alerts**: Go beyond flagging issues — automatically trigger notifications to stakeholders within
+  workflows, transforming compliance checks into immediate corrective actions.
 
 ## Development
 
