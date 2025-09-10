@@ -15,6 +15,9 @@
 	],
 	"license": "Apache-2.0",
 	"homepage": "https://docs.markup.ai/",
+	"publishConfig": {
+		"access": "public"
+	},
 	"author": {
 		"name": "MarkupAI",
 		"email": "support@markupai.com"
