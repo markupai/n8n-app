@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { IHttpRequestOptions, FunctionsBase } from 'n8n-workflow';
+
 import {
 	postStyleRewrite,
 	pollResponse,
@@ -16,6 +17,20 @@ vi.mock('../../nodes/Markupai/utils/load.options', () => ({
 	getApiKey: vi.fn(),
 	getBaseUrl: vi.fn(),
 }));
+
+vi.mock('n8n-workflow', async () => {
+	const actual = await vi.importActual('n8n-workflow');
+	return {
+		...actual,
+		sleep: vi.fn().mockImplementation(
+			(ms: number) =>
+				new Promise((resolve) => {
+					vi.advanceTimersByTime(ms);
+					resolve(undefined);
+				}),
+		),
+	};
+});
 
 interface MockHttpRequest extends ReturnType<typeof vi.fn> {
 	(body: IHttpRequestOptions): Promise<{ body: GetStyleRewriteResponse }>;
@@ -38,6 +53,11 @@ interface MockFnObject {
 describe('style.api.utils', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
 	});
 
 	const createMockFunctions = () => {
@@ -293,25 +313,20 @@ describe('style.api.utils', () => {
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			const fn = createFnObject(mockHttpRequest);
 
-			const originalSetTimeout = global.setTimeout;
-			global.setTimeout = vi.fn((callback: () => void) => {
-				callback();
-				return 1 as any;
-			}) as any;
+			const pollPromise = pollResponse(
+				fn as any,
+				postStyleRewriteResponse,
+				true,
+				30_000,
+				'v1/style/rewrite',
+			);
 
-			let timeValue = Date.now();
-			const originalDateNow = Date.now;
-			Date.now = vi.fn(() => {
-				timeValue += 2000;
-				return timeValue;
-			});
+			// Advance timers to trigger timeout
+			vi.advanceTimersByTime(30_000);
 
-			await expect(
-				pollResponse(fn as any, postStyleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
-			).rejects.toThrow('Workflow timeout after 30000ms. Workflow ID: test-workflow-id');
-
-			Date.now = originalDateNow;
-			global.setTimeout = originalSetTimeout;
+			await expect(pollPromise).rejects.toThrow(
+				'Workflow timeout after 30000ms. Workflow ID: test-workflow-id',
+			);
 		});
 	});
 

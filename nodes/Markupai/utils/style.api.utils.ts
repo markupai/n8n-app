@@ -1,7 +1,6 @@
-import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
+import { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData, sleep } from 'n8n-workflow';
 import { getApiKey, getBaseUrl } from './load.options';
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from '../Markupai.api.types';
-import FormData from 'form-data';
 
 export interface FormDataDetails {
 	content: string;
@@ -24,10 +23,9 @@ export async function postStyleRewrite(
 	const apiKey = await getApiKey(fn);
 	const baseUrl = await getBaseUrl(fn);
 
-	formData.append('file_upload', Buffer.from(formDataDetails.content, 'utf-8'), {
-		filename: formDataDetails.documentName || 'content.txt',
-		contentType: 'text/plain',
-	});
+	const blob = new Blob([formDataDetails.content], { type: 'text/plain' });
+
+	formData.append('file_upload', blob, formDataDetails.documentName || 'content.txt');
 	formData.append('dialect', formDataDetails.dialect);
 	formData.append('tone', formDataDetails.tone);
 	formData.append('style_guide', formDataDetails.styleGuide);
@@ -37,7 +35,7 @@ export async function postStyleRewrite(
 		url: `${baseUrl.toString()}${path}`,
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
-			...formData.getHeaders(),
+			'Content-Type': 'multipart/form-data',
 		},
 		body: formData,
 		returnFullResponse: true,
@@ -76,7 +74,7 @@ export async function pollResponse(
 				);
 			}
 
-			await new Promise((resolve) => setTimeout(resolve, pollingInterval));
+			await sleep(pollingInterval);
 
 			const statusOptions: IHttpRequestOptions = {
 				method: 'GET',
