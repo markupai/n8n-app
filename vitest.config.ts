@@ -27,6 +27,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': resolve(__dirname, './'),
+			'n8n-workflow': resolve(__dirname, './'),
 		},
 	},
 	define: {
