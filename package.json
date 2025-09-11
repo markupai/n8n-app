@@ -13,49 +13,34 @@
 		"grammar-checker",
 		"ai-writing"
 	],
-	"license": "MIT",
 	"homepage": "https://docs.markup.ai/",
-	"publishConfig": {
-		"access": "public"
-	},
-	"author": {
-		"name": "MarkupAI",
-		"email": "support@markupai.com"
-	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/markupai/n8n-app"
 	},
-	"engines": {
-		"node": ">=20.15"
+	"license": "MIT",
+	"author": {
+		"name": "MarkupAI",
+		"email": "support@markupai.com"
 	},
 	"main": "index.js",
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsc && gulp build:icons",
+		"check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
 		"dev": "tsc --watch",
 		"format": "prettier nodes . --write",
 		"format:check": "prettier nodes . --check",
 		"lint": "eslint nodes . package.json",
 		"lintfix": "eslint nodes . package.json --fix",
 		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json && npm run check:stable-version",
-		"check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
 		"test": "vitest run",
-		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:debug": "node --inspect-brk node_modules/vitest/vitest.mjs run --no-file-parallelism",
-		"test:debug:watch": "node --inspect node_modules/vitest/vitest.mjs watch --no-file-parallelism"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/MarkupAiApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/Markupai/Markupai.node.js"
-		]
+		"test:debug:watch": "node --inspect node_modules/vitest/vitest.mjs watch --no-file-parallelism",
+		"test:watch": "vitest"
 	},
 	"devDependencies": {
 		"@types/node": "^24.3.1",
@@ -70,5 +55,20 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
+	},
+	"engines": {
+		"node": ">=20.15"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/MarkupAiApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Markupai/Markupai.node.js"
+		]
 	}
 }
