@@ -6,12 +6,14 @@
 		"n8n-community-node-package",
 		"n8n",
 		"markupai",
+		"content-guardian",
+		"brand-alignment",
 		"text-analysis",
 		"writing-assistant",
 		"style-guide",
 		"content-quality",
-		"grammar-checker",
-		"ai-writing"
+		"ai-writing",
+		"low-code"
 	],
 	"homepage": "https://docs.markup.ai/",
 	"repository": {
