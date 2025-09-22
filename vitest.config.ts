@@ -9,7 +9,7 @@ export default defineConfig({
 		exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
 		coverage: {
 			provider: 'v8',
-			reporter: ['text', 'json', 'html'],
+			reporter: ['text', 'json', 'html', 'lcov'],
 			include: ['nodes/**/*.ts', 'credentials/**/*.ts'],
 			exclude: [
 				'node_modules/',
