@@ -124,6 +124,7 @@ describe('load.options', () => {
 			const result = await loadTones.call(loadOptionsFunction);
 
 			expect(result).toEqual([
+				{ name: 'None (Keep Tone Unchanged)', value: 'None (Keep Tone Unchanged)' },
 				{ name: 'tone_1', value: 'tone_1' },
 				{ name: 'tone_2', value: 'tone_2' },
 			]);
@@ -143,6 +144,7 @@ describe('load.options', () => {
 			const result = await loadTones.call(loadOptionsFunction);
 
 			expect(result).toEqual([
+				{ name: 'None (Keep Tone Unchanged)', value: 'None (Keep Tone Unchanged)' },
 				{ name: 'academic', value: 'academic' },
 				{ name: 'confident', value: 'confident' },
 				{ name: 'conversational', value: 'conversational' },
@@ -151,6 +153,28 @@ describe('load.options', () => {
 				{ name: 'friendly', value: 'friendly' },
 				{ name: 'professional', value: 'professional' },
 				{ name: 'technical', value: 'technical' },
+			]);
+		});
+
+		it('includes "None (Keep Tone Unchanged)" as the first option when API returns tones', async () => {
+			const loadOptionsFunction = {
+				getCredentials: vi
+					.fn()
+					.mockResolvedValue({ apiKey: 'mocked-key-123', baseUrl: 'https://api.markup.ai' }),
+				helpers: {
+					httpRequest: vi.fn().mockResolvedValue({
+						body: { tones: ['tone_1', 'tone_2'] },
+						statusCode: 200,
+					}),
+				},
+			} as any;
+
+			const result = await loadTones.call(loadOptionsFunction);
+
+			expect(result).toEqual([
+				{ name: 'None (Keep Tone Unchanged)', value: 'None (Keep Tone Unchanged)' },
+				{ name: 'tone_1', value: 'tone_1' },
+				{ name: 'tone_2', value: 'tone_2' },
 			]);
 		});
 	});
