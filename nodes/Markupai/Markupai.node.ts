@@ -103,11 +103,11 @@ export class Markupai implements INodeType {
 					'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [
 					{
-						name: 'None (Keep Dialect Unchanged)',
-						value: 'None (Keep Dialect Unchanged)',
+						name: 'None (Keep Tone Unchanged)',
+						value: 'None (Keep Tone Unchanged)',
 					},
 				],
-				default: 'None (Keep Dialect Unchanged)',
+				default: 'None (Keep Tone Unchanged)',
 				typeOptions: {
 					loadOptionsMethod: 'loadTones',
 				},
