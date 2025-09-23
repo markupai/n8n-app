@@ -27,6 +27,17 @@ const DEFAULT_CONSTANTS = {
 	],
 };
 
+const appendDefaultTone = (tones: string[]) => {
+	return ['None (Keep Tone Unchanged)', ...tones];
+};
+
+const mapTones = (tones: string[]) => {
+	return appendDefaultTone(tones).map((tone) => ({
+		name: tone,
+		value: tone,
+	}));
+};
+
 export async function getApiKey(functionsBase: FunctionsBase): Promise<string> {
 	const credentials: ICredentialDataDecryptedObject =
 		await functionsBase.getCredentials('markupaiApi');
@@ -105,15 +116,9 @@ export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePrope
 	try {
 		const constants = await getConstants(this);
 
-		return constants.tones.map((tone: string) => ({
-			name: tone,
-			value: tone,
-		}));
+		return mapTones(constants.tones);
 	} catch (error) {
-		return DEFAULT_CONSTANTS.tones.map((tone: string) => ({
-			name: tone,
-			value: tone,
-		}));
+		return mapTones(DEFAULT_CONSTANTS.tones);
 	}
 }
 
