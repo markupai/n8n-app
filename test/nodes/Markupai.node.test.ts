@@ -114,7 +114,7 @@ describe('Markupai', () => {
 			const toneProp = properties.find((p) => p.name === 'tone');
 			expect(toneProp).toBeDefined();
 			expect(toneProp?.type).toBe('options');
-			expect(toneProp?.default).toBe('None (Keep Dialect Unchanged)');
+			expect(toneProp?.default).toBe('None (Keep Tone Unchanged)');
 			expect(toneProp?.typeOptions?.loadOptionsMethod).toBe('loadTones');
 
 			const dialectProp = properties.find((p) => p.name === 'dialect');
