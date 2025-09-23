@@ -12,7 +12,7 @@ vi.mock('n8n-workflow', async () => {
 	const actual = await vi.importActual('n8n-workflow');
 	return {
 		...actual,
-		NodeConnectionType: {
+		NodeConnectionTypes: {
 			Main: 'main',
 		},
 		NodeApiError: class NodeApiError extends Error {

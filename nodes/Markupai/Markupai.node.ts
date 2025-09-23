@@ -5,7 +5,7 @@ import {
 	INodeTypeDescription,
 	JsonObject,
 	NodeApiError,
-	NodeConnectionType,
+	NodeConnectionTypes,
 } from 'n8n-workflow';
 import { loadDialects, loadStyleGuides, loadTones } from './utils/load.options';
 import { FormDataDetails, getPath, styleRequest } from './utils/style.api.utils';
@@ -22,8 +22,8 @@ export class Markupai implements INodeType {
 		defaults: {
 			name: 'Markup AI',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		group: [],
 		credentials: [
 			{
