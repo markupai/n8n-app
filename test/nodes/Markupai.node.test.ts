@@ -293,7 +293,7 @@ describe('Markupai', () => {
 			expect(result).toEqual([mockInputData]);
 		});
 
-		it('should handle "None (Keep Dialect Unchanged)" tone correctly', async () => {
+		it('should handle "None (Keep Tone Unchanged)" tone correctly', async () => {
 			const mockResult = {
 				workflow: { id: 'test-id', status: 'completed' },
 				config: { style_guide: { style_guide_id: 'test-guide' } },
@@ -317,9 +317,7 @@ describe('Markupai', () => {
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				mockExecuteFunctions,
-				expect.objectContaining({
-					tone: '', // Should be empty string for "None" option
-				}),
+				expect.not.objectContaining({ tone: expect.any(String) }),
 				'v1/style/checks',
 				0,
 			);

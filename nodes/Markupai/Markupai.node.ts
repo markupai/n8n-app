@@ -213,7 +213,7 @@ export class Markupai implements INodeType {
 				const formDataDetails = {
 					content,
 					styleGuide,
-					tone: tone === 'None (keep tone unchanged)' ? '' : tone,
+					...(tone !== 'None (keep tone unchanged)' && { tone }),
 					dialect,
 					waitForCompletion,
 					pollingTimeout,
