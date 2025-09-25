@@ -43,7 +43,6 @@ const createCheckWorkflowResponse = () => ({
 	workflow: { id: 'test-id', status: 'completed' },
 	config: { style_guide: { style_guide_id: 'test-guide' } },
 	original: { issues: [], scores: { quality: { score: 85 } } },
-	rewrite: { text: 'rewritten content' },
 });
 
 describe('Markupai', () => {
