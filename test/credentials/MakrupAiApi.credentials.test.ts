@@ -44,11 +44,11 @@ describe('MarkupAiApi credentials', () => {
 		it('should have correct property structure', () => {
 			const properties = credentials.properties;
 
-			properties.forEach((property) => {
+			for (const property of properties) {
 				expect(property).toHaveProperty('displayName');
 				expect(property).toHaveProperty('name');
 				expect(property).toHaveProperty('type');
-			});
+			}
 		});
 
 		it('should have API key as first property', () => {
