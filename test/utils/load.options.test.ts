@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { FunctionsBase } from 'n8n-workflow';
+import { LoggerProxy } from 'n8n-workflow';
 import {
 	getApiKey,
 	getBaseUrl,
@@ -8,6 +9,16 @@ import {
 	loadTones,
 } from '../../nodes/Markupai/utils/load.options';
 
+vi.mock('n8n-workflow', async () => {
+	const actual = await vi.importActual('n8n-workflow');
+	return {
+		...actual,
+		LoggerProxy: {
+			error: vi.fn(),
+		},
+	};
+});
+
 interface MockFunctionsBase extends FunctionsBase {
 	getCredentials: ReturnType<typeof vi.fn>;
 }
@@ -15,6 +26,7 @@ interface MockFunctionsBase extends FunctionsBase {
 describe('load.options', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(LoggerProxy.error).mockClear();
 	});
 
 	describe('getApiKey', () => {
@@ -154,6 +166,11 @@ describe('load.options', () => {
 				{ name: 'professional', value: 'professional' },
 				{ name: 'technical', value: 'technical' },
 			]);
+
+			expect(LoggerProxy.error).toHaveBeenCalledWith(
+				"Couldn't fetch tones from API, using default tones.",
+				expect.any(Error),
+			);
 		});
 
 		it('includes "None (Keep Tone Unchanged)" as the first option when API returns tones', async () => {
@@ -221,6 +238,11 @@ describe('load.options', () => {
 				{ name: 'british_english', value: 'british_english' },
 				{ name: 'canadian_english', value: 'canadian_english' },
 			]);
+
+			expect(LoggerProxy.error).toHaveBeenCalledWith(
+				"Couldn't fetch dialects from API, using default dialects.",
+				expect.any(Error),
+			);
 		});
 	});
 });

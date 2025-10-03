@@ -1,4 +1,5 @@
 import { Issue, IssueCategory } from '../Markupai.api.types';
+import { LoggerProxy } from 'n8n-workflow';
 
 /**
  * Base interface for categorized issues
@@ -68,7 +69,7 @@ export function categorizeIssues<T extends Issue>(issues: T[]): CategorizedIssue
 				break;
 			default:
 				// Handle any future categories that might be added
-				console.warn(`Unknown issue category: ${issue.category}`);
+				LoggerProxy.warn(`Unknown issue category: ${issue.category}`);
 				break;
 		}
 	}
