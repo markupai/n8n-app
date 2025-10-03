@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CategorizedIssues, categorizeIssues } from '../../nodes/Markupai/utils/issues';
 import { Issue, IssueCategory } from '../../nodes/Markupai/Markupai.api.types';
+import { LoggerProxy } from 'n8n-workflow';
 
 function validateEmptyIssues(result: CategorizedIssues) {
 	expect(result.clarity).toHaveLength(0);
@@ -9,7 +10,22 @@ function validateEmptyIssues(result: CategorizedIssues) {
 	expect(result.tone).toHaveLength(0);
 }
 
+vi.mock('n8n-workflow', async () => {
+	const actual = await vi.importActual('n8n-workflow');
+	return {
+		...actual,
+		LoggerProxy: {
+			warn: vi.fn(),
+		},
+	};
+});
+
 describe('issues', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(LoggerProxy.warn).mockClear();
+	});
+
 	describe('categorizeIssues', () => {
 		it('should categorize issues by category', () => {
 			const mockIssues: Issue[] = [
@@ -126,6 +142,7 @@ describe('issues', () => {
 			expect(result.grammar).toHaveLength(1);
 			expect(result.grammar[0].original).toBe('grammar issue');
 			validateEmptyIssues(result);
+			expect(LoggerProxy.warn).toHaveBeenCalledWith('Unknown issue category: unknown_category');
 		});
 	});
 });

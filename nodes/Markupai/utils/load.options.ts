@@ -6,6 +6,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
 } from 'n8n-workflow';
+import { LoggerProxy } from 'n8n-workflow';
 import { StyleGuides } from '../Markupai.api.types';
 
 type Constants = {
@@ -118,6 +119,7 @@ export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePrope
 
 		return mapTones(constants.tones);
 	} catch (error) {
+		LoggerProxy.error("Couldn't fetch tones from API, using default tones.", error);
 		return mapTones(DEFAULT_CONSTANTS.tones);
 	}
 }
@@ -131,6 +133,7 @@ export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePr
 			value: dialect,
 		}));
 	} catch (error) {
+		LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", error);
 		return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
 			name: dialect,
 			value: dialect,
