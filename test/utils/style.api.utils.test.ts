@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { IHttpRequestOptions, FunctionsBase } from 'n8n-workflow';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { IHttpRequestOptions, FunctionsBase } from "n8n-workflow";
 
 import {
 	postStyleRewrite,
@@ -7,19 +7,19 @@ import {
 	styleRequest,
 	getPath,
 	FormDataDetails,
-} from '../../nodes/Markupai/utils/style.api.utils';
+} from "../../nodes/Markupai/utils/style.api.utils";
 import type {
 	GetStyleRewriteResponse,
 	PostStyleRewriteResponse,
-} from '../../nodes/Markupai/Markupai.api.types';
+} from "../../nodes/Markupai/Markupai.api.types";
 
-vi.mock('../../nodes/Markupai/utils/load.options', () => ({
+vi.mock("../../nodes/Markupai/utils/load.options", () => ({
 	getApiKey: vi.fn(),
 	getBaseUrl: vi.fn(),
 }));
 
-vi.mock('n8n-workflow', async () => {
-	const actual = await vi.importActual('n8n-workflow');
+vi.mock("n8n-workflow", async () => {
+	const actual = await vi.importActual("n8n-workflow");
 	return {
 		...actual,
 		sleep: vi.fn().mockImplementation(
@@ -50,7 +50,7 @@ interface MockFnObject {
 	};
 }
 
-describe('style.api.utils', () => {
+describe("style.api.utils", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
@@ -61,17 +61,17 @@ describe('style.api.utils', () => {
 	});
 
 	const createMockFunctions = () => {
-		const mockGetApiKey = vi.fn().mockResolvedValue('mocked-api-key-123') as MockGetApiKey;
+		const mockGetApiKey = vi.fn().mockResolvedValue("mocked-api-key-123") as MockGetApiKey;
 		const mockGetBaseUrl = vi
 			.fn()
-			.mockResolvedValue(new URL('https://api.markup.ai/')) as MockGetBaseUrl;
+			.mockResolvedValue(new URL("https://api.markup.ai/")) as MockGetBaseUrl;
 		const mockHttpRequest = vi.fn() as MockHttpRequest;
 
 		return { mockGetApiKey, mockGetBaseUrl, mockHttpRequest };
 	};
 
 	const setupMocks = async (mockGetApiKey: MockGetApiKey, mockGetBaseUrl: MockGetBaseUrl) => {
-		const { getApiKey, getBaseUrl } = await import('../../nodes/Markupai/utils/load.options');
+		const { getApiKey, getBaseUrl } = await import("../../nodes/Markupai/utils/load.options");
 		vi.mocked(getApiKey).mockImplementation(mockGetApiKey);
 		vi.mocked(getBaseUrl).mockImplementation(mockGetBaseUrl);
 	};
@@ -82,27 +82,27 @@ describe('style.api.utils', () => {
 		},
 	});
 
-	describe('getPath', () => {
-		it('should return correct path for styleCheck operation', () => {
-			const result = getPath('styleCheck');
-			expect(result).toBe('v1/style/checks');
+	describe("getPath", () => {
+		it("should return correct path for styleCheck operation", () => {
+			const result = getPath("styleCheck");
+			expect(result).toBe("v1/style/checks");
 		});
 
-		it('should return correct path for rewrite operation', () => {
-			const result = getPath('styleRewrite');
-			expect(result).toBe('v1/style/rewrites');
+		it("should return correct path for rewrite operation", () => {
+			const result = getPath("styleRewrite");
+			expect(result).toBe("v1/style/rewrites");
 		});
 	});
 
-	describe('postStyleRewrite', () => {
+	describe("postStyleRewrite", () => {
 		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
-			content: 'test content',
-			dialect: 'american_english',
-			tone: 'business',
-			styleGuide: 'test-style-guide',
-			documentName: 'test.txt',
-			documentOwner: 'test-owner',
-			documentLink: 'https://test.com',
+			content: "test content",
+			dialect: "american_english",
+			tone: "business",
+			styleGuide: "test-style-guide",
+			documentName: "test.txt",
+			documentOwner: "test-owner",
+			documentLink: "https://test.com",
 			waitForCompletion: true,
 			pollingTimeout: 30_000,
 			...overrides,
@@ -110,14 +110,14 @@ describe('style.api.utils', () => {
 
 		const mockResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'running',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "running",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 		};
 
-		it('should post style rewrite request successfully', async () => {
+		it("should post style rewrite request successfully", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 
 			mockHttpRequest.mockResolvedValue({
@@ -128,25 +128,25 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 			const formDataDetails = createFormDataDetails();
 
-			const result = await postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite');
+			const result = await postStyleRewrite(fn as any, formDataDetails, "v1/style/rewrite");
 
 			expect(result).toEqual(mockResponseBody);
 			expect(mockGetApiKey).toHaveBeenCalledWith(fn);
 			expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
 			expect(mockHttpRequest).toHaveBeenCalledWith({
-				method: 'POST',
-				url: 'https://api.markup.ai/v1/style/rewrite',
+				method: "POST",
+				url: "https://api.markup.ai/v1/style/rewrite",
 				headers: expect.objectContaining({
-					Authorization: 'Bearer mocked-api-key-123',
+					Authorization: "Bearer mocked-api-key-123",
 				}),
 				body: expect.any(Object),
 				returnFullResponse: true,
 			});
 		});
 
-		it('should throw an error if httpRequest fails', async () => {
+		it("should throw an error if httpRequest fails", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
-			mockHttpRequest.mockRejectedValue(new Error('Network error'));
+			mockHttpRequest.mockRejectedValue(new Error("Network error"));
 
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			const fn = createFnObject(mockHttpRequest);
@@ -157,26 +157,26 @@ describe('style.api.utils', () => {
 			});
 
 			await expect(
-				postStyleRewrite(fn as any, formDataDetails, 'v1/style/rewrite'),
-			).rejects.toThrow('Network error');
+				postStyleRewrite(fn as any, formDataDetails, "v1/style/rewrite"),
+			).rejects.toThrow("Network error");
 		});
 	});
 
-	describe('pollResponse', () => {
+	describe("pollResponse", () => {
 		const postStyleRewriteResponse: PostStyleRewriteResponse = {
-			status: 'running',
-			workflow_id: 'test-workflow-id',
+			status: "running",
+			workflow_id: "test-workflow-id",
 		};
 
 		const completedResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'completed',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "completed",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 			rewrite: {
-				text: 'test-result',
+				text: "test-result",
 				scores: {
 					quality: {
 						score: 85,
@@ -206,11 +206,11 @@ describe('style.api.utils', () => {
 			},
 			config: {
 				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
+					style_guide_type: "test",
+					style_guide_id: "test-style-guide",
 				},
-				dialect: 'american_english',
-				tone: 'business',
+				dialect: "american_english",
+				tone: "business",
 			},
 			original: {
 				issues: [],
@@ -245,23 +245,23 @@ describe('style.api.utils', () => {
 
 		const failedResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'failed',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "failed",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 		};
 
 		const runningResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'running',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "running",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 		};
 
-		it('should poll until completion', async () => {
+		it("should poll until completion", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest.mockResolvedValue({
 				body: completedResponseBody,
@@ -275,22 +275,22 @@ describe('style.api.utils', () => {
 				postStyleRewriteResponse,
 				true,
 				30_000,
-				'v1/style/rewrite',
+				"v1/style/rewrite",
 			);
 
-			expect(result.workflow.status).toBe('completed');
-			expect(result.rewrite?.text).toBe('test-result');
+			expect(result.workflow.status).toBe("completed");
+			expect(result.rewrite?.text).toBe("test-result");
 			expect(mockHttpRequest).toHaveBeenCalledWith({
-				method: 'GET',
-				url: 'https://api.markup.ai/v1/style/rewrite/test-workflow-id',
+				method: "GET",
+				url: "https://api.markup.ai/v1/style/rewrite/test-workflow-id",
 				headers: {
-					Authorization: 'Bearer mocked-api-key-123',
+					Authorization: "Bearer mocked-api-key-123",
 				},
 				returnFullResponse: true,
 			});
 		});
 
-		it('should throw error on workflow failure', async () => {
+		it("should throw error on workflow failure", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest.mockResolvedValue({
 				body: failedResponseBody,
@@ -300,11 +300,11 @@ describe('style.api.utils', () => {
 			const fn = createFnObject(mockHttpRequest);
 
 			await expect(
-				pollResponse(fn as any, postStyleRewriteResponse, true, 30_000, 'v1/style/rewrite'),
-			).rejects.toThrow('Workflow failed: test-workflow-id');
+				pollResponse(fn as any, postStyleRewriteResponse, true, 30_000, "v1/style/rewrite"),
+			).rejects.toThrow("Workflow failed: test-workflow-id");
 		});
 
-		it('should throw error on timeout', async () => {
+		it("should throw error on timeout", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest.mockResolvedValue({
 				body: runningResponseBody,
@@ -318,19 +318,19 @@ describe('style.api.utils', () => {
 				postStyleRewriteResponse,
 				true,
 				30_000,
-				'v1/style/rewrite',
+				"v1/style/rewrite",
 			);
 
 			// Advance timers to trigger timeout
 			vi.advanceTimersByTime(30_000);
 
 			await expect(pollPromise).rejects.toThrow(
-				'Workflow timeout after 30000ms. Workflow ID: test-workflow-id',
+				"Workflow timeout after 30000ms. Workflow ID: test-workflow-id",
 			);
 		});
 	});
 
-	describe('styleRequest', () => {
+	describe("styleRequest", () => {
 		const fn: MockFnObject = {
 			helpers: {
 				httpRequest: {} as MockHttpRequest,
@@ -338,37 +338,37 @@ describe('style.api.utils', () => {
 		};
 
 		const formDataDetails: FormDataDetails = {
-			content: 'test content',
-			dialect: 'american_english',
-			tone: 'business',
-			styleGuide: 'test-style-guide',
+			content: "test content",
+			dialect: "american_english",
+			tone: "business",
+			styleGuide: "test-style-guide",
 			waitForCompletion: true,
 			pollingTimeout: 30_000,
 		};
 
 		const runningResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'running',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "running",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 		};
 
 		const completedResponseBody: GetStyleRewriteResponse = {
 			workflow: {
-				id: 'test-workflow-id',
-				status: 'completed',
-				api_version: '1.0.0',
-				type: 'rewrites',
+				id: "test-workflow-id",
+				status: "completed",
+				api_version: "1.0.0",
+				type: "rewrites",
 			},
 			config: {
 				style_guide: {
-					style_guide_type: 'test',
-					style_guide_id: 'test-style-guide',
+					style_guide_type: "test",
+					style_guide_id: "test-style-guide",
 				},
-				dialect: 'american_english',
-				tone: 'business',
+				dialect: "american_english",
+				tone: "business",
 			},
 			original: {
 				issues: [],
@@ -400,7 +400,7 @@ describe('style.api.utils', () => {
 				},
 			},
 			rewrite: {
-				text: 'test-result',
+				text: "test-result",
 				scores: {
 					quality: {
 						score: 85,
@@ -430,13 +430,13 @@ describe('style.api.utils', () => {
 			},
 		};
 
-		it('should process style request successfully with completion', async () => {
+		it("should process style request successfully with completion", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest
 				.mockResolvedValueOnce({
 					body: {
-						status: 'running',
-						workflow_id: 'test-workflow-id',
+						status: "running",
+						workflow_id: "test-workflow-id",
 					},
 				})
 				.mockResolvedValueOnce({
@@ -449,7 +449,7 @@ describe('style.api.utils', () => {
 			await setupMocks(mockGetApiKey, mockGetBaseUrl);
 			fn.helpers.httpRequest = mockHttpRequest;
 
-			const result = await styleRequest(fn as any, formDataDetails, 'v1/style/rewrite', 0);
+			const result = await styleRequest(fn as any, formDataDetails, "v1/style/rewrite", 0);
 
 			expect(result).toEqual([
 				{
@@ -461,7 +461,7 @@ describe('style.api.utils', () => {
 			]);
 		});
 
-		it('should process style request without waiting for completion', async () => {
+		it("should process style request without waiting for completion", async () => {
 			const { mockGetApiKey, mockGetBaseUrl, mockHttpRequest } = createMockFunctions();
 			mockHttpRequest.mockResolvedValue({
 				body: runningResponseBody,
@@ -477,7 +477,7 @@ describe('style.api.utils', () => {
 			const result = await styleRequest(
 				fn as any,
 				formDataDetailsWithoutCompletion,
-				'v1/style/rewrite',
+				"v1/style/rewrite",
 				0,
 			);
 

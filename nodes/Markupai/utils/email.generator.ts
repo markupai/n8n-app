@@ -1,5 +1,5 @@
-import { GetStyleRewriteResponse } from '../Markupai.api.types';
-import { categorizeIssues } from './issues';
+import { GetStyleRewriteResponse } from "../Markupai.api.types";
+import { categorizeIssues } from "./issues";
 
 interface ExtendedInputData {
 	document_name?: string;
@@ -9,11 +9,11 @@ interface ExtendedInputData {
 
 function getScoreColor(score: number): string {
 	if (score < 60) {
-		return '#fcd9e4';
+		return "#fcd9e4";
 	} else if (score >= 60 && score < 80) {
-		return '#fff7c5';
+		return "#fff7c5";
 	} else {
-		return '#caffc9';
+		return "#caffc9";
 	}
 }
 
@@ -214,7 +214,7 @@ export function generateEmailHTMLReport(
 								result.config?.tone
 							}</strong></div>
               <div style="font-size:14px; line-height:21px;">Workflow ID: <strong>${
-								result.workflow.id || ''
+								result.workflow.id || ""
 							}</strong></div>
             </td>
           </tr>

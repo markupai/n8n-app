@@ -5,9 +5,9 @@ import type {
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
-} from 'n8n-workflow';
-import { LoggerProxy } from 'n8n-workflow';
-import { StyleGuides } from '../Markupai.api.types';
+} from "n8n-workflow";
+import { LoggerProxy } from "n8n-workflow";
+import { StyleGuides } from "../Markupai.api.types";
 
 type Constants = {
 	dialects: string[];
@@ -15,21 +15,21 @@ type Constants = {
 };
 
 const DEFAULT_CONSTANTS = {
-	dialects: ['american_english', 'british_english', 'canadian_english'],
+	dialects: ["american_english", "british_english", "canadian_english"],
 	tones: [
-		'academic',
-		'confident',
-		'conversational',
-		'empathetic',
-		'engaging',
-		'friendly',
-		'professional',
-		'technical',
+		"academic",
+		"confident",
+		"conversational",
+		"empathetic",
+		"engaging",
+		"friendly",
+		"professional",
+		"technical",
 	],
 };
 
 const appendDefaultTone = (tones: string[]) => {
-	return ['None (Keep Tone Unchanged)', ...tones];
+	return ["None (Keep Tone Unchanged)", ...tones];
 };
 
 const mapTones = (tones: string[]) => {
@@ -41,13 +41,13 @@ const mapTones = (tones: string[]) => {
 
 export async function getApiKey(functionsBase: FunctionsBase): Promise<string> {
 	const credentials: ICredentialDataDecryptedObject =
-		await functionsBase.getCredentials('markupaiApi');
+		await functionsBase.getCredentials("markupaiApi");
 
 	return credentials.apiKey as string;
 }
 
 export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
-	const credentials = await functionsBase.getCredentials('markupaiApi');
+	const credentials = await functionsBase.getCredentials("markupaiApi");
 
 	return new URL(credentials.baseUrl);
 }
@@ -60,7 +60,7 @@ export async function loadStyleGuides(
 		const baseUrl = await getBaseUrl(this);
 
 		const httpRequestOptions: IHttpRequestOptions = {
-			method: 'GET',
+			method: "GET",
 			url: `${baseUrl.toString()}v1/style-guides`,
 			headers: {
 				Authorization: `Bearer ${apiKey}`,
@@ -71,13 +71,13 @@ export async function loadStyleGuides(
 		const response = await this.helpers.httpRequest(httpRequestOptions);
 
 		if (response.statusCode !== 200) {
-			throw new Error('Error loading style guides: ' + response.body);
+			throw new Error("Error loading style guides: " + response.body);
 		}
 
 		const styleGuides = response.body as StyleGuides;
 
 		if (!styleGuides) {
-			throw new Error('Error loading style guides: empty response');
+			throw new Error("Error loading style guides: empty response");
 		}
 
 		return styleGuides.map((styleGuide) => ({
@@ -85,7 +85,7 @@ export async function loadStyleGuides(
 			value: styleGuide.id,
 		}));
 	} catch (error) {
-		throw new Error('Error loading style guides', error as Error);
+		throw new Error("Error loading style guides", error as Error);
 	}
 }
 
@@ -94,7 +94,7 @@ async function getConstants(fn: ILoadOptionsFunctions | IExecuteFunctions): Prom
 	const baseUrl = await getBaseUrl(fn);
 
 	const requestOptions: IHttpRequestOptions = {
-		method: 'GET',
+		method: "GET",
 		url: `${baseUrl.toString()}v1/internal/constants`,
 		headers: {
 			Authorization: `Bearer ${apiKey}`,

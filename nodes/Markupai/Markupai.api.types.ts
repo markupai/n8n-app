@@ -52,11 +52,11 @@ export interface Issue {
 }
 
 export enum IssueCategory {
-	Clarity = 'clarity',
-	Consistency = 'consistency',
-	Grammar = 'grammar',
-	Terminology = 'terminology',
-	Tone = 'tone',
+	Clarity = "clarity",
+	Consistency = "consistency",
+	Grammar = "grammar",
+	Terminology = "terminology",
+	Tone = "tone",
 }
 
 export interface PostStyleRewriteResponse {
@@ -85,7 +85,7 @@ export interface GetStyleRewriteResponse {
 		id: string;
 		api_version: string;
 		generated_at?: string;
-		status: 'running' | 'completed' | 'failed';
+		status: "running" | "completed" | "failed";
 		type: string;
 		webhook_response?: {
 			url: string;

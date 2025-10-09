@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CategorizedIssues, categorizeIssues } from '../../nodes/Markupai/utils/issues';
-import { Issue, IssueCategory } from '../../nodes/Markupai/Markupai.api.types';
-import { LoggerProxy } from 'n8n-workflow';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { CategorizedIssues, categorizeIssues } from "../../nodes/Markupai/utils/issues";
+import { Issue, IssueCategory } from "../../nodes/Markupai/Markupai.api.types";
+import { LoggerProxy } from "n8n-workflow";
 
 function validateEmptyIssues(result: CategorizedIssues) {
 	expect(result.clarity).toHaveLength(0);
@@ -10,8 +10,8 @@ function validateEmptyIssues(result: CategorizedIssues) {
 	expect(result.tone).toHaveLength(0);
 }
 
-vi.mock('n8n-workflow', async () => {
-	const actual = await vi.importActual('n8n-workflow');
+vi.mock("n8n-workflow", async () => {
+	const actual = await vi.importActual("n8n-workflow");
 	return {
 		...actual,
 		LoggerProxy: {
@@ -20,129 +20,129 @@ vi.mock('n8n-workflow', async () => {
 	};
 });
 
-describe('issues', () => {
+describe("issues", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(LoggerProxy.warn).mockClear();
 	});
 
-	describe('categorizeIssues', () => {
-		it('should categorize issues by category', () => {
+	describe("categorizeIssues", () => {
+		it("should categorize issues by category", () => {
 			const mockIssues: Issue[] = [
 				{
-					original: 'text',
+					original: "text",
 					position: {
 						start_index: 0,
 					},
-					subcategory: 'Capitalization',
+					subcategory: "Capitalization",
 					category: IssueCategory.Grammar,
-					suggestion: 'Text',
+					suggestion: "Text",
 				},
 				{
-					original: 'word',
+					original: "word",
 					position: {
 						start_index: 5,
 					},
-					subcategory: 'Simpler Words',
+					subcategory: "Simpler Words",
 					category: IssueCategory.Clarity,
-					suggestion: 'term',
+					suggestion: "term",
 				},
 				{
-					original: 'sentence',
+					original: "sentence",
 					position: {
 						start_index: 10,
 					},
-					subcategory: 'Brand Voice',
+					subcategory: "Brand Voice",
 					category: IssueCategory.Consistency,
-					suggestion: 'phrase',
+					suggestion: "phrase",
 				},
 				{
-					original: 'tone',
+					original: "tone",
 					position: {
 						start_index: 20,
 					},
-					subcategory: 'Transitions and Flow',
+					subcategory: "Transitions and Flow",
 					category: IssueCategory.Tone,
-					suggestion: 'style',
+					suggestion: "style",
 				},
 			];
 
 			const result = categorizeIssues(mockIssues);
 
 			expect(result.grammar).toHaveLength(1);
-			expect(result.grammar[0].original).toBe('text');
+			expect(result.grammar[0].original).toBe("text");
 			expect(result.clarity).toHaveLength(1);
-			expect(result.clarity[0].original).toBe('word');
+			expect(result.clarity[0].original).toBe("word");
 			expect(result.consistency).toHaveLength(1);
-			expect(result.consistency[0].original).toBe('sentence');
+			expect(result.consistency[0].original).toBe("sentence");
 			expect(result.tone).toHaveLength(1);
-			expect(result.tone[0].original).toBe('tone');
+			expect(result.tone[0].original).toBe("tone");
 		});
 
-		it('should handle empty issues array', () => {
+		it("should handle empty issues array", () => {
 			const result = categorizeIssues([]);
 
 			expect(result.grammar).toHaveLength(0);
 			validateEmptyIssues(result);
 		});
 
-		it('should handle multiple issues in the same category', () => {
+		it("should handle multiple issues in the same category", () => {
 			const mockIssues: Issue[] = [
 				{
-					original: 'first grammar issue',
+					original: "first grammar issue",
 					position: {
 						start_index: 0,
 					},
-					subcategory: 'Capitalization',
+					subcategory: "Capitalization",
 					category: IssueCategory.Grammar,
-					suggestion: 'First grammar issue suggestion',
+					suggestion: "First grammar issue suggestion",
 				},
 				{
-					original: 'second grammar issue',
+					original: "second grammar issue",
 					position: {
 						start_index: 30,
 					},
-					subcategory: 'Capitalization',
+					subcategory: "Capitalization",
 					category: IssueCategory.Grammar,
-					suggestion: 'Second grammar issue suggestion',
+					suggestion: "Second grammar issue suggestion",
 				},
 			];
 
 			const result = categorizeIssues(mockIssues);
 
 			expect(result.grammar).toHaveLength(2);
-			expect(result.grammar[0].original).toBe('first grammar issue');
-			expect(result.grammar[1].original).toBe('second grammar issue');
+			expect(result.grammar[0].original).toBe("first grammar issue");
+			expect(result.grammar[1].original).toBe("second grammar issue");
 		});
 
-		it('should handle issues with unknown categories', () => {
+		it("should handle issues with unknown categories", () => {
 			const mockIssues: Issue[] = [
 				{
-					original: 'unknown issue',
+					original: "unknown issue",
 					position: {
 						start_index: 1,
 					},
-					subcategory: 'unknown',
-					category: 'unknown_category',
-					suggestion: 'unknown suggestion',
+					subcategory: "unknown",
+					category: "unknown_category",
+					suggestion: "unknown suggestion",
 				},
 				{
-					original: 'grammar issue',
+					original: "grammar issue",
 					position: {
 						start_index: 10,
 					},
-					subcategory: 'spelling',
+					subcategory: "spelling",
 					category: IssueCategory.Grammar,
-					suggestion: 'grammar suggestion',
+					suggestion: "grammar suggestion",
 				},
 			];
 
 			const result = categorizeIssues(mockIssues);
 
 			expect(result.grammar).toHaveLength(1);
-			expect(result.grammar[0].original).toBe('grammar issue');
+			expect(result.grammar[0].original).toBe("grammar issue");
 			validateEmptyIssues(result);
-			expect(LoggerProxy.warn).toHaveBeenCalledWith('Unknown issue category: unknown_category');
+			expect(LoggerProxy.warn).toHaveBeenCalledWith("Unknown issue category: unknown_category");
 		});
 	});
 });
