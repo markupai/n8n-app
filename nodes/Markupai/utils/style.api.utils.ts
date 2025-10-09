@@ -1,6 +1,6 @@
-import { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData, sleep } from 'n8n-workflow';
-import { getApiKey, getBaseUrl } from './load.options';
-import { GetStyleRewriteResponse, PostStyleRewriteResponse } from '../Markupai.api.types';
+import { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData, sleep } from "n8n-workflow";
+import { getApiKey, getBaseUrl } from "./load.options";
+import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
 
 export interface FormDataDetails {
 	content: string;
@@ -23,19 +23,19 @@ export async function postStyleRewrite(
 	const apiKey = await getApiKey(fn);
 	const baseUrl = await getBaseUrl(fn);
 
-	const blob = new Blob([formDataDetails.content], { type: 'text/plain' });
+	const blob = new Blob([formDataDetails.content], { type: "text/plain" });
 
-	formData.append('file_upload', blob, formDataDetails.documentName || 'content.txt');
-	formData.append('dialect', formDataDetails.dialect);
-	formData.append('tone', formDataDetails.tone);
-	formData.append('style_guide', formDataDetails.styleGuide);
+	formData.append("file_upload", blob, formDataDetails.documentName || "content.txt");
+	formData.append("dialect", formDataDetails.dialect);
+	formData.append("tone", formDataDetails.tone);
+	formData.append("style_guide", formDataDetails.styleGuide);
 
 	const requestOptions: IHttpRequestOptions = {
-		method: 'POST',
+		method: "POST",
 		url: `${baseUrl.toString()}${path}`,
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
-			'Content-Type': 'multipart/form-data',
+			"Content-Type": "multipart/form-data",
 		},
 		body: formData,
 		returnFullResponse: true,
@@ -44,7 +44,7 @@ export async function postStyleRewrite(
 	const response = await fn.helpers.httpRequest(requestOptions);
 
 	const submitResponse =
-		typeof response.body === 'string' ? response.body : JSON.stringify(response.body);
+		typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 
 	return JSON.parse(submitResponse);
 }
@@ -62,12 +62,12 @@ export async function pollResponse(
 		...styleRewriteResponse,
 	};
 
-	if (result.status === 'running' && waitForCompletion) {
+	if (result.status === "running" && waitForCompletion) {
 		const pollingInterval = 2000;
 
 		const startTime = Date.now();
 
-		while (result.status === 'running') {
+		while (result.status === "running") {
 			if (Date.now() - startTime > pollingTimeout) {
 				throw new Error(
 					`Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${styleRewriteResponse.workflow_id}`,
@@ -77,7 +77,7 @@ export async function pollResponse(
 			await sleep(pollingInterval);
 
 			const statusOptions: IHttpRequestOptions = {
-				method: 'GET',
+				method: "GET",
 				url: `${baseUrl.toString()}${path}/${styleRewriteResponse.workflow_id}`,
 				headers: {
 					Authorization: `Bearer ${apiKey}`,
@@ -87,7 +87,7 @@ export async function pollResponse(
 
 			const statusResp = await fn.helpers.httpRequest(statusOptions);
 			const statusResponse =
-				typeof statusResp.body === 'string' ? statusResp.body : JSON.stringify(statusResp.body);
+				typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
 
 			const responseBody = JSON.parse(statusResponse);
 
@@ -97,7 +97,7 @@ export async function pollResponse(
 			};
 		}
 
-		if (result.status === 'failed') {
+		if (result.status === "failed") {
 			throw new Error(`Workflow failed: ${result.workflow.id}}`);
 		}
 	}
@@ -140,9 +140,9 @@ export async function styleRequest(
 }
 
 export function getPath(operation: string): string {
-	if (operation === 'styleRewrite') {
-		return 'v1/style/rewrites';
+	if (operation === "styleRewrite") {
+		return "v1/style/rewrites";
 	} else {
-		return 'v1/style/checks';
+		return "v1/style/checks";
 	}
 }

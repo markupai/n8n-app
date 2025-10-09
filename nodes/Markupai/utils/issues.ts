@@ -1,5 +1,5 @@
-import { Issue, IssueCategory } from '../Markupai.api.types';
-import { LoggerProxy } from 'n8n-workflow';
+import { Issue, IssueCategory } from "../Markupai.api.types";
+import { LoggerProxy } from "n8n-workflow";
 
 /**
  * Base interface for categorized issues

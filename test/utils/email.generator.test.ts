@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { generateEmailHTMLReport } from '../../nodes/Markupai/utils/email.generator';
-import { GetStyleRewriteResponse } from '../../nodes/Markupai/Markupai.api.types';
+import { describe, it, expect } from "vitest";
+import { generateEmailHTMLReport } from "../../nodes/Markupai/utils/email.generator";
+import { GetStyleRewriteResponse } from "../../nodes/Markupai/Markupai.api.types";
 
 const mockResult = {
 	workflow: {
-		id: 'test-workflow-id',
-		status: 'completed',
-		api_version: '1.0.0',
-		type: 'rewrites',
+		id: "test-workflow-id",
+		status: "completed",
+		api_version: "1.0.0",
+		type: "rewrites",
 	},
 	original: {
 		scores: {
@@ -48,7 +48,7 @@ const mockResult = {
 		issues: [],
 	},
 	rewrite: {
-		text: 'Rewritten content',
+		text: "Rewritten content",
 		scores: {
 			quality: {
 				score: 85,
@@ -78,66 +78,66 @@ const mockResult = {
 	},
 	config: {
 		style_guide: {
-			style_guide_type: 'Standard',
-			style_guide_id: 'sg-123',
+			style_guide_type: "Standard",
+			style_guide_id: "sg-123",
 		},
-		dialect: 'US English',
-		tone: 'Professional',
+		dialect: "US English",
+		tone: "Professional",
 	},
 } as GetStyleRewriteResponse;
 
 function validateCommonFields(result: string) {
-	expect(result).toContain('<!DOCTYPE html>');
-	expect(result).toContain('<title>MarkupAI Document Analysis Report</title>');
-	expect(result).toContain('85');
-	expect(result).toContain('Quality Score');
-	expect(result).toContain('Standard');
-	expect(result).toContain('US English');
-	expect(result).toContain('Professional');
-	expect(result).toContain('test-workflow-id');
+	expect(result).toContain("<!DOCTYPE html>");
+	expect(result).toContain("<title>MarkupAI Document Analysis Report</title>");
+	expect(result).toContain("85");
+	expect(result).toContain("Quality Score");
+	expect(result).toContain("Standard");
+	expect(result).toContain("US English");
+	expect(result).toContain("Professional");
+	expect(result).toContain("test-workflow-id");
 }
 
-describe('email.generator', () => {
-	describe('generateEmailHTMLReport', () => {
-		it('should generate HTML report with basic data', () => {
+describe("email.generator", () => {
+	describe("generateEmailHTMLReport", () => {
+		it("should generate HTML report with basic data", () => {
 			const mockInputData = {
-				document_name: 'Test Document',
-				document_owner: 'John Doe',
-				document_link: 'https://example.com/doc',
+				document_name: "Test Document",
+				document_owner: "John Doe",
+				document_link: "https://example.com/doc",
 			};
 
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
 			validateCommonFields(result);
-			expect(result).toContain('Test Document');
-			expect(result).toContain('John Doe');
-			expect(result).toContain('https://example.com/doc');
+			expect(result).toContain("Test Document");
+			expect(result).toContain("John Doe");
+			expect(result).toContain("https://example.com/doc");
 		});
 
-		it('should handle missing optional fields', () => {
+		it("should handle missing optional fields", () => {
 			const mockInputData = {};
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
 			validateCommonFields(result);
 
-			expect(result).toContain('Title: <strong>undefined</strong>');
-			expect(result).toContain('Owner: <strong>undefined</strong>');
+			expect(result).toContain("Title: <strong>undefined</strong>");
+			expect(result).toContain("Owner: <strong>undefined</strong>");
 			expect(result).toContain('href="undefined"');
 		});
 
-		it('should handle issues data correctly', () => {
+		it("should handle issues data correctly", () => {
 			const mockInputData = {
-				document_name: 'Technical Report',
-				document_owner: 'Jane Smith',
-				document_link: 'https://example.com/tech-report',
+				document_name: "Technical Report",
+				document_owner: "Jane Smith",
+				document_link: "https://example.com/tech-report",
 			};
 
 			const result = generateEmailHTMLReport(mockResult, mockInputData);
 
 			validateCommonFields(result);
-			expect(result).toContain('Jane Smith');
-			expect(result).toContain('https://example.com/tech-report');
-			expect(result).toContain('Total issues found: <strong>0</strong>');
+			expect(result).toContain("Jane Smith");
+			expect(result).toContain("https://example.com/tech-report");
+			expect(result).toContain("Total issues found: <strong>0</strong>");
 		});
 	});
 });
