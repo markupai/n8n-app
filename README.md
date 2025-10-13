@@ -20,13 +20,13 @@ nodes documentation.
 In n8n, go to **Settings** > **Community Nodes** and install:
 
 ```
-n8n-nodes-markupai
+@markupai/n8n-nodes-markupai
 ```
 
 ### Manual Install
 
 ```bash
-npm install n8n-nodes-markupai
+npm install @markupai/n8n-nodes-markupai
 ```
 
 ## Pre-Requisites
@@ -89,49 +89,100 @@ All content operations support:
 
 ## Development
 
-Install n8n locally
+### Quick Setup (Recommended)
 
-```
-npm install n8n -g
+After cloning this repository, run the automated setup script:
+
+```bash
+npm run setup
 ```
 
-Install dependencies after cloning this repository
+This will:
+- Install dependencies (including n8n as a devDependency)
+- Build the code and create the dist folder
+- Link the package from the dist folder (avoiding node_modules conflicts)
+- Configure the n8n custom directory
+- Fix n8n config file permissions
+- Link the package for local development
 
+Then start n8n:
+
+```bash
+npm start
 ```
+
+This uses the local n8n installation from devDependencies - no global installation needed!
+
+**Note:** The setup links from the `dist` folder rather than the project root. This ensures that n8n only loads the compiled code without development dependencies, preventing module loading conflicts.
+
+### Manual Setup
+
+If you prefer to set things up manually:
+
+1. Install dependencies after cloning this repository
+
+```bash
 npm install
 ```
 
-Build the code
+2. Build the code
 
-```
+```bash
 npm run build
 ```
 
-Link the build
+3. Link the build from the dist folder
 
-```
+```bash
+cd dist
 npm link
+cd ..
 ```
 
-You need to create a `custom` directory inside n8n if it does not exist
+4. Create a `custom` directory inside n8n if it does not exist
 
-```
+```bash
 # In ~/.n8n directory run
-mkdir custom
-cd custom
-npm init
+mkdir -p ~/.n8n/custom
+cd ~/.n8n/custom
+npm init -y
 ```
 
-Link the custom folder to the build
+5. Link the custom folder to the build
 
-```
-npm link n8n-nodes-markupai
+```bash
+npm link @markupai/n8n-nodes-markupai
 ```
 
-Start n8n
+6. Fix n8n config file permissions (if needed)
 
+```bash
+chmod 600 ~/.n8n/config
 ```
-n8n start
+
+7. Start n8n
+
+```bash
+# Back in your project directory
+npm start
 ```
 
 You should now see Markup AI in the list of nodes. Happy hacking!
+
+### Troubleshooting
+
+**Module loading errors**: If you see errors like `require(...).index is not a constructor`, make sure you've linked from the `dist` folder, not the project root. To fix:
+
+```bash
+npm run cleanup  # Remove old links
+npm run setup    # Set up correctly
+```
+
+**Permissions errors**: If you see warnings about file permissions, run `chmod 600 ~/.n8n/config` to fix them.
+
+**Resetting the development environment**: If you need to start fresh:
+
+```bash
+npm run cleanup  # Removes all npm links
+npm run setup    # Sets up from scratch
+```
