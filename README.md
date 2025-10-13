@@ -141,38 +141,85 @@ Contributions are welcome! This section is for developers who want to contribute
 - npm or yarn
 - Basic familiarity with n8n and TypeScript
 
-### Quick Setup
+### Quick Setup (Recommended)
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/markupai/n8n-app.git
-cd n8n-app
-```
-
-2. Run the automated setup script:
+After cloning this repository, run the automated setup script:
 
 ```bash
 npm run setup
 ```
 
 This will:
-
 - Install dependencies (including n8n as a devDependency)
 - Build the code and create the dist folder
 - Link the package from the dist folder (avoiding node_modules conflicts)
 - Configure the n8n custom directory
 - Fix n8n config file permissions
+- Link the package for local development
 
-3. Start n8n:
+Then start n8n:
 
 ```bash
 npm start
 ```
 
-n8n will be available at `http://localhost:5678`
+This uses the local n8n installation from devDependencies - no global installation needed!
 
-**Note:** The setup links from the `dist` folder rather than the project root to prevent module loading conflicts.
+**Note:** The setup links from the `dist` folder rather than the project root. This ensures that n8n only loads the compiled code without development dependencies, preventing module loading conflicts.
+
+### Manual Setup
+
+If you prefer to set things up manually:
+
+1. Install dependencies after cloning this repository
+
+```bash
+npm install
+```
+
+2. Build the code
+
+```bash
+npm run build
+```
+
+3. Link the build from the dist folder
+
+```bash
+cd dist
+npm link
+cd ..
+```
+
+4. Create a `custom` directory inside n8n if it does not exist
+
+```bash
+# In ~/.n8n directory run
+mkdir -p ~/.n8n/custom
+cd ~/.n8n/custom
+npm init -y
+```
+
+5. Link the custom folder to the build
+
+```bash
+npm link @markupai/n8n-nodes-markupai
+```
+
+6. Fix n8n config file permissions (if needed)
+
+```bash
+chmod 600 ~/.n8n/config
+```
+
+7. Start n8n
+
+```bash
+# Back in your project directory
+npm start
+```
+
+You should now see Markup AI in the list of nodes. Happy hacking!
 
 ### Available Scripts
 
@@ -218,24 +265,20 @@ npm run test:watch
 
 ### Troubleshooting
 
-**Module loading errors**: If you see errors like `require(...).index is not a constructor`:
+**Module loading errors**: If you see errors like `require(...).index is not a constructor`, make sure you've linked from the `dist` folder, not the project root. To fix:
 
 ```bash
 npm run cleanup  # Remove old links
 npm run setup    # Set up correctly
 ```
 
-**Permissions errors**: If you see warnings about file permissions:
+**Permissions errors**: If you see warnings about file permissions, run `chmod 600 ~/.n8n/config` to fix them.
+
+**Resetting the development environment**: If you need to start fresh:
 
 ```bash
-chmod 600 ~/.n8n/config
-```
-
-**Reset environment**: To start fresh:
-
-```bash
-npm run cleanup
-npm run setup
+npm run cleanup  # Removes all npm links
+npm run setup    # Sets up from scratch
 ```
 
 ## License
