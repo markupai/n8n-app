@@ -127,10 +127,6 @@ All operations support the following options:
 - [n8n Documentation](https://docs.n8n.io/)
 - [GitHub Repository](https://github.com/markupai/n8n-app)
 
-## Version History
-
-See [CHANGELOG.md](CHANGELOG.md) for a detailed version history.
-
 ## Development
 
 Contributions are welcome! This section is for developers who want to contribute to this community node or set up a local development environment.
