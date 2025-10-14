@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
-const path = require("path");
-const os = require("os");
+const { execSync } = require("node:child_process");
+const path = require("node:path");
+const os = require("node:os");
 
 const colors = {
 	reset: "\x1b[0m",
