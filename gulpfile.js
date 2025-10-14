@@ -18,16 +18,21 @@ function copyIcons() {
 }
 
 function copyPackageJson(cb) {
-	const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+	try {
+		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
-	// Remove devDependencies and scripts that are only needed for development
-	const distPackageJson = {
-		...packageJson,
-		devDependencies: undefined,
-		scripts: undefined,
-	};
+		// Remove devDependencies and scripts that are only needed for development
+		const distPackageJson = {
+			...packageJson,
+			devDependencies: undefined,
+			scripts: undefined,
+		};
 
-	fs.writeFileSync(path.resolve("dist", "package.json"), JSON.stringify(distPackageJson, null, 2));
+		fs.writeFileSync(path.resolve("dist", "package.json"), JSON.stringify(distPackageJson, null, 2));
 
-	cb();
+		cb();
+	} catch (err) {
+		console.error("Error copying package.json:", err.message);
+		cb(err);
+	}
 }
