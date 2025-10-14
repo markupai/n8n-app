@@ -28,7 +28,10 @@ function copyPackageJson(cb) {
 			scripts: undefined,
 		};
 
-		fs.writeFileSync(path.resolve("dist", "package.json"), JSON.stringify(distPackageJson, null, 2));
+		fs.writeFileSync(
+			path.resolve("dist", "package.json"),
+			JSON.stringify(distPackageJson, null, 2),
+		);
 
 		cb();
 	} catch (err) {
