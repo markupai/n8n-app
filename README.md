@@ -81,9 +81,9 @@ All operations support the following options:
 
 | Option                  | Type    | Default | Description                                 |
 | ----------------------- | ------- | ------- | ------------------------------------------- |
-| **Dialect**             | String  | -       | The dialect to be used for content analysis |
-| **Tone**                | String  | -       | The desired tone for content                |
 | **Style Guide**         | String  | -       | The style guide to apply                    |
+| **Dialect**             | String  | -       | The dialect to be used for content analysis |
+| **Tone**                | String  | -       | The desired tone for content (optional)     |
 | **Wait for Completion** | Boolean | `true`  | Auto-poll for results                       |
 | **Polling Timeout**     | Number  | `60000` | Maximum wait time in milliseconds           |
 | **Polling Interval**    | Number  | `2000`  | Polling frequency in milliseconds           |
