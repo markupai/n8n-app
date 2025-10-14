@@ -1,3 +1,5 @@
+"use strict";
+
 import path from "node:path";
 import { task, src, dest } from "gulp";
 import fs from "node:fs";
