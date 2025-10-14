@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 "use strict";
 
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
+const { exec } = require("node:child_process");
+const { promisify } = require("node:util");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
 
 const execAsync = promisify(exec);
 

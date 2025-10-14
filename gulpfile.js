@@ -1,8 +1,8 @@
 "use strict";
 
-import path from "node:path";
-import { task, src, dest } from "gulp";
-import fs from "node:fs";
+const path = require("node:path");
+const { task, src, dest } = require("gulp");
+const fs = require("node:fs");
 
 task("build:icons", copyIcons);
 task("build:package", copyPackageJson);
