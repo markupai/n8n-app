@@ -142,6 +142,7 @@ Contributions are welcome! This section is for developers who want to contribute
 - Basic familiarity with n8n and TypeScript
 
 ### Quick Setup (Recommended)
+
 After cloning this repository, run the automated setup script:
 
 ```bash
@@ -149,13 +150,14 @@ npm run setup
 ```
 
 This will:
+
 - Install dependencies (including n8n as a devDependency)
 - Build the code and create the dist folder
 - Link the package from the dist folder (avoiding node_modules conflicts)
 - Configure the n8n custom directory
 - Fix n8n config file permissions
 - Link the package for local development
-Then start n8n:
+  Then start n8n:
 
 ```bash
 npm start
