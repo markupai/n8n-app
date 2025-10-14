@@ -150,6 +150,7 @@ npm run setup
 ```
 
 This will:
+
 - Install dependencies (including n8n as a devDependency)
 - Build the code and create the dist folder
 - Link the package from the dist folder (avoiding node_modules conflicts)
