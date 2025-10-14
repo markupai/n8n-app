@@ -1,6 +1,6 @@
-const path = require("node:path");
-const { task, src, dest } = require("gulp");
-const fs = require("fs");
+import path from "node:path";
+import { task, src, dest } from "gulp";
+import fs from "node:fs";
 
 task("build:icons", copyIcons);
 task("build:package", copyPackageJson);
