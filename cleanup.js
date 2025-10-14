@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+"use strict";
 
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
