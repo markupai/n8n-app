@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@markupai/n8n-nodes-markupai.svg)](https://www.npmjs.com/package/@markupai/n8n-nodes-markupai)
 [![npm downloads](https://img.shields.io/npm/dt/@markupai/n8n-nodes-markupai.svg)](https://www.npmjs.com/package/@markupai/n8n-nodes-markupai)
 
-This is an n8n community node that integrates [Markup AI](https://markup.ai/) - a content guardian platform for ensuring brand-compliant, consistent, and engaging content.
+This is an n8n community node that integrates [Markup AI](https://markup.ai/) — a content guardian platform for ensuring brand-compliant, consistent, and engaging content.
 
 [Markup AI](https://markup.ai/) provides AI-powered content analysis, suggestions, and rewrites based on your organization's brand standards. Integrate content quality checks and automated improvements directly into your n8n workflows.
 
@@ -133,8 +133,8 @@ Contributions are welcome! This section is for developers who want to contribute
 
 ### Prerequisites
 
-- Node.js >= 20.15
-- npm or yarn
+- Node.js >= 20
+- npm
 - Basic familiarity with n8n and TypeScript
 
 ### Quick Setup (Recommended)
@@ -153,13 +153,14 @@ This will:
 - Configure the n8n custom directory
 - Fix n8n config file permissions
 - Link the package for local development
-  Then start n8n:
+
+Then start n8n:
 
 ```bash
 npm start
 ```
 
-This uses the local n8n installation from devDependencies - no global installation needed!
+This uses the local n8n installation from devDependencies — no global installation needed!
 
 **Note:** The setup links from the `dist` folder rather than the project root. This ensures that n8n only loads the compiled code without development dependencies, preventing module loading conflicts.
 
@@ -216,20 +217,6 @@ npm start
 ```
 
 You should now see Markup AI in the list of nodes. Happy hacking!
-
-### Available Scripts
-
-- `npm run build` - Build the TypeScript code
-- `npm run dev` - Watch mode for development
-- `npm run setup` - Automated development environment setup
-- `npm run cleanup` - Remove development links
-- `npm start` - Start n8n with the custom node
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage
-- `npm run lint` - Lint the code
-- `npm run lintfix` - Fix linting issues
-- `npm run format` - Format code with Prettier
 
 ### Making Changes
 
