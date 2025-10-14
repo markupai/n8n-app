@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
+const { execSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
 
 const colors = {
 	reset: "\x1b[0m",
@@ -65,7 +65,9 @@ const customDir = path.join(n8nDir, "custom");
 
 try {
 	// Create .n8n directory if it doesn't exist
-	if (!fs.existsSync(n8nDir)) {
+	if (fs.existsSync(n8nDir)) {
+		log("✓ .n8n directory already exists", colors.green);
+	} else {
 		fs.mkdirSync(n8nDir, { recursive: true });
 		log("✓ Created .n8n directory", colors.green);
 	}
@@ -83,21 +85,21 @@ try {
 	}
 
 	// Create custom directory if it doesn't exist
-	if (!fs.existsSync(customDir)) {
+	if (fs.existsSync(customDir)) {
+		log("✓ Custom directory already exists", colors.green);
+	} else {
 		fs.mkdirSync(customDir, { recursive: true });
 		log("✓ Created custom directory", colors.green);
-	} else {
-		log("✓ Custom directory already exists", colors.green);
 	}
 
 	// Initialize npm in custom directory if package.json doesn't exist
 	const customPackageJson = path.join(customDir, "package.json");
-	if (!fs.existsSync(customPackageJson)) {
+	if (fs.existsSync(customPackageJson)) {
+		log("✓ Custom directory already initialized", colors.green);
+	} else {
 		log("Initializing npm in custom directory...", colors.blue);
 		execSync("npm init -y", { cwd: customDir, stdio: "ignore" });
 		log("✓ Initialized npm in custom directory", colors.green);
-	} else {
-		log("✓ Custom directory already initialized", colors.green);
 	}
 
 	// Link the package in custom directory
