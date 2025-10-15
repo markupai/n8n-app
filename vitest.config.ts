@@ -9,19 +9,9 @@ export default defineConfig({
 		exclude: ["node_modules", "dist", ".idea", ".git", ".cache"],
 		coverage: {
 			provider: "v8",
-			reporter: ["text", "json", "html", "lcov"],
+			reporter: ["text", "html", "lcov"],
 			include: ["nodes/**/*.ts", "credentials/**/*.ts"],
-			exclude: [
-				"node_modules/",
-				"dist/",
-				"test/",
-				"**/*.d.ts",
-				"**/*.config.*",
-				"**/*.json",
-				"**/*.md",
-				"**/*.test.ts",
-				"**/*.spec.ts",
-			],
+			exclude: ["**/*.d.ts", "**/*.test.ts", "**/*.spec.ts"],
 		},
 	},
 	resolve: {
