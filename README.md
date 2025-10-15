@@ -259,6 +259,19 @@ npm run cleanup  # Removes all npm links
 npm run setup    # Sets up from scratch
 ```
 
+**Debugging setup issues**: If you encounter problems during setup, enable debug mode for detailed output:
+
+```bash
+DEBUG=1 npm run setup    # Verbose setup with debug information
+DEBUG=1 npm run cleanup  # Verbose cleanup with debug information
+```
+
+This will show:
+- Exact commands being executed
+- Full command output (both stdout and stderr)
+- Detailed error information when commands fail
+- Working directory for each command
+
 ## License
 
 [MIT](LICENSE)
