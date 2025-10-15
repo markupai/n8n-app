@@ -27,8 +27,7 @@ main() {
     if exec_command_strict "Linking package from dist folder" "npm link" "dist"; then
         log_success "✓ Package linked from dist folder"
     else
-        link_exit_code=$?
-        log_error "✗ Failed to link package: $link_exit_code"
+        log_error "✗ Failed to link package"
         log_warning "\nNote: Package linking may require admin privileges"
         log_warning "If it failed, try:"
         log_bright "  cd dist"
