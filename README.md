@@ -2,14 +2,9 @@
 
 # n8n-nodes-markupai
 
-[![npm version](https://img.shields.io/npm/v/@markupai/n8n-nodes-markupai.svg)](https://www.npmjs.com/package/@markupai/n8n-nodes-markupai)
-[![npm downloads](https://img.shields.io/npm/dt/@markupai/n8n-nodes-markupai.svg)](https://www.npmjs.com/package/@markupai/n8n-nodes-markupai)
-
 This is an n8n community node that integrates [Markup AI](https://markup.ai/) — a content guardian platform for ensuring brand-compliant, consistent, and engaging content.
 
 [Markup AI](https://markup.ai/) provides AI-powered content analysis, suggestions, and rewrites based on your organization's brand standards. Integrate content quality checks and automated improvements directly into your n8n workflows.
-
-[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 [Installation](#installation) · [Operations](#operations) · [Credentials](#credentials) · [Usage](#usage) · [Resources](#resources) · [Development](#development)
 
