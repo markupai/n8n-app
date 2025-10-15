@@ -19,7 +19,7 @@ function copyIcons() {
 	return src(credSource).pipe(dest(credDestination));
 }
 
-function copyPackageJson(cb) {
+function copyPackageJson(callback) {
 	try {
 		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
@@ -35,9 +35,9 @@ function copyPackageJson(cb) {
 			JSON.stringify(distPackageJson, null, 2),
 		);
 
-		cb();
+		callback();
 	} catch (err) {
 		console.error("Error copying package.json:", err.message);
-		cb(err);
+		callback(err);
 	}
 }
