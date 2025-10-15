@@ -24,11 +24,7 @@ function copyPackageJson(callback) {
 		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
 		// Remove devDependencies and scripts that are only needed for development
-		const distPackageJson = {
-			...packageJson,
-			devDependencies: undefined,
-			scripts: undefined,
-		};
+		const { devDependencies, scripts, ...distPackageJson } = packageJson;
 
 		fs.writeFileSync(
 			path.resolve("dist", "package.json"),
