@@ -267,6 +267,7 @@ DEBUG=1 npm run cleanup  # Verbose cleanup with debug information
 ```
 
 This will show:
+
 - Exact commands being executed
 - Full command output (both stdout and stderr)
 - Detailed error information when commands fail
