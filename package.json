@@ -50,7 +50,7 @@
   "devDependencies": {
     "@types/node": "^24.9.1",
     "@typescript-eslint/parser": "^8.46.2",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.0.3",
     "eslint-plugin-n8n-nodes-base": "^1.16.4",
     "gulp": "^5.0.1",
     "n8n": "^1.116.2",
