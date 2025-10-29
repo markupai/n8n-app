@@ -1,5 +1,5 @@
 import { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData, sleep } from "n8n-workflow";
-import { getApiKey, getBaseUrl } from "./load.options";
+import { getBaseUrl } from "./load.options";
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
 
 export interface FormDataDetails {
@@ -15,13 +15,12 @@ export interface FormDataDetails {
 }
 
 export async function postStyleRewrite(
-	fn: IExecuteFunctions,
+	this: IExecuteFunctions,
 	formDataDetails: FormDataDetails,
 	path: string,
 ): Promise<PostStyleRewriteResponse> {
 	const formData = new FormData();
-	const apiKey = await getApiKey(fn);
-	const baseUrl = await getBaseUrl(fn);
+	const baseUrl = await getBaseUrl(this);
 
 	const blob = new Blob([formDataDetails.content], { type: "text/plain" });
 
@@ -34,14 +33,17 @@ export async function postStyleRewrite(
 		method: "POST",
 		url: `${baseUrl.toString()}${path}`,
 		headers: {
-			Authorization: `Bearer ${apiKey}`,
 			"Content-Type": "multipart/form-data",
 		},
 		body: formData,
 		returnFullResponse: true,
 	};
 
-	const response = await fn.helpers.httpRequest(requestOptions);
+	const response = await this.helpers.httpRequestWithAuthentication.call(
+		this,
+		"markupaiApi",
+		requestOptions,
+	);
 
 	const submitResponse =
 		typeof response.body === "string" ? response.body : JSON.stringify(response.body);
@@ -50,14 +52,14 @@ export async function postStyleRewrite(
 }
 
 export async function pollResponse(
-	fn: IExecuteFunctions,
+	this: IExecuteFunctions,
 	styleRewriteResponse: PostStyleRewriteResponse,
 	waitForCompletion: boolean,
 	pollingTimeout: number,
 	path: string,
 ): Promise<GetStyleRewriteResponse> {
-	const baseUrl = await getBaseUrl(fn);
-	const apiKey = await getApiKey(fn);
+	const baseUrl = await getBaseUrl(this);
+
 	let result: any = {
 		...styleRewriteResponse,
 	};
@@ -79,13 +81,14 @@ export async function pollResponse(
 			const statusOptions: IHttpRequestOptions = {
 				method: "GET",
 				url: `${baseUrl.toString()}${path}/${styleRewriteResponse.workflow_id}`,
-				headers: {
-					Authorization: `Bearer ${apiKey}`,
-				},
 				returnFullResponse: true,
 			};
 
-			const statusResp = await fn.helpers.httpRequest(statusOptions);
+			const statusResp = await this.helpers.httpRequestWithAuthentication.call(
+				this,
+				"markupaiApi",
+				statusOptions,
+			);
 			const statusResponse =
 				typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
 
@@ -106,17 +109,17 @@ export async function pollResponse(
 }
 
 export async function styleRequest(
-	fn: IExecuteFunctions,
+	this: IExecuteFunctions,
 	formDataDetails: FormDataDetails,
 	path: string,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const returnData: INodeExecutionData[] = [];
-	const postStyleRewriteResponse = await postStyleRewrite(fn, formDataDetails, path);
+	const postStyleRewriteResponse = await postStyleRewrite.call(this, formDataDetails, path);
 
 	if (formDataDetails.waitForCompletion) {
-		const pollStyleRewriteResponseComplete = await pollResponse(
-			fn,
+		const pollStyleRewriteResponseComplete = await pollResponse.call(
+			this,
 			postStyleRewriteResponse,
 			formDataDetails.waitForCompletion,
 			formDataDetails.pollingTimeout,

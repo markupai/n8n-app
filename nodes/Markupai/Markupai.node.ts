@@ -187,6 +187,8 @@ export class Markupai implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		try {
+			console.log("Executing Markupai node...");
+
 			const items = this.getInputData();
 			const returnData: INodeExecutionData[] = [];
 
@@ -219,7 +221,7 @@ export class Markupai implements INodeType {
 					pollingTimeout,
 				} as FormDataDetails;
 
-				const result = await styleRequest(this, formDataDetails, getPath(operation), i);
+				const result = await styleRequest.call(this, formDataDetails, getPath(operation), i);
 
 				if (waitForCompletion) {
 					const emailHTMLReport = generateEmailHTMLReport(

@@ -263,7 +263,6 @@ describe("Markupai", () => {
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
-				mockExecuteFunctions,
 				{
 					content: "test content",
 					styleGuide: "test-style-guide",
@@ -302,7 +301,6 @@ describe("Markupai", () => {
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
-				mockExecuteFunctions,
 				{
 					content: "test content",
 					styleGuide: "test-style-guide",
@@ -329,7 +327,6 @@ describe("Markupai", () => {
 			await markupai.execute.call(mockExecuteFunctions as any);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
-				mockExecuteFunctions,
 				expect.not.objectContaining({ tone: expect.any(String) }),
 				"v1/style/checks",
 				0,
@@ -354,7 +351,6 @@ describe("Markupai", () => {
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
-				mockExecuteFunctions,
 				expect.objectContaining({
 					waitForCompletion: false,
 				}),
@@ -393,7 +389,6 @@ describe("Markupai", () => {
 			await markupai.execute.call(mockExecuteFunctions as any);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
-				mockExecuteFunctions,
 				expect.objectContaining({
 					waitForCompletion: true, // default value when undefined
 					pollingTimeout: 60000, // default value when undefined

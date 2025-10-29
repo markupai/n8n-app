@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FunctionsBase } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import {
-	getApiKey,
 	getBaseUrl,
 	loadDialects,
 	loadStyleGuides,
@@ -27,19 +26,6 @@ describe("load.options", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(LoggerProxy.error).mockClear();
-	});
-
-	describe("getApiKey", () => {
-		it("returns the API key from credentials", async () => {
-			const mockFunctionsBase: MockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
-			} as MockFunctionsBase;
-
-			const result = await getApiKey(mockFunctionsBase);
-
-			expect(result).toBe("mocked-key-123");
-			expect(mockFunctionsBase.getCredentials).toHaveBeenCalledWith("markupaiApi");
-		});
 	});
 
 	describe("getBaseUrl", () => {
@@ -70,10 +56,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: styleGuidesResponse,
-						statusCode: 200,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: styleGuidesResponse,
+							statusCode: 200,
+						}),
+					},
 				},
 			} as any;
 
@@ -90,7 +78,9 @@ describe("load.options", () => {
 			const loadOptionsFunction = {
 				getCredentials: vi.fn().mockResolvedValue({}),
 				helpers: {
-					httpRequest: vi.fn(),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockRejectedValue(new Error("Credentials error")),
+					},
 				},
 			} as any;
 
@@ -105,10 +95,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: { error: "Bad Request" },
-						statusCode: 400,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: { error: "Bad Request" },
+							statusCode: 400,
+						}),
+					},
 				},
 			} as any;
 
@@ -126,10 +118,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: tonesResponse,
-						statusCode: 200,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: tonesResponse,
+							statusCode: 200,
+						}),
+					},
 				},
 			} as any;
 
@@ -144,12 +138,14 @@ describe("load.options", () => {
 
 		it("returns the default tones if the API returns an error", async () => {
 			const loadOptionsFunction = {
-				getCredentials: vi.fn().mockResolvedValue({}),
+				getCredentials: vi.fn().mockResolvedValue({ baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: { error: "Bad Request" },
-						statusCode: 400,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: { error: "Bad Request" },
+							statusCode: 400,
+						}),
+					},
 				},
 			} as any;
 
@@ -179,10 +175,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: { tones: ["tone_1", "tone_2"] },
-						statusCode: 200,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: { tones: ["tone_1", "tone_2"] },
+							statusCode: 200,
+						}),
+					},
 				},
 			} as any;
 
@@ -203,10 +201,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: { dialects: ["english_uk", "english_us"] },
-						statusCode: 200,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: { dialects: ["english_uk", "english_us"] },
+							statusCode: 200,
+						}),
+					},
 				},
 			} as any;
 
@@ -224,10 +224,12 @@ describe("load.options", () => {
 					.fn()
 					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
 				helpers: {
-					httpRequest: vi.fn().mockResolvedValue({
-						body: { error: "Bad Request" },
-						statusCode: 400,
-					}),
+					httpRequestWithAuthentication: {
+						call: vi.fn().mockResolvedValue({
+							body: { error: "Bad Request" },
+							statusCode: 400,
+						}),
+					},
 				},
 			} as any;
 
