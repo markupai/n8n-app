@@ -187,8 +187,6 @@ export class Markupai implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		try {
-			console.log("Executing Markupai node...");
-
 			const items = this.getInputData();
 			const returnData: INodeExecutionData[] = [];
 
