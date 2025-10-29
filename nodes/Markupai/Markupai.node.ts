@@ -219,7 +219,7 @@ export class Markupai implements INodeType {
 					pollingTimeout,
 				} as FormDataDetails;
 
-				const result = await styleRequest(this, formDataDetails, getPath(operation), i);
+				const result = await styleRequest.call(this, formDataDetails, getPath(operation), i);
 
 				if (waitForCompletion) {
 					const emailHTMLReport = generateEmailHTMLReport(
