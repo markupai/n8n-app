@@ -161,7 +161,11 @@ describe("Markupai", () => {
 	});
 
 	describe("Methods", () => {
-		it("should have correct loadOptions methods", () => {});
+		it("should have correct loadOptions methods", () => {
+			expect(markupai.methods.loadOptions.loadStyleGuides).toBeDefined();
+			expect(markupai.methods.loadOptions.loadTones).toBeDefined();
+			expect(markupai.methods.loadOptions.loadDialects).toBeDefined();
+		});
 	});
 
 	describe("Execute Method", () => {
