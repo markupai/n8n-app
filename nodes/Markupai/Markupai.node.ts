@@ -260,7 +260,7 @@ export class Markupai implements INodeType {
 				}
 
 				throw new NodeOperationError(this.getNode(), error as Error, {
-					description: error.description,
+					description: error instanceof NodeApiError ? error.description : error.message,
 					itemIndex: i,
 				});
 			}
