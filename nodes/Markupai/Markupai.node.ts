@@ -232,14 +232,18 @@ export class Markupai implements INodeType {
 							...(result[0].json as unknown as GetStyleRewriteResponse),
 							html_email: emailHTMLReport,
 						},
-						itemData: i,
+						pairedItem: {
+							item: i,
+						},
 					});
 				} else {
 					returnData.push({
 						json: {
 							...(result[0].json as unknown as PostStyleRewriteResponse),
 						},
-						itemData: i,
+						pairedItem: {
+							item: i,
+						},
 					});
 				}
 			}
