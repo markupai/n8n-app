@@ -188,6 +188,33 @@ describe("Markupai", () => {
 		const mockGenerateEmailHTMLReport = vi.fn();
 		const mockGetPath = vi.fn();
 
+		const createExpectedExecuteResult = (
+			jsonData: INodeExecutionData["json"],
+			itemIndex = 0,
+		): INodeExecutionData[][] => {
+			return [
+				[
+					{
+						json: jsonData,
+						pairedItem: { item: itemIndex },
+					},
+				],
+			];
+		};
+
+		const createExpectedResultWithCompletion = (
+			workflowResponse: ReturnType<typeof createCheckWorkflowResponse>,
+			itemIndex = 0,
+		): INodeExecutionData[][] => {
+			return createExpectedExecuteResult(
+				{
+					...workflowResponse,
+					html_email: "<html>test report</html>",
+				},
+				itemIndex,
+			);
+		};
+
 		const mockContentCheck = () => {
 			const mockResult = createCheckWorkflowResponse();
 
@@ -220,7 +247,16 @@ describe("Markupai", () => {
 			mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(mockInputData);
 
 			if (mockExecuteFunctions.helpers) {
-				mockExecuteFunctions.helpers.returnJsonArray = vi.fn().mockReturnValue(mockInputData);
+				const addPairedItem = (item: INodeExecutionData, index: number) => ({
+					...item,
+					pairedItem: { item: index },
+				});
+				const returnJsonArrayImpl = (data: INodeExecutionData[]) => {
+					return data.map(addPairedItem);
+				};
+				mockExecuteFunctions.helpers.returnJsonArray = vi
+					.fn()
+					.mockImplementation(returnJsonArrayImpl);
 			}
 		});
 
@@ -259,7 +295,8 @@ describe("Markupai", () => {
 				document_link: "https://test.com",
 			});
 
-			expect(result).toEqual([mockInputData]);
+			const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
+			expect(result).toEqual(expectedResult);
 		});
 
 		it("should execute styleRewrite operation successfully with completion", async () => {
@@ -291,7 +328,8 @@ describe("Markupai", () => {
 				0,
 			);
 
-			expect(result).toEqual([mockInputData]);
+			const expectedResult = createExpectedResultWithCompletion(mockResult);
+			expect(result).toEqual(expectedResult);
 		});
 
 		it('should handle "None (Keep Tone Unchanged)" tone correctly', async () => {
@@ -337,8 +375,9 @@ describe("Markupai", () => {
 				0,
 			);
 
+			const expectedResult = createExpectedExecuteResult(mockResult);
 			expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();
-			expect(result).toEqual([mockInputData]);
+			expect(result).toEqual(expectedResult);
 		});
 
 		it("should throw NodeApiError when styleRequest fails", async () => {
@@ -375,6 +414,57 @@ describe("Markupai", () => {
 				"v1/style/checks",
 				0,
 			);
+		});
+
+		it("should include pairedItem object in execute response", async () => {
+			mockContentCheck();
+
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
+				"professional",
+			).mockReturnValueOnce({
+				waitForCompletion: true,
+			});
+
+			const result = await markupai.execute.call(mockExecuteFunctions as any);
+
+			const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
+			expect(result).toEqual(expectedResult);
+		});
+
+		it("should only return json and pairedItem properties in execute response", async () => {
+			mockContentCheck();
+
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
+				"professional",
+			).mockReturnValueOnce({
+				waitForCompletion: true,
+			});
+
+			const result = await markupai.execute.call(mockExecuteFunctions as any);
+
+			const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
+			expect(result).toEqual(expectedResult);
+		});
+
+		it("should only return json and pairedItem properties when waitForCompletion is false", async () => {
+			const mockResult = {
+				status: "running",
+				workflow_id: "test-id",
+			};
+
+			mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
+			mockGetPath.mockReturnValue("v1/style/checks");
+
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
+				"professional",
+			).mockReturnValueOnce({
+				waitForCompletion: false,
+			});
+
+			const result = await markupai.execute.call(mockExecuteFunctions as any);
+
+			const expectedResult = createExpectedExecuteResult(mockResult);
+			expect(result).toEqual(expectedResult);
 		});
 	});
 });
