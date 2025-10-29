@@ -3,9 +3,9 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	JsonObject,
 	NodeApiError,
 	NodeConnectionTypes,
+	NodeOperationError,
 } from "n8n-workflow";
 import { loadDialects, loadStyleGuides, loadTones } from "./utils/load.options";
 import { FormDataDetails, getPath, styleRequest } from "./utils/style.api.utils";
@@ -186,11 +186,11 @@ export class Markupai implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		try {
-			const items = this.getInputData();
-			const returnData: INodeExecutionData[] = [];
+		const items = this.getInputData();
+		const returnData: INodeExecutionData[] = [];
 
-			for (let i = 0; i < items.length; i++) {
+		for (let i = 0; i < items.length; i++) {
+			try {
 				const operation = this.getNodeParameter("operation", i);
 				const content = this.getNodeParameter("content", i);
 				const styleGuide = this.getNodeParameter("styleGuide", i);
@@ -246,11 +246,26 @@ export class Markupai implements INodeType {
 						},
 					});
 				}
-			}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({
+						json: {
+							error: error instanceof NodeApiError ? error.description : error.message,
+						},
+						pairedItem: {
+							item: i,
+						},
+					});
+					continue;
+				}
 
-			return [this.helpers.returnJsonArray(returnData)];
-		} catch (error) {
-			throw new NodeApiError(this.getNode(), error as JsonObject);
+				throw new NodeOperationError(this.getNode(), error as Error, {
+					description: error instanceof NodeApiError ? error.description : error.message,
+					itemIndex: i,
+				});
+			}
 		}
+
+		return [this.helpers.returnJsonArray(returnData)];
 	}
 }

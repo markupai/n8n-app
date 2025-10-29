@@ -5,7 +5,6 @@ import type {
 	INodeExecutionData,
 	INodePropertyTypeOptions,
 } from "n8n-workflow";
-import { NodeApiError } from "n8n-workflow";
 import { Markupai } from "../../nodes/Markupai/Markupai.node";
 
 vi.mock("n8n-workflow", async () => {
@@ -374,9 +373,9 @@ describe("Markupai", () => {
 				waitForCompletion: true,
 			});
 
-			await expect(markupai.execute.call(mockExecuteFunctions as any)).rejects.toThrow(
-				NodeApiError,
-			);
+			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
+
+			await expect(markupai.execute.call(mockExecuteFunctions as any)).rejects.toThrow(Error);
 		});
 
 		it("should handle undefined additional options gracefully", async () => {
@@ -447,6 +446,84 @@ describe("Markupai", () => {
 
 			const expectedResult = createExpectedExecuteResult(mockResult);
 			expect(result).toEqual(expectedResult);
+		});
+
+		it("should handle multiple items with continueOnFail when one fails", async () => {
+			const twoItemsInputData: INodeExecutionData[] = [
+				{ json: { test: "data1" } },
+				{ json: { test: "data2" } },
+			];
+
+			mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItemsInputData);
+
+			const firstItemError = new Error("API request failed for first item");
+			const secondItemResult = createCheckWorkflowResponse();
+
+			mockStyleRequest
+				.mockRejectedValueOnce(firstItemError)
+				.mockResolvedValueOnce([{ json: secondItemResult }]);
+
+			mockGetPath.mockReturnValue("v1/style/checks");
+			mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
+
+			mockExecuteFunctions.getNodeParameter = vi
+				.fn()
+				.mockReturnValueOnce("styleCheck")
+				.mockReturnValueOnce("test content 1")
+				.mockReturnValueOnce("test-style-guide")
+				.mockReturnValueOnce("professional")
+				.mockReturnValueOnce("american_english")
+				.mockReturnValueOnce({ waitForCompletion: true })
+				.mockReturnValueOnce("styleCheck")
+				.mockReturnValueOnce("test content 2")
+				.mockReturnValueOnce("test-style-guide")
+				.mockReturnValueOnce("professional")
+				.mockReturnValueOnce("american_english")
+				.mockReturnValueOnce({ waitForCompletion: true });
+
+			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
+			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
+
+			const result = await markupai.execute.call(mockExecuteFunctions as any);
+
+			expect(result[0]).toHaveLength(2);
+
+			expect(result[0][0].json).toHaveProperty("error", firstItemError.message);
+			expect(result[0][0].pairedItem).toEqual({ item: 0 });
+
+			expect(result[0][1].json).toMatchObject({
+				...secondItemResult,
+				html_email: "<html>test report</html>",
+			});
+			expect(result[0][1].pairedItem).toEqual({ item: 1 });
+
+			expect(mockStyleRequest).toHaveBeenCalledTimes(2);
+
+			expect(mockGenerateEmailHTMLReport).toHaveBeenCalledTimes(1);
+		});
+
+		it("should throw error when continueOnFail is false and error occurs", async () => {
+			const singleItemInputData: INodeExecutionData[] = [{ json: { test: "data" } }];
+
+			mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(singleItemInputData);
+
+			const error = new Error("API request failed");
+			mockStyleRequest.mockRejectedValue(error);
+			mockGetPath.mockReturnValue("v1/style/checks");
+
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
+				"professional",
+			).mockReturnValueOnce({
+				waitForCompletion: true,
+			});
+
+			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
+			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
+
+			await expect(markupai.execute.call(mockExecuteFunctions as any)).rejects.toThrow(Error);
+
+			expect(mockStyleRequest).toHaveBeenCalledTimes(1);
+			expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();
 		});
 	});
 });
