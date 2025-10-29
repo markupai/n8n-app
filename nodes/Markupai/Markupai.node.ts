@@ -233,6 +233,9 @@ export class Markupai implements INodeType {
 							html_email: emailHTMLReport,
 						},
 						itemData: i,
+						pairedItem: {
+							item: i,
+						},
 					});
 				} else {
 					returnData.push({
@@ -240,6 +243,9 @@ export class Markupai implements INodeType {
 							...(result[0].json as unknown as PostStyleRewriteResponse),
 						},
 						itemData: i,
+						pairedItem: {
+							item: i,
+						},
 					});
 				}
 			}

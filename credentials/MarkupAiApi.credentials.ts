@@ -33,7 +33,6 @@ export class MarkupAiApi implements ICredentialType {
 		properties: {
 			headers: {
 				Authorization: "=Bearer {{$credentials.apiKey}}",
-				"OpenAI-Organization": "={{$credentials.organizationId}}",
 			},
 		},
 	};
