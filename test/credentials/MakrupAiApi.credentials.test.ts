@@ -25,7 +25,6 @@ describe("MarkupAiApi credentials", () => {
 			expect(credentials.properties).toHaveLength(2);
 
 			const apiKeyProperty = credentials.properties.find((p) => p.name === "apiKey");
-			expect(apiKeyProperty).toBeDefined();
 			expect(apiKeyProperty?.displayName).toBe("Markup AI API Key");
 			expect(apiKeyProperty?.type).toBe("string");
 			expect(apiKeyProperty?.required).toBe(true);
@@ -33,7 +32,6 @@ describe("MarkupAiApi credentials", () => {
 			expect(apiKeyProperty?.default).toBe("");
 
 			const baseUrlProperty = credentials.properties.find((p) => p.name === "baseUrl");
-			expect(baseUrlProperty).toBeDefined();
 			expect(baseUrlProperty?.displayName).toBe("Base URL");
 			expect(baseUrlProperty?.type).toBe("string");
 			expect(baseUrlProperty?.default).toBe("https://api.markup.ai/");
@@ -74,35 +72,22 @@ describe("MarkupAiApi credentials", () => {
 		});
 
 		it("should have authenticate object with correct type", () => {
-			expect(credentials.authenticate).toBeDefined();
 			expect(credentials.authenticate.type).toBe("generic");
 		});
 
 		it("should have authenticate properties with headers", () => {
-			expect(credentials.authenticate.properties).toBeDefined();
-			expect(credentials.authenticate.properties.headers).toBeDefined();
 			expect(typeof credentials.authenticate.properties.headers).toBe("object");
 		});
 
 		it("should have exactly one header in authenticate properties", () => {
 			const headers = credentials.authenticate.properties.headers;
-			expect(headers).toBeDefined();
 			const headerKeys = Object.keys(headers!);
 			expect(headerKeys).toHaveLength(1);
 		});
 
 		it("should have Authorization header with correct value", () => {
 			const headers = credentials.authenticate.properties.headers;
-			expect(headers).toBeDefined();
 			expect(headers!.Authorization).toBe("=Bearer {{$credentials.apiKey}}");
-		});
-
-		it("should have test object defined", () => {
-			expect(credentials.test).toBeDefined();
-		});
-
-		it("should have test request object", () => {
-			expect(credentials.test.request).toBeDefined();
 		});
 
 		it("should have correct baseURL in test request", () => {

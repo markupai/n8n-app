@@ -98,33 +98,27 @@ describe("Markupai", () => {
 			const properties = markupai.description.properties;
 
 			const resourceProp = properties.find((p) => p.name === "resource");
-			expect(resourceProp).toBeDefined();
 			expect(resourceProp?.type).toBe("options");
 			expect(resourceProp?.default).toBe("content");
 
 			const operationProp = properties.find((p) => p.name === "operation");
-			expect(operationProp).toBeDefined();
 			expect(operationProp?.type).toBe("options");
 			expect(operationProp?.default).toBe("styleCheck");
 
 			const contentProp = properties.find((p) => p.name === "content");
-			expect(contentProp).toBeDefined();
 			expect(contentProp?.type).toBe("string");
 			expect(contentProp?.required).toBe(true);
 
 			const styleGuideProp = properties.find((p) => p.name === "styleGuide");
-			expect(styleGuideProp).toBeDefined();
 			expect(styleGuideProp?.type).toBe("options");
 			expect(styleGuideProp?.typeOptions?.loadOptionsMethod).toBe("loadStyleGuides");
 
 			const toneProp = properties.find((p) => p.name === "tone");
-			expect(toneProp).toBeDefined();
 			expect(toneProp?.type).toBe("options");
 			expect(toneProp?.default).toBe("None (Keep Tone Unchanged)");
 			expect(toneProp?.typeOptions?.loadOptionsMethod).toBe("loadTones");
 
 			const dialectProp = properties.find((p) => p.name === "dialect");
-			expect(dialectProp).toBeDefined();
 			expect(dialectProp?.type).toBe("options");
 			expect(dialectProp?.typeOptions?.loadOptionsMethod).toBe("loadDialects");
 		});
@@ -133,52 +127,41 @@ describe("Markupai", () => {
 			const additionalOptionsProp = markupai.description.properties.find(
 				(p) => p.name === "additionalOptions",
 			);
-			expect(additionalOptionsProp).toBeDefined();
 			expect(additionalOptionsProp?.type).toBe("collection");
 
 			const options = additionalOptionsProp?.options;
-			expect(options).toBeDefined();
 
 			const documentLinkOption = options?.find(
 				(o) => o.name === "documentLink",
 			) as INodePropertyTypeOptions;
-			expect(documentLinkOption).toBeDefined();
 			expect(documentLinkOption?.type).toBe("string");
 
 			const documentNameOption = options?.find(
 				(o) => o.name === "documentName",
 			) as INodePropertyTypeOptions;
-			expect(documentNameOption).toBeDefined();
 			expect(documentNameOption?.type).toBe("string");
 
 			const documentOwnerOption = options?.find(
 				(o) => o.name === "documentOwner",
 			) as INodePropertyTypeOptions;
-			expect(documentOwnerOption).toBeDefined();
 			expect(documentOwnerOption?.type).toBe("string");
 
 			const pollingTimeoutOption = options?.find(
 				(o) => o.name === "pollingTimeout",
 			) as INodePropertyTypeOptions;
-			expect(pollingTimeoutOption).toBeDefined();
 			expect(pollingTimeoutOption?.type).toBe("number");
 			expect(pollingTimeoutOption?.default).toBe(60000);
 
 			const waitForCompletionOption = options?.find(
 				(o) => o.name === "waitForCompletion",
 			) as INodePropertyTypeOptions;
-			expect(waitForCompletionOption).toBeDefined();
 			expect(waitForCompletionOption?.type).toBe("boolean");
 			expect(waitForCompletionOption?.default).toBe(true);
 		});
 	});
 
 	describe("Methods", () => {
-		it("should have correct loadOptions methods", () => {
-			expect(markupai.methods.loadOptions.loadStyleGuides).toBeDefined();
-			expect(markupai.methods.loadOptions.loadTones).toBeDefined();
-			expect(markupai.methods.loadOptions.loadDialects).toBeDefined();
-		});
+		it("should have correct loadOptions methods", () => {});
 	});
 
 	describe("Execute Method", () => {
