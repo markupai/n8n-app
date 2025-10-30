@@ -167,6 +167,26 @@ describe("Markupai", () => {
 		});
 	});
 
+	function validateFirstItem(firstElement: INodeExecutionData, firstItemError: Error) {
+		expect(firstElement.json).toHaveProperty("error", firstItemError.message);
+		expect(firstElement.pairedItem).toEqual({ item: 0 });
+	}
+
+	function validateSecondItem(
+		secondElement: INodeExecutionData,
+		secondItemResult: {
+			workflow: { id: string; status: string };
+			config: { style_guide: { style_guide_id: string } };
+			original: { issues: any[]; scores: { quality: { score: number } } };
+		},
+	) {
+		expect(secondElement.json).toMatchObject({
+			...secondItemResult,
+			html_email: "<html>test report</html>",
+		});
+		expect(secondElement.pairedItem).toEqual({ item: 1 });
+	}
+
 	describe("Execute Method", () => {
 		const mockInputData: INodeExecutionData[] = [{ json: { test: "data" } }];
 
@@ -489,17 +509,11 @@ describe("Markupai", () => {
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
 			const resultElement = result[0];
-			const firstElement = resultElement[0];
 
 			expect(resultElement).toHaveLength(2);
-			expect(firstElement.json).toHaveProperty("error", firstItemError.message);
-			expect(firstElement.pairedItem).toEqual({ item: 0 });
 
-			expect(resultElement[1].json).toMatchObject({
-				...secondItemResult,
-				html_email: "<html>test report</html>",
-			});
-			expect(resultElement[1].pairedItem).toEqual({ item: 1 });
+			validateFirstItem(resultElement[0], firstItemError);
+			validateSecondItem(resultElement[1], secondItemResult);
 
 			expect(mockStyleRequest).toHaveBeenCalledTimes(2);
 
