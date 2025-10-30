@@ -472,16 +472,18 @@ describe("Markupai", () => {
 
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
-			expect(result[0]).toHaveLength(2);
+			const resultElement = result[0];
+			const firstElement = resultElement[0];
 
-			expect(result[0][0].json).toHaveProperty("error", firstItemError.message);
-			expect(result[0][0].pairedItem).toEqual({ item: 0 });
+			expect(resultElement).toHaveLength(2);
+			expect(firstElement.json).toHaveProperty("error", firstItemError.message);
+			expect(firstElement.pairedItem).toEqual({ item: 0 });
 
-			expect(result[0][1].json).toMatchObject({
+			expect(resultElement[1].json).toMatchObject({
 				...secondItemResult,
 				html_email: "<html>test report</html>",
 			});
-			expect(result[0][1].pairedItem).toEqual({ item: 1 });
+			expect(resultElement[1].pairedItem).toEqual({ item: 1 });
 
 			expect(mockStyleRequest).toHaveBeenCalledTimes(2);
 
