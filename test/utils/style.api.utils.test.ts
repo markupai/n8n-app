@@ -119,6 +119,7 @@ describe("style.api.utils", () => {
 	describe("postStyleRewrite", () => {
 		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
 			content: "test content",
+			contentType: ".md",
 			dialect: "american_english",
 			tone: "business",
 			styleGuide: "test-style-guide",
@@ -140,6 +141,9 @@ describe("style.api.utils", () => {
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 			const formDataDetails = createFormDataDetails();
 
+			// Spy on FormData.append to verify filename
+			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+
 			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
 
 			expect(result).toEqual(postResponse);
@@ -153,6 +157,82 @@ describe("style.api.utils", () => {
 				body: expect.any(Object),
 				returnFullResponse: true,
 			});
+
+			// Verify filename is constructed correctly with documentName
+			expect(formDataAppendSpy).toHaveBeenCalledWith(
+				"file_upload",
+				expect.any(Blob),
+				"test.txt.md",
+			);
+
+			formDataAppendSpy.mockRestore();
+		});
+
+		it("should use 'unknown' as filename when documentName is not provided", async () => {
+			const { mockGetBaseUrl, mockHttpRequest, mockHttpRequestWithAuthentication } =
+				createMockFunctions();
+
+			const postResponse = setupMockPostResponse(mockHttpRequestWithAuthentication);
+
+			await setupMocks(mockGetBaseUrl);
+			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
+			const formDataDetails = createFormDataDetails({
+				documentName: undefined,
+				contentType: ".html",
+			});
+
+			// Spy on FormData.append to verify filename
+			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+
+			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+
+			expect(result).toEqual(postResponse);
+
+			// Verify filename is constructed with "unknown" when documentName is undefined
+			expect(formDataAppendSpy).toHaveBeenCalledWith(
+				"file_upload",
+				expect.any(Blob),
+				"unknown.html",
+			);
+
+			formDataAppendSpy.mockRestore();
+		});
+
+		it("should correctly construct filename with documentName and contentType", async () => {
+			const { mockGetBaseUrl, mockHttpRequest, mockHttpRequestWithAuthentication } =
+				createMockFunctions();
+
+			setupMockPostResponse(mockHttpRequestWithAuthentication);
+
+			await setupMocks(mockGetBaseUrl);
+			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
+
+			// Test with different content types
+			const testCases = [
+				{ documentName: "document", contentType: ".dita", expected: "document.dita" },
+				{ documentName: "file", contentType: ".txt", expected: "file.txt" },
+				{ documentName: "page", contentType: ".md", expected: "page.md" },
+			];
+
+			for (const testCase of testCases) {
+				const formDataDetails = createFormDataDetails({
+					documentName: testCase.documentName,
+					contentType: testCase.contentType,
+				});
+
+				const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+
+				await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+
+				expect(formDataAppendSpy).toHaveBeenCalledWith(
+					"file_upload",
+					expect.any(Blob),
+					testCase.expected,
+				);
+
+				formDataAppendSpy.mockRestore();
+				mockHttpRequestWithAuthentication.mockClear();
+			}
 		});
 
 		it("should throw an error if httpRequest fails", async () => {
@@ -347,6 +427,7 @@ describe("style.api.utils", () => {
 
 		const formDataDetails: FormDataDetails = {
 			content: "test content",
+			contentType: ".md",
 			dialect: "american_english",
 			tone: "business",
 			styleGuide: "test-style-guide",
