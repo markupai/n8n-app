@@ -16,6 +16,31 @@ type AdditionalOptions = {
 	documentLink?: string;
 };
 
+function addHtmlReportToWorkflowResponse(
+	resultElement: INodeExecutionData,
+	extendedInputData: {
+		document_name: string | undefined;
+		document_owner: string | undefined;
+		document_link: string | undefined;
+	},
+	itemIndex: number,
+) {
+	const emailHTMLReport = generateEmailHTMLReport(
+		resultElement.json as unknown as GetStyleRewriteResponse,
+		extendedInputData,
+	);
+
+	return {
+		json: {
+			...(resultElement.json as unknown as GetStyleRewriteResponse),
+			html_email: emailHTMLReport,
+		},
+		pairedItem: {
+			item: itemIndex,
+		},
+	};
+}
+
 function buildFormDataDetails(
 	this: IExecuteFunctions,
 	itemIndex: number,
@@ -36,6 +61,28 @@ function buildFormDataDetails(
 		waitForCompletion,
 		pollingTimeout,
 	} as FormDataDetails;
+}
+
+function createErrorResponse(error: any, itemIndex: number) {
+	return {
+		json: {
+			error: error instanceof NodeApiError ? error.description : error.message,
+		},
+		pairedItem: {
+			item: itemIndex,
+		},
+	};
+}
+
+function createWorkflowResponse(resultElement: INodeExecutionData, itemIndex: number) {
+	return {
+		json: {
+			...(resultElement.json as unknown as PostStyleRewriteResponse),
+		},
+		pairedItem: {
+			item: itemIndex,
+		},
+	};
 }
 
 export async function processMarkupaiItem(
@@ -61,40 +108,13 @@ export async function processMarkupaiItem(
 		const resultElement = result[0];
 
 		if (formDataDetails.waitForCompletion) {
-			const emailHTMLReport = generateEmailHTMLReport(
-				resultElement.json as unknown as GetStyleRewriteResponse,
-				extendedInputData,
-			);
-
-			return {
-				json: {
-					...(resultElement.json as unknown as GetStyleRewriteResponse),
-					html_email: emailHTMLReport,
-				},
-				pairedItem: {
-					item: itemIndex,
-				},
-			};
-		} else {
-			return {
-				json: {
-					...(resultElement.json as unknown as PostStyleRewriteResponse),
-				},
-				pairedItem: {
-					item: itemIndex,
-				},
-			};
+			return addHtmlReportToWorkflowResponse(resultElement, extendedInputData, itemIndex);
 		}
+
+		return createWorkflowResponse(resultElement, itemIndex);
 	} catch (error) {
 		if (this.continueOnFail()) {
-			return {
-				json: {
-					error: error instanceof NodeApiError ? error.description : error.message,
-				},
-				pairedItem: {
-					item: itemIndex,
-				},
-			};
+			return createErrorResponse(error, itemIndex);
 		}
 
 		throw new NodeOperationError(this.getNode(), error as Error, {
