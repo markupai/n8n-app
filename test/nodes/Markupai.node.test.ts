@@ -209,15 +209,39 @@ describe("Markupai", () => {
 			mockGetPath.mockReturnValue("v1/style/checks");
 		};
 
-		const mockCommonFunctionResponses = (tone: string, additionalOptions = {}) => {
-			return vi
-				.fn()
+		const addItemMockReturns = (
+			mock: ReturnType<typeof vi.fn>,
+			tone: string,
+			additionalOptions: Record<string, any>,
+			content: string,
+		) => {
+			return mock
 				.mockReturnValueOnce("styleCheck")
 				.mockReturnValueOnce(additionalOptions)
-				.mockReturnValueOnce("test content")
+				.mockReturnValueOnce(content)
 				.mockReturnValueOnce("test-style-guide")
 				.mockReturnValueOnce(tone)
 				.mockReturnValueOnce("american_english");
+		};
+
+		const mockCommonFunctionResponses = (
+			tone: string,
+			additionalOptions = {},
+			content = "test content",
+		) => {
+			return addItemMockReturns(vi.fn(), tone, additionalOptions, content);
+		};
+
+		const mockMultipleItemsFunctionResponses = (
+			tone: string,
+			additionalOptions = {},
+			...contents: string[]
+		) => {
+			const mock = vi.fn();
+			for (const content of contents) {
+				addItemMockReturns(mock, tone, additionalOptions, content);
+			}
+			return mock;
 		};
 
 		beforeEach(async () => {
@@ -452,20 +476,12 @@ describe("Markupai", () => {
 			mockGetPath.mockReturnValue("v1/style/checks");
 			mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
 
-			mockExecuteFunctions.getNodeParameter = vi
-				.fn()
-				.mockReturnValueOnce("styleCheck")
-				.mockReturnValueOnce({ waitForCompletion: true })
-				.mockReturnValueOnce("test content 1")
-				.mockReturnValueOnce("test-style-guide")
-				.mockReturnValueOnce("professional")
-				.mockReturnValueOnce("american_english")
-				.mockReturnValueOnce("styleCheck")
-				.mockReturnValueOnce({ waitForCompletion: true })
-				.mockReturnValueOnce("test content 2")
-				.mockReturnValueOnce("test-style-guide")
-				.mockReturnValueOnce("professional")
-				.mockReturnValueOnce("american_english");
+			mockExecuteFunctions.getNodeParameter = mockMultipleItemsFunctionResponses(
+				"professional",
+				{ waitForCompletion: true },
+				"test content 1",
+				"test content 2",
+			);
 
 			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
 			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
