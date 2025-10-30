@@ -58,15 +58,17 @@ export async function processMarkupaiItem(
 
 		const result = await styleRequest.call(this, formDataDetails, getPath(operation), itemIndex);
 
+		const resultElement = result[0];
+
 		if (formDataDetails.waitForCompletion) {
 			const emailHTMLReport = generateEmailHTMLReport(
-				result[0].json as unknown as GetStyleRewriteResponse,
+				resultElement.json as unknown as GetStyleRewriteResponse,
 				extendedInputData,
 			);
 
 			return {
 				json: {
-					...(result[0].json as unknown as GetStyleRewriteResponse),
+					...(resultElement.json as unknown as GetStyleRewriteResponse),
 					html_email: emailHTMLReport,
 				},
 				pairedItem: {
@@ -76,7 +78,7 @@ export async function processMarkupaiItem(
 		} else {
 			return {
 				json: {
-					...(result[0].json as unknown as PostStyleRewriteResponse),
+					...(resultElement.json as unknown as PostStyleRewriteResponse),
 				},
 				pairedItem: {
 					item: itemIndex,
