@@ -44,6 +44,26 @@ const createCheckWorkflowResponse = () => ({
 	original: { issues: [], scores: { quality: { score: 85 } } },
 });
 
+const validateFirstItem = (firstElement: INodeExecutionData, firstItemError: Error) => {
+	expect(firstElement.json).toHaveProperty("error", firstItemError.message);
+	expect(firstElement.pairedItem).toEqual({ item: 0 });
+};
+
+const validateSecondItem = (
+	secondElement: INodeExecutionData,
+	secondItemResult: {
+		workflow: { id: string; status: string };
+		config: { style_guide: { style_guide_id: string } };
+		original: { issues: any[]; scores: { quality: { score: number } } };
+	},
+) => {
+	expect(secondElement.json).toMatchObject({
+		...secondItemResult,
+		html_email: "<html>test report</html>",
+	});
+	expect(secondElement.pairedItem).toEqual({ item: 1 });
+};
+
 describe("Markupai", () => {
 	let markupai: Markupai;
 	let mockExecuteFunctions: Partial<IExecuteFunctions>;
@@ -166,26 +186,6 @@ describe("Markupai", () => {
 			expect(markupai.methods.loadOptions.loadDialects).toBeDefined();
 		});
 	});
-
-	function validateFirstItem(firstElement: INodeExecutionData, firstItemError: Error) {
-		expect(firstElement.json).toHaveProperty("error", firstItemError.message);
-		expect(firstElement.pairedItem).toEqual({ item: 0 });
-	}
-
-	function validateSecondItem(
-		secondElement: INodeExecutionData,
-		secondItemResult: {
-			workflow: { id: string; status: string };
-			config: { style_guide: { style_guide_id: string } };
-			original: { issues: any[]; scores: { quality: { score: number } } };
-		},
-	) {
-		expect(secondElement.json).toMatchObject({
-			...secondItemResult,
-			html_email: "<html>test report</html>",
-		});
-		expect(secondElement.pairedItem).toEqual({ item: 1 });
-	}
 
 	describe("Execute Method", () => {
 		const mockInputData: INodeExecutionData[] = [{ json: { test: "data" } }];
