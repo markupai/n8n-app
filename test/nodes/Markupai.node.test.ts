@@ -44,6 +44,26 @@ const createCheckWorkflowResponse = () => ({
 	original: { issues: [], scores: { quality: { score: 85 } } },
 });
 
+const validateFirstItem = (firstElement: INodeExecutionData, firstItemError: Error) => {
+	expect(firstElement.json).toHaveProperty("error", firstItemError.message);
+	expect(firstElement.pairedItem).toEqual({ item: 0 });
+};
+
+const validateSecondItem = (
+	secondElement: INodeExecutionData,
+	secondItemResult: {
+		workflow: { id: string; status: string };
+		config: { style_guide: { style_guide_id: string } };
+		original: { issues: any[]; scores: { quality: { score: number } } };
+	},
+) => {
+	expect(secondElement.json).toMatchObject({
+		...secondItemResult,
+		html_email: "<html>test report</html>",
+	});
+	expect(secondElement.pairedItem).toEqual({ item: 1 });
+};
+
 describe("Markupai", () => {
 	let markupai: Markupai;
 	let mockExecuteFunctions: Partial<IExecuteFunctions>;
@@ -209,14 +229,39 @@ describe("Markupai", () => {
 			mockGetPath.mockReturnValue("v1/style/checks");
 		};
 
-		const mockCommonFunctionResponses = (tone: string) => {
-			return vi
-				.fn()
+		const addItemMockReturns = (
+			mock: ReturnType<typeof vi.fn>,
+			tone: string,
+			additionalOptions: Record<string, any>,
+			content: string,
+		) => {
+			return mock
 				.mockReturnValueOnce("styleCheck")
-				.mockReturnValueOnce("test content")
+				.mockReturnValueOnce(additionalOptions)
+				.mockReturnValueOnce(content)
 				.mockReturnValueOnce("test-style-guide")
 				.mockReturnValueOnce(tone)
 				.mockReturnValueOnce("american_english");
+		};
+
+		const mockCommonFunctionResponses = (
+			tone: string,
+			additionalOptions = {},
+			content = "test content",
+		) => {
+			return addItemMockReturns(vi.fn(), tone, additionalOptions, content);
+		};
+
+		const mockMultipleItemsFunctionResponses = (
+			tone: string,
+			additionalOptions = {},
+			...contents: string[]
+		) => {
+			const mock = vi.fn();
+			for (const content of contents) {
+				addItemMockReturns(mock, tone, additionalOptions, content);
+			}
+			return mock;
 		};
 
 		beforeEach(async () => {
@@ -249,9 +294,7 @@ describe("Markupai", () => {
 		it("should execute styleCheck operation successfully with completion", async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 				pollingTimeout: 30000,
 				documentName: "test.txt",
@@ -291,9 +334,7 @@ describe("Markupai", () => {
 			mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
 			mockGetPath.mockReturnValue("v1/style/rewrites");
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 			});
 
@@ -321,7 +362,8 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
 				"None (keep tone unchanged)",
-			).mockReturnValueOnce({ waitForCompletion: true });
+				{ waitForCompletion: true },
+			);
 
 			await markupai.execute.call(mockExecuteFunctions as any);
 
@@ -341,9 +383,7 @@ describe("Markupai", () => {
 			mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
 			mockGetPath.mockReturnValue("v1/style/checks");
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: false,
 			});
 
@@ -367,9 +407,7 @@ describe("Markupai", () => {
 			mockStyleRequest.mockRejectedValue(error);
 			mockGetPath.mockReturnValue("v1/style/checks");
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 			});
 
@@ -381,9 +419,7 @@ describe("Markupai", () => {
 		it("should handle undefined additional options gracefully", async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({});
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {});
 
 			await markupai.execute.call(mockExecuteFunctions as any);
 
@@ -400,9 +436,7 @@ describe("Markupai", () => {
 		it("should include pairedItem object in execute response", async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 			});
 
@@ -415,9 +449,7 @@ describe("Markupai", () => {
 		it("should only return json and pairedItem properties in execute response", async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 			});
 
@@ -436,9 +468,7 @@ describe("Markupai", () => {
 			mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
 			mockGetPath.mockReturnValue("v1/style/checks");
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: false,
 			});
 
@@ -466,36 +496,24 @@ describe("Markupai", () => {
 			mockGetPath.mockReturnValue("v1/style/checks");
 			mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
 
-			mockExecuteFunctions.getNodeParameter = vi
-				.fn()
-				.mockReturnValueOnce("styleCheck")
-				.mockReturnValueOnce("test content 1")
-				.mockReturnValueOnce("test-style-guide")
-				.mockReturnValueOnce("professional")
-				.mockReturnValueOnce("american_english")
-				.mockReturnValueOnce({ waitForCompletion: true })
-				.mockReturnValueOnce("styleCheck")
-				.mockReturnValueOnce("test content 2")
-				.mockReturnValueOnce("test-style-guide")
-				.mockReturnValueOnce("professional")
-				.mockReturnValueOnce("american_english")
-				.mockReturnValueOnce({ waitForCompletion: true });
+			mockExecuteFunctions.getNodeParameter = mockMultipleItemsFunctionResponses(
+				"professional",
+				{ waitForCompletion: true },
+				"test content 1",
+				"test content 2",
+			);
 
 			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
 			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
 
 			const result = await markupai.execute.call(mockExecuteFunctions as any);
 
-			expect(result[0]).toHaveLength(2);
+			const resultElement = result[0];
 
-			expect(result[0][0].json).toHaveProperty("error", firstItemError.message);
-			expect(result[0][0].pairedItem).toEqual({ item: 0 });
+			expect(resultElement).toHaveLength(2);
 
-			expect(result[0][1].json).toMatchObject({
-				...secondItemResult,
-				html_email: "<html>test report</html>",
-			});
-			expect(result[0][1].pairedItem).toEqual({ item: 1 });
+			validateFirstItem(resultElement[0], firstItemError);
+			validateSecondItem(resultElement[1], secondItemResult);
 
 			expect(mockStyleRequest).toHaveBeenCalledTimes(2);
 
@@ -511,9 +529,7 @@ describe("Markupai", () => {
 			mockStyleRequest.mockRejectedValue(error);
 			mockGetPath.mockReturnValue("v1/style/checks");
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"professional",
-			).mockReturnValueOnce({
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
 			});
 

@@ -3,14 +3,10 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	NodeApiError,
 	NodeConnectionTypes,
-	NodeOperationError,
 } from "n8n-workflow";
 import { loadDialects, loadStyleGuides, loadTones } from "./utils/load.options";
-import { FormDataDetails, getPath, styleRequest } from "./utils/style.api.utils";
-import { generateEmailHTMLReport } from "./utils/email.generator";
-import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "./Markupai.api.types";
+import { processMarkupaiItem } from "./utils/process.item";
 
 export class Markupai implements INodeType {
 	description: INodeTypeDescription = {
@@ -190,80 +186,9 @@ export class Markupai implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			try {
-				const operation = this.getNodeParameter("operation", i);
-				const content = this.getNodeParameter("content", i);
-				const styleGuide = this.getNodeParameter("styleGuide", i);
-				const tone = this.getNodeParameter("tone", i);
-				const dialect = this.getNodeParameter("dialect", i);
-				const additionalOptions = this.getNodeParameter("additionalOptions", i) as {
-					waitForCompletion?: boolean;
-					pollingTimeout?: number;
-					documentName?: string;
-					documentOwner?: string;
-					documentLink?: string;
-				};
-				const waitForCompletion = additionalOptions.waitForCompletion ?? true;
-				const pollingTimeout = additionalOptions.pollingTimeout || 60000;
-				const extendedInputData = {
-					document_name: additionalOptions.documentName,
-					document_owner: additionalOptions.documentOwner,
-					document_link: additionalOptions.documentLink,
-				};
-				const formDataDetails = {
-					content,
-					styleGuide,
-					...(tone !== "None (keep tone unchanged)" && { tone }),
-					dialect,
-					waitForCompletion,
-					pollingTimeout,
-				} as FormDataDetails;
+			const result = await processMarkupaiItem.call(this, i);
 
-				const result = await styleRequest.call(this, formDataDetails, getPath(operation), i);
-
-				if (waitForCompletion) {
-					const emailHTMLReport = generateEmailHTMLReport(
-						result[0].json as unknown as GetStyleRewriteResponse,
-						extendedInputData,
-					);
-
-					returnData.push({
-						json: {
-							...(result[0].json as unknown as GetStyleRewriteResponse),
-							html_email: emailHTMLReport,
-						},
-						pairedItem: {
-							item: i,
-						},
-					});
-				} else {
-					returnData.push({
-						json: {
-							...(result[0].json as unknown as PostStyleRewriteResponse),
-						},
-						pairedItem: {
-							item: i,
-						},
-					});
-				}
-			} catch (error) {
-				if (this.continueOnFail()) {
-					returnData.push({
-						json: {
-							error: error instanceof NodeApiError ? error.description : error.message,
-						},
-						pairedItem: {
-							item: i,
-						},
-					});
-					continue;
-				}
-
-				throw new NodeOperationError(this.getNode(), error as Error, {
-					description: error instanceof NodeApiError ? error.description : error.message,
-					itemIndex: i,
-				});
-			}
+			returnData.push(result);
 		}
 
 		return [this.helpers.returnJsonArray(returnData)];
