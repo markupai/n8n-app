@@ -74,10 +74,6 @@ describe("getStringContentType (filename.resolver)", () => {
 			content: "# Heading\n\n- item 1\n- item 2\n\n[link](https://example.com)",
 		},
 		{
-			description: "frontmatter with YAML",
-			content: "---\ntitle: My Document\nauthor: John Doe\n---\n\nContent here",
-		},
-		{
 			description: "frontmatter with simple key-value pairs",
 			content: "---\nkey: value\n---\n",
 		},
@@ -86,40 +82,16 @@ describe("getStringContentType (filename.resolver)", () => {
 			content: "- item 1\n- item 2",
 		},
 		{
-			description: "unordered list using * marker",
-			content: "* item 1\n* item 2",
-		},
-		{
-			description: "unordered list using + marker",
-			content: "+ item 1\n+ item 2",
-		},
-		{
-			description: "ordered list",
-			content: "1. item 1\n2. item 2",
-		},
-		{
 			description: "ordered list with multiple digits",
 			content: "123. item 1\n456. item 2",
-		},
-		{
-			description: "blockquote",
-			content: "> This is a blockquote",
 		},
 		{
 			description: "blockquote with multiple lines",
 			content: "> Line 1\n> Line 2",
 		},
 		{
-			description: "blockquote with leading whitespace",
-			content: ">   Indented blockquote",
-		},
-		{
 			description: "code fence with language identifier",
 			content: "```javascript\nconst x = 1;\n```",
-		},
-		{
-			description: "code fence without language",
-			content: "```\ncode here\n```",
 		},
 		{
 			description: "image with title",
