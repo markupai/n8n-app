@@ -19,40 +19,37 @@ function getAndValidateFileNameExtension(content: string, expectedExtension: str
 }
 
 describe("getStringContentType (filename.resolver)", () => {
-	it("detects DITA via DOCTYPE PUBLIC identifier", () => {
-		const content =
-			"<?xml version='1.0' encoding='UTF-8'?>\n" +
-			"<!DOCTYPE topic PUBLIC '-//OASIS//DTD DITA Topic//EN' 'topic.dtd'>\n" +
-			'<topic id="t1"><title>Sample</title><body><p>Para</p></body></topic>';
-
-		getAndValidateDitaExtension(content);
-	});
-
-	it("detects DITA via DOCTYPE with arbitrary .dtd filename for DITA root", () => {
-		const content =
-			"<?xml version='1.0' encoding='UTF-8'?>\n" +
-			"<!DOCTYPE task PUBLIC '-//OASIS//DTD DITA Task//EN' 'my-custom-dita-file-123.dtd'>\n" +
-			'<task id="t1"><title>Task</title><taskbody><steps><step><cmd>Do</cmd></step></steps></taskbody></task>';
-
-		getAndValidateDitaExtension(content);
-	});
-
-	it("detects DITA via root map with DITA namespace", () => {
-		const content =
-			'<?xml version="1.0" encoding="UTF-8"?>\n' +
-			'<map xmlns="http://dita.oasis-open.org/architecture/2005/">\n' +
-			'  <topicref href="topic.dita"/>\n' +
-			"</map>";
-
-		getAndValidateDitaExtension(content);
-	});
-
-	it("detects DITA via DOCTYPE SYSTEM URL to OASIS DITA DTD", () => {
-		const content =
-			'<?xml version="1.0" encoding="UTF-8"?>\n' +
-			'<!DOCTYPE concept SYSTEM "https://docs.oasis-open.org/dita/v1.3/os/dtd/concept.dtd">\n' +
-			'<concept id="c1"><title>Concept</title><conbody><p>Body</p></conbody></concept>';
-
+	it.each([
+		{
+			description: "DOCTYPE PUBLIC identifier",
+			content:
+				"<?xml version='1.0' encoding='UTF-8'?>\n" +
+				"<!DOCTYPE topic PUBLIC '-//OASIS//DTD DITA Topic//EN' 'topic.dtd'>\n" +
+				'<topic id="t1"><title>Sample</title><body><p>Para</p></body></topic>',
+		},
+		{
+			description: "DOCTYPE with arbitrary .dtd filename for DITA root",
+			content:
+				"<?xml version='1.0' encoding='UTF-8'?>\n" +
+				"<!DOCTYPE task PUBLIC '-//OASIS//DTD DITA Task//EN' 'my-custom-dita-file-123.dtd'>\n" +
+				'<task id="t1"><title>Task</title><taskbody><steps><step><cmd>Do</cmd></step></steps></taskbody></task>',
+		},
+		{
+			description: "root map with DITA namespace",
+			content:
+				'<?xml version="1.0" encoding="UTF-8"?>\n' +
+				'<map xmlns="http://dita.oasis-open.org/architecture/2005/">\n' +
+				'  <topicref href="topic.dita"/>\n' +
+				"</map>",
+		},
+		{
+			description: "DOCTYPE SYSTEM URL to OASIS DITA DTD",
+			content:
+				'<?xml version="1.0" encoding="UTF-8"?>\n' +
+				'<!DOCTYPE concept SYSTEM "https://docs.oasis-open.org/dita/v1.3/os/dtd/concept.dtd">\n' +
+				'<concept id="c1"><title>Concept</title><conbody><p>Body</p></conbody></concept>',
+		},
+	])("detects DITA via $description", ({ content }) => {
 		getAndValidateDitaExtension(content);
 	});
 
@@ -71,45 +68,36 @@ describe("getStringContentType (filename.resolver)", () => {
 		getAndValidateHtmlExtension(content);
 	});
 
-	it("detects Markdown content", () => {
-		const content = "# Heading\n\n- item 1\n- item 2\n\n[link](https://example.com)";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown with unordered list using - marker", () => {
-		const content = "- item 1\n- item 2";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown with unordered list using * marker", () => {
-		const content = "* item 1\n* item 2";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown with unordered list using + marker", () => {
-		const content = "+ item 1\n+ item 2";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown with ordered list", () => {
-		const content = "1. item 1\n2. item 2";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown with ordered list with multiple digits", () => {
-		const content = "123. item 1\n456. item 2";
-
-		getAndValidateMarkdownExtension(content);
-	});
-
-	it("detects Markdown list with leading whitespace", () => {
-		const content = "   - item 1\n   * item 2\n   1. item 3";
-
+	it.each([
+		{
+			description: "basic content with heading, list, and link",
+			content: "# Heading\n\n- item 1\n- item 2\n\n[link](https://example.com)",
+		},
+		{
+			description: "unordered list using - marker",
+			content: "- item 1\n- item 2",
+		},
+		{
+			description: "unordered list using * marker",
+			content: "* item 1\n* item 2",
+		},
+		{
+			description: "unordered list using + marker",
+			content: "+ item 1\n+ item 2",
+		},
+		{
+			description: "ordered list",
+			content: "1. item 1\n2. item 2",
+		},
+		{
+			description: "ordered list with multiple digits",
+			content: "123. item 1\n456. item 2",
+		},
+		{
+			description: "list with leading whitespace",
+			content: "   - item 1\n   * item 2\n   1. item 3",
+		},
+	])("detects Markdown with $description", ({ content }) => {
 		getAndValidateMarkdownExtension(content);
 	});
 
