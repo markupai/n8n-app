@@ -16,6 +16,13 @@ vi.mock("../../nodes/Markupai/utils/email.generator", () => ({
 	generateEmailHTMLReport: vi.fn(),
 }));
 
+vi.mock("../../nodes/Markupai/utils/file.type.utils", () => ({
+	getContentType: vi.fn(),
+	getFileExtensionFromFileName: vi.fn(),
+	getMimeTypeFromFileName: vi.fn(),
+	getFileNameExtension: vi.fn(),
+}));
+
 vi.mock("n8n-workflow", async () => {
 	const actual = await vi.importActual("n8n-workflow");
 	return {
@@ -118,6 +125,10 @@ describe("process.item", () => {
 	let mockStyleRequest: ReturnType<typeof vi.fn>;
 	let mockGenerateEmailHTMLReport: ReturnType<typeof vi.fn>;
 	let mockGetPath: ReturnType<typeof vi.fn>;
+	let mockGetContentType: ReturnType<typeof vi.fn>;
+	let mockGetFileExtensionFromFileName: ReturnType<typeof vi.fn>;
+	let mockGetMimeTypeFromFileName: ReturnType<typeof vi.fn>;
+	let mockGetFileNameExtension: ReturnType<typeof vi.fn>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -125,14 +136,28 @@ describe("process.item", () => {
 		const { styleRequest } = await import("../../nodes/Markupai/utils/style.api.utils");
 		const { generateEmailHTMLReport } = await import("../../nodes/Markupai/utils/email.generator");
 		const { getPath } = await import("../../nodes/Markupai/utils/style.api.utils");
+		const {
+			getContentType,
+			getFileExtensionFromFileName,
+			getMimeTypeFromFileName,
+			getFileNameExtension,
+		} = await import("../../nodes/Markupai/utils/file.type.utils");
 
 		mockStyleRequest = vi.fn();
 		mockGenerateEmailHTMLReport = vi.fn().mockReturnValue("<html>test report</html>");
 		mockGetPath = vi.fn().mockReturnValue("v1/style/checks");
+		mockGetContentType = vi.fn().mockReturnValue("text/plain");
+		mockGetFileExtensionFromFileName = vi.fn().mockReturnValue(".txt");
+		mockGetMimeTypeFromFileName = vi.fn().mockReturnValue("text/plain");
+		mockGetFileNameExtension = vi.fn().mockReturnValue(".txt");
 
 		vi.mocked(styleRequest).mockImplementation(mockStyleRequest);
 		vi.mocked(generateEmailHTMLReport).mockImplementation(mockGenerateEmailHTMLReport);
 		vi.mocked(getPath).mockImplementation(mockGetPath);
+		vi.mocked(getContentType).mockImplementation(mockGetContentType);
+		vi.mocked(getFileExtensionFromFileName).mockImplementation(mockGetFileExtensionFromFileName);
+		vi.mocked(getMimeTypeFromFileName).mockImplementation(mockGetMimeTypeFromFileName);
+		vi.mocked(getFileNameExtension).mockImplementation(mockGetFileNameExtension);
 	});
 
 	afterEach(() => {
@@ -144,6 +169,7 @@ describe("process.item", () => {
 			it("should process item successfully with waitForCompletion true", async () => {
 				const mockResponse = createGetStyleRewriteResponse();
 				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
+				mockGetMimeTypeFromFileName.mockReturnValue("text/plain");
 
 				const mockExecuteFunctions = createMockExecuteFunctions({
 					getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
@@ -159,6 +185,8 @@ describe("process.item", () => {
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					{
 						content: "test content",
+						contentType: "text/plain",
+						fileNameExtension: ".txt",
 						styleGuide: "test-style-guide",
 						tone: "professional",
 						dialect: "american_english",
@@ -333,6 +361,66 @@ describe("process.item", () => {
 				expect(mockStyleRequest).toHaveBeenCalledWith(expect.anything(), "v1/style/checks", 2);
 
 				expect(result.pairedItem).toEqual({ item: 2 });
+			});
+
+			it("should use getMimeTypeFromFileName when documentName is provided", async () => {
+				const mockResponse = createGetStyleRewriteResponse();
+				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
+				mockGetMimeTypeFromFileName.mockReturnValue("application/dita+xml");
+				mockGetFileNameExtension.mockReturnValue(".dita");
+
+				const mockExecuteFunctions = createMockExecuteFunctions({
+					getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+						waitForCompletion: true,
+						documentName: "document.dita",
+					}),
+				});
+
+				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+
+				expect(mockGetMimeTypeFromFileName).toHaveBeenCalledWith("document.dita");
+				expect(mockGetContentType).not.toHaveBeenCalled();
+				expect(mockGetFileNameExtension).toHaveBeenCalledWith("application/dita+xml");
+			});
+
+			it("should use getContentType when documentName is not provided", async () => {
+				const mockResponse = createGetStyleRewriteResponse();
+				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
+				mockGetContentType.mockReturnValue("text/html");
+				mockGetFileNameExtension.mockReturnValue(".html");
+
+				const mockExecuteFunctions = createMockExecuteFunctions({
+					getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+						waitForCompletion: true,
+						// documentName is not provided
+					}),
+				});
+
+				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+
+				expect(mockGetContentType).toHaveBeenCalledWith("test content");
+				expect(mockGetFileExtensionFromFileName).not.toHaveBeenCalled();
+				expect(mockGetFileNameExtension).toHaveBeenCalledWith("text/html");
+			});
+
+			it("should use getContentType when documentName is undefined", async () => {
+				const mockResponse = createGetStyleRewriteResponse();
+				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
+				mockGetContentType.mockReturnValue("application/dita+xml");
+				mockGetFileNameExtension.mockReturnValue(".dita");
+
+				const mockExecuteFunctions = createMockExecuteFunctions({
+					getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+						waitForCompletion: true,
+						documentName: undefined,
+					}),
+				});
+
+				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+
+				expect(mockGetContentType).toHaveBeenCalledWith("test content");
+				expect(mockGetFileExtensionFromFileName).not.toHaveBeenCalled();
+				expect(mockGetFileNameExtension).toHaveBeenCalledWith("application/dita+xml");
 			});
 		});
 

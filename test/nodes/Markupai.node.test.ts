@@ -307,6 +307,8 @@ describe("Markupai", () => {
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				{
 					content: "test content",
+					contentType: "text/plain",
+					fileNameExtension: ".txt",
 					styleGuide: "test-style-guide",
 					tone: "professional",
 					dialect: "american_english",
@@ -343,6 +345,8 @@ describe("Markupai", () => {
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				{
 					content: "test content",
+					contentType: "text/plain",
+					fileNameExtension: ".txt",
 					styleGuide: "test-style-guide",
 					tone: "professional",
 					dialect: "american_english",
