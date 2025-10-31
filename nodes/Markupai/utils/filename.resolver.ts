@@ -23,8 +23,8 @@ function isLikelyMarkdownString(content: string): boolean {
 		return true;
 	}
 
-	// Lists
-	if (/^(?:\s*[-*+]\s+\S|\s*\d+\.\s+\S)/m.test(sample)) {
+	// Lists - split regex to avoid backtracking issues
+	if (/^\s*[-*+]\s+\S/m.test(sample) || /^\s*\d+\.\s+\S/m.test(sample)) {
 		return true;
 	}
 
