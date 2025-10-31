@@ -29,18 +29,21 @@ function isLikelyMarkdownString(content: string): boolean {
 		return true;
 	}
 
-	// Links
-	if (/\[(.*?)\]\((.*?)\s?(?:"(.*?)")?\)/i.test(sample)) {
+	// Links - use negated character classes with bounded quantifiers to prevent backtracking
+	// Matches [text](url) or [text](url "title") format
+	if (/\[[^\]]{0,200}\]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
 		return true;
 	}
 
-	// Images
-	if (/!\[(.*?)\]\((.*?)\s?(?:"(.*?)")?\)/i.test(sample)) {
+	// Images - use negated character classes with bounded quantifiers to prevent backtracking
+	// Matches ![alt](url) or ![alt](url "title") format
+	if (/!\[[^\]]{0,200}\]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
 		return true;
 	}
 
-	// Blockquotes
-	if (/^>\s*(.+)$/.test(sample)) {
+	// Blockquotes - use bounded quantifier to prevent backtracking
+	// Matches lines starting with > followed by content
+	if (/^>\s*.{1,200}$/m.test(sample)) {
 		return true;
 	}
 
