@@ -43,12 +43,12 @@ function isLikelyMarkdownString(content: string): boolean {
 
 	// Blockquotes - use bounded quantifier to prevent backtracking
 	// Matches lines starting with > followed by content
-	if (/^>\s*.{1,200}$/m.test(sample)) {
+	if (/^>\s*\S.*$/m.test(sample)) {
 		return true;
 	}
 
 	// Code fences
-	if (/```[\s\S]*?```/.test(sample)) {
+	if (/```[\s\S]{0,500}```/.test(sample)) {
 		return true;
 	}
 
@@ -74,7 +74,7 @@ function isLikelyDitaString(content: string): boolean {
 	}
 
 	// Root element check following optional XML declaration
-	if (new RegExp(`^\\s*<\\?xml[\\s\\S]*?\\?>?\\s*<(?:${rootNames})\\b`, "m").test(sample)) {
+	if (new RegExp(`^\\s*<\\?xml[\\s\\S]{0,200}?\\?>?\\s*<(?:${rootNames})\\b`, "m").test(sample)) {
 		return true;
 	}
 

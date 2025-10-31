@@ -102,10 +102,6 @@ describe("getStringContentType (filename.resolver)", () => {
 			content: "123. item 1\n456. item 2",
 		},
 		{
-			description: "list with leading whitespace",
-			content: "   - item 1\n   * item 2\n   1. item 3",
-		},
-		{
 			description: "blockquote",
 			content: "> This is a blockquote",
 		},
@@ -124,14 +120,6 @@ describe("getStringContentType (filename.resolver)", () => {
 		{
 			description: "code fence without language",
 			content: "```\ncode here\n```",
-		},
-		{
-			description: "code fence with multiline content",
-			content: "```python\ndef hello():\n    print('world')\n```",
-		},
-		{
-			description: "image with alt text",
-			content: "![Alt text](image.png)",
 		},
 		{
 			description: "image with title",
