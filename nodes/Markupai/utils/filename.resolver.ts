@@ -24,20 +24,19 @@ function isLikelyMarkdownString(content: string): boolean {
 	}
 
 	// Unordered and ordered lists - split regex to avoid backtracking issues
-	// Limit quantifiers to prevent catastrophic backtracking (bounded by sample size of 512 chars)
 	if (/^\s{0,100}[-*+]\s+\S/m.test(sample) || /^\s{0,100}\d{1,10}\.\s+\S/m.test(sample)) {
 		return true;
 	}
 
 	// Links - use negated character classes with bounded quantifiers to prevent backtracking
 	// Matches [text](url) or [text](url "title") format
-	if (/\[[^\]]{0,200}\]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
+	if (/\[[^\]]{0,200}]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
 		return true;
 	}
 
 	// Images - use negated character classes with bounded quantifiers to prevent backtracking
 	// Matches ![alt](url) or ![alt](url "title") format
-	if (/!\[[^\]]{0,200}\]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
+	if (/!\[[^\]]{0,200}]\([^)]{0,200}(\s+"[^"]{0,100}")?\)/i.test(sample)) {
 		return true;
 	}
 
@@ -48,11 +47,7 @@ function isLikelyMarkdownString(content: string): boolean {
 	}
 
 	// Code fences
-	if (/```[\s\S]{0,500}```/.test(sample)) {
-		return true;
-	}
-
-	return false;
+	return /```[\s\S]{0,500}```/.test(sample);
 }
 
 // Heuristic to detect likely DITA XML content in a string
@@ -83,7 +78,7 @@ function isLikelyDitaString(content: string): boolean {
 }
 
 // Helper function to determine MIME type for string content
-export function getStringContentType(content: string): string {
+export function getFileNameExtension(content: string): string {
 	if (isLikelyDitaString(content)) {
 		return ".dita";
 	}

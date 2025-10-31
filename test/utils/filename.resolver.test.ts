@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStringContentType } from "../../nodes/Markupai/utils/filename.resolver";
+import { getFileNameExtension } from "../../nodes/Markupai/utils/filename.resolver";
 
 function getAndValidateDitaExtension(content: string) {
 	getAndValidateFileNameExtension(content, ".dita");
@@ -14,7 +14,7 @@ function getAndValidateMarkdownExtension(content: string) {
 }
 
 function getAndValidateFileNameExtension(content: string, expectedExtension: string) {
-	const type = getStringContentType(content);
+	const type = getFileNameExtension(content);
 	expect(type).toBe(expectedExtension);
 }
 
@@ -103,7 +103,7 @@ describe("getStringContentType (filename.resolver)", () => {
 
 	it("falls back to text/plain for unknown content", () => {
 		const content = "Just a plain line of text without special markers.";
-		const type = getStringContentType(content);
+		const type = getFileNameExtension(content);
 		expect(type).toBe(".txt");
 	});
 });
