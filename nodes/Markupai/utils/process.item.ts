@@ -9,7 +9,7 @@ import { generateEmailHTMLReport } from "./email.generator";
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
 import {
 	getContentType,
-	getFileExtensionFromFileName,
+	getMimeTypeFromFileName,
 	getFileNameExtension,
 } from "./filename.extension.resolver";
 
@@ -58,7 +58,7 @@ function buildFormDataDetails(
 	const waitForCompletion = additionalOptions.waitForCompletion ?? true;
 	const pollingTimeout = additionalOptions.pollingTimeout || 60000;
 	const contentType = additionalOptions.documentName
-		? getFileExtensionFromFileName(additionalOptions.documentName)
+		? getMimeTypeFromFileName(additionalOptions.documentName)
 		: getContentType(content as string);
 	const fileNameExtension = getFileNameExtension(contentType);
 

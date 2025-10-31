@@ -94,9 +94,29 @@ export function getFileNameExtension(contentType: string): string {
 }
 
 export function getFileExtensionFromFileName(fileName: string): string {
-	const extension = fileName.split(".").pop() ?? "";
+	const arr = fileName.split(".");
+	const extension = arr.length > 1 ? arr.pop() : "";
 
-	return "." + extension;
+	return extension ? "." + extension : "";
+}
+
+export function getMimeTypeFromFileName(fileName: string): string {
+	const extension = getFileExtensionFromFileName(fileName).toLowerCase();
+
+	switch (extension) {
+		case ".dita":
+			return "application/dita+xml";
+		case ".md":
+		case ".markdown":
+			return "text/markdown";
+		case ".html":
+		case ".htm":
+			return "text/html";
+		case ".txt":
+			return "text/plain";
+		default:
+			return "text/plain";
+	}
 }
 
 // Helper function to determine MIME type for string content
