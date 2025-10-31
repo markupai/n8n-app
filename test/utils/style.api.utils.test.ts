@@ -213,7 +213,7 @@ describe("style.api.utils", () => {
 
 			for (const testCase of testCases) {
 				const formDataDetails = createFormDataDetails({
-					documentName: testCase?.documentName,
+					documentName: testCase.documentName,
 					fileNameExtension: testCase.fileNameExtension,
 				});
 

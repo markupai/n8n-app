@@ -57,7 +57,7 @@ function isLikelyDitaString(content: string): boolean {
 	const rootNames = "topic|concept|task|reference|map|bookmap|glossentry|subjectScheme";
 
 	// DOCTYPE with DITA identifiers
-	if (new RegExp(String.raw`<!DOCTYPE\s+(?:${rootNames})\b/.*/DITA`, "is").test(sample)) {
+	if (new RegExp(String.raw`<!DOCTYPE\s+(?:${rootNames})\b\/.*\/DITA`, "is").test(sample)) {
 		return true;
 	}
 
