@@ -23,13 +23,24 @@ function isLikelyMarkdownString(content: string): boolean {
 		return true;
 	}
 
-	// Lists - split regex to avoid backtracking issues
-	if (/^\s*[-*+]\s+\S/m.test(sample) || /^\s*\d+\.\s+\S/m.test(sample)) {
+	// Unordered and ordered lists - split regex to avoid backtracking issues
+	// Limit quantifiers to prevent catastrophic backtracking (bounded by sample size of 512 chars)
+	if (/^\s{0,100}[-*+]\s+\S/m.test(sample) || /^\s{0,100}\d{1,10}\.\s+\S/m.test(sample)) {
 		return true;
 	}
 
-	// Links or images
-	if (/\[[^\]]+\]\([^)]+\)/.test(sample) || /!\[[^\]]*\]\([^)]+\)/.test(sample)) {
+	// Links
+	if (/\[(.*?)\]\((.*?)\s?(?:"(.*?)")?\)/i.test(sample)) {
+		return true;
+	}
+
+	// Images
+	if (/!\[(.*?)\]\((.*?)\s?(?:"(.*?)")?\)/i.test(sample)) {
+		return true;
+	}
+
+	// Blockquotes
+	if (/^>\s*(.+)$/.test(sample)) {
 		return true;
 	}
 
