@@ -74,6 +74,14 @@ describe("getStringContentType (filename.resolver)", () => {
 			content: "# Heading\n\n- item 1\n- item 2\n\n[link](https://example.com)",
 		},
 		{
+			description: "frontmatter with YAML",
+			content: "---\ntitle: My Document\nauthor: John Doe\n---\n\nContent here",
+		},
+		{
+			description: "frontmatter with simple key-value pairs",
+			content: "---\nkey: value\n---\n",
+		},
+		{
 			description: "unordered list using - marker",
 			content: "- item 1\n- item 2",
 		},
@@ -96,6 +104,38 @@ describe("getStringContentType (filename.resolver)", () => {
 		{
 			description: "list with leading whitespace",
 			content: "   - item 1\n   * item 2\n   1. item 3",
+		},
+		{
+			description: "blockquote",
+			content: "> This is a blockquote",
+		},
+		{
+			description: "blockquote with multiple lines",
+			content: "> Line 1\n> Line 2",
+		},
+		{
+			description: "blockquote with leading whitespace",
+			content: ">   Indented blockquote",
+		},
+		{
+			description: "code fence with language identifier",
+			content: "```javascript\nconst x = 1;\n```",
+		},
+		{
+			description: "code fence without language",
+			content: "```\ncode here\n```",
+		},
+		{
+			description: "code fence with multiline content",
+			content: "```python\ndef hello():\n    print('world')\n```",
+		},
+		{
+			description: "image with alt text",
+			content: "![Alt text](image.png)",
+		},
+		{
+			description: "image with title",
+			content: '![Alt text](image.png "Image title")',
 		},
 	])("detects Markdown with $description", ({ content }) => {
 		getAndValidateMarkdownExtension(content);
