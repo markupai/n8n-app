@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getFileNameExtension } from "../../nodes/Markupai/utils/filename.resolver";
+import { getFileNameExtension } from "../../nodes/Markupai/utils/filename.extension.resolver";
 
 function getAndValidateDitaExtension(content: string) {
 	getAndValidateFileNameExtension(content, ".dita");

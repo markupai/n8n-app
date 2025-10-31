@@ -7,7 +7,7 @@ import {
 import { FormDataDetails, getPath, styleRequest } from "./style.api.utils";
 import { generateEmailHTMLReport } from "./email.generator";
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
-import { getFileNameExtension } from "./filename.resolver";
+import { getFileNameExtension } from "./filename.extension.resolver";
 
 type AdditionalOptions = {
 	waitForCompletion?: boolean;
