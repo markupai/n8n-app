@@ -18,7 +18,7 @@ function getAndValidateFileNameExtension(content: string, expectedExtension: str
 	expect(type).toBe(expectedExtension);
 }
 
-describe("getStringContentType (filename.resolver)", () => {
+describe("getFileNameExtension (filename.resolver)", () => {
 	it.each([
 		{
 			description: "DOCTYPE PUBLIC identifier",

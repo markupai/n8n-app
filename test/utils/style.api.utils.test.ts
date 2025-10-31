@@ -119,7 +119,7 @@ describe("style.api.utils", () => {
 	describe("postStyleRewrite", () => {
 		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
 			content: "test content",
-			contentType: ".md",
+			fileNameExtension: ".md",
 			dialect: "american_english",
 			tone: "business",
 			styleGuide: "test-style-guide",
@@ -178,7 +178,7 @@ describe("style.api.utils", () => {
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 			const formDataDetails = createFormDataDetails({
 				documentName: undefined,
-				contentType: ".html",
+				fileNameExtension: ".html",
 			});
 
 			// Spy on FormData.append to verify filename
@@ -198,7 +198,7 @@ describe("style.api.utils", () => {
 			formDataAppendSpy.mockRestore();
 		});
 
-		it("should correctly construct filename with documentName and contentType", async () => {
+		it("should correctly construct filename with documentName and fileNameExtension", async () => {
 			const { mockGetBaseUrl, mockHttpRequest, mockHttpRequestWithAuthentication } =
 				createMockFunctions();
 
@@ -209,15 +209,15 @@ describe("style.api.utils", () => {
 
 			// Test with different content types
 			const testCases = [
-				{ documentName: "document", contentType: ".dita", expected: "document.dita" },
-				{ documentName: "file", contentType: ".txt", expected: "file.txt" },
-				{ documentName: "page", contentType: ".md", expected: "page.md" },
+				{ documentName: "document", fileNameExtension: ".dita", expected: "document.dita" },
+				{ documentName: "file", fileNameExtension: ".txt", expected: "file.txt" },
+				{ documentName: "page", fileNameExtension: ".md", expected: "page.md" },
 			];
 
 			for (const testCase of testCases) {
 				const formDataDetails = createFormDataDetails({
 					documentName: testCase.documentName,
-					contentType: testCase.contentType,
+					fileNameExtension: testCase.fileNameExtension,
 				});
 
 				const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
@@ -427,7 +427,7 @@ describe("style.api.utils", () => {
 
 		const formDataDetails: FormDataDetails = {
 			content: "test content",
-			contentType: ".md",
+			fileNameExtension: ".md",
 			dialect: "american_english",
 			tone: "business",
 			styleGuide: "test-style-guide",

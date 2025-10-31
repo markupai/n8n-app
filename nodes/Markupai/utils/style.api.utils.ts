@@ -4,7 +4,7 @@ import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.a
 
 export interface FormDataDetails {
 	content: string;
-	contentType: string;
+	fileNameExtension: string;
 	dialect: string;
 	tone: string;
 	styleGuide: string;
@@ -23,8 +23,8 @@ export async function postStyleRewrite(
 	const formData = new FormData();
 	const baseUrl = await getBaseUrl(this);
 
-	const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
-	const fileName = (formDataDetails.documentName || "unknown") + formDataDetails.contentType;
+	const blob = new Blob([formDataDetails.content], { type: formDataDetails.fileNameExtension });
+	const fileName = (formDataDetails.documentName || "unknown") + formDataDetails.fileNameExtension;
 
 	formData.append("file_upload", blob, fileName);
 	formData.append("dialect", formDataDetails.dialect);

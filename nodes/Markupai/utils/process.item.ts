@@ -53,11 +53,11 @@ function buildFormDataDetails(
 	const dialect = this.getNodeParameter("dialect", itemIndex);
 	const waitForCompletion = additionalOptions.waitForCompletion ?? true;
 	const pollingTimeout = additionalOptions.pollingTimeout || 60000;
-	const contentType = getFileNameExtension(content as string);
+	const fileNameExtension = getFileNameExtension(content as string);
 
 	return {
 		content,
-		contentType,
+		fileNameExtension: fileNameExtension,
 		styleGuide,
 		...(tone !== "None (keep tone unchanged)" && { tone }),
 		dialect,
