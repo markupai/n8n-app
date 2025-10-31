@@ -1,21 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { getFileNameExtension } from "../../nodes/Markupai/utils/filename.extension.resolver";
+import {
+	getContentType,
+	getFileNameExtension,
+} from "../../nodes/Markupai/utils/filename.extension.resolver";
 
-function getAndValidateDitaExtension(content: string) {
-	getAndValidateFileNameExtension(content, ".dita");
-}
+function getAndValidateFileNameExtension(contentType: string, expectedExtension: string) {
+	const type = getFileNameExtension(contentType);
 
-function getAndValidateHtmlExtension(content: string) {
-	getAndValidateFileNameExtension(content, ".html");
-}
-
-function getAndValidateMarkdownExtension(content: string) {
-	getAndValidateFileNameExtension(content, ".md");
-}
-
-function getAndValidateFileNameExtension(content: string, expectedExtension: string) {
-	const type = getFileNameExtension(content);
 	expect(type).toBe(expectedExtension);
+}
+
+function getAndValidateHtmlContentType(content: string) {
+	getAndValidateContentType(content, "text/html");
+}
+
+function getAndValidateDitaContentType(content: string) {
+	getAndValidateContentType(content, "application/dita+xml");
+}
+
+function getAndValidateMarkdownContentType(content: string) {
+	getAndValidateContentType(content, "text/markdown");
+}
+
+function getAndValidateTextContentType(content: string) {
+	getAndValidateContentType(content, "text/plain");
+}
+
+function getAndValidateContentType(content: string, expectedContentType: string) {
+	const type = getContentType(content);
+
+	expect(type).toBe(expectedContentType);
 }
 
 describe("getFileNameExtension (filename.resolver)", () => {
@@ -50,7 +64,7 @@ describe("getFileNameExtension (filename.resolver)", () => {
 				'<concept id="c1"><title>Concept</title><conbody><p>Body</p></conbody></concept>',
 		},
 	])("detects DITA via $description", ({ content }) => {
-		getAndValidateDitaExtension(content);
+		getAndValidateDitaContentType(content);
 	});
 
 	it("does not misclassify non-DITA XML", () => {
@@ -58,14 +72,14 @@ describe("getFileNameExtension (filename.resolver)", () => {
 			'<?xml version="1.0" encoding="UTF-8"?>\n' +
 			"<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me</body></note>";
 
-		getAndValidateHtmlExtension(content);
+		getAndValidateHtmlContentType(content);
 	});
 
 	it("detects HTML content", () => {
 		const content =
 			"<!doctype html>\n<html><head><title>x</title></head><body><div>Hi</div></body></html>";
 
-		getAndValidateHtmlExtension(content);
+		getAndValidateHtmlContentType(content);
 	});
 
 	it.each([
@@ -98,12 +112,38 @@ describe("getFileNameExtension (filename.resolver)", () => {
 			content: '![Alt text](image.png "Image title")',
 		},
 	])("detects Markdown with $description", ({ content }) => {
-		getAndValidateMarkdownExtension(content);
+		getAndValidateMarkdownContentType(content);
 	});
 
 	it("falls back to text/plain for unknown content", () => {
 		const content = "Just a plain line of text without special markers.";
-		const type = getFileNameExtension(content);
-		expect(type).toBe(".txt");
+		getAndValidateTextContentType(content);
+	});
+});
+
+describe("getContentType (filename.extension.resolver)", () => {
+	it.each([
+		{
+			description: "DITA content",
+			contentType: "application/dita+xml",
+			extension: ".dita",
+		},
+		{
+			description: "Markdown content",
+			contentType: "text/markdown",
+			extension: ".md",
+		},
+		{
+			description: "HTML content",
+			contentType: "text/html",
+			extension: ".html",
+		},
+		{
+			description: "Plain text content",
+			contentType: "text/plain",
+			extension: ".txt",
+		},
+	])("detects content type with $description", ({ contentType, extension }) => {
+		getAndValidateFileNameExtension(contentType, extension);
 	});
 });

@@ -159,6 +159,7 @@ describe("process.item", () => {
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					{
 						content: "test content",
+						contentType: "text/plain",
 						fileNameExtension: ".txt",
 						styleGuide: "test-style-guide",
 						tone: "professional",

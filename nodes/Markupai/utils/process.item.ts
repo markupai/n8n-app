@@ -7,7 +7,7 @@ import {
 import { FormDataDetails, getPath, styleRequest } from "./style.api.utils";
 import { generateEmailHTMLReport } from "./email.generator";
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
-import { getFileNameExtension } from "./filename.extension.resolver";
+import { getContentType, getFileNameExtension } from "./filename.extension.resolver";
 
 type AdditionalOptions = {
 	waitForCompletion?: boolean;
@@ -53,11 +53,13 @@ function buildFormDataDetails(
 	const dialect = this.getNodeParameter("dialect", itemIndex);
 	const waitForCompletion = additionalOptions.waitForCompletion ?? true;
 	const pollingTimeout = additionalOptions.pollingTimeout || 60000;
-	const fileNameExtension = getFileNameExtension(content as string);
+	const contentType = getContentType(content as string);
+	const fileNameExtension = getFileNameExtension(contentType);
 
 	return {
 		content,
-		fileNameExtension: fileNameExtension,
+		contentType,
+		fileNameExtension,
 		styleGuide,
 		...(tone !== "None (keep tone unchanged)" && { tone }),
 		dialect,

@@ -77,19 +77,35 @@ function isLikelyDitaString(content: string): boolean {
 	return /\bclass="[^"]*\btopic\/topic\b/i.test(sample);
 }
 
+// Helper function to determine extension for MIME type
+export function getFileNameExtension(contentType: string): string {
+	switch (contentType) {
+		case "application/dita+xml":
+			return ".dita";
+		case "text/markdown":
+			return ".md";
+		case "text/html":
+			return ".html";
+		case "text/plain":
+			return ".txt";
+		default:
+			return ".txt";
+	}
+}
+
 // Helper function to determine MIME type for string content
-export function getFileNameExtension(content: string): string {
+export function getContentType(content: string): string {
 	if (isLikelyDitaString(content)) {
-		return ".dita";
+		return "application/dita+xml";
 	}
 
 	if (isLikelyMarkdownString(content)) {
-		return ".md";
+		return "text/markdown";
 	}
 
 	if (isLikelyHtmlString(content)) {
-		return ".html";
+		return "text/html";
 	}
 
-	return ".txt";
+	return "text/plain";
 }
