@@ -93,6 +93,12 @@ export function getFileNameExtension(contentType: string): string {
 	}
 }
 
+export function getFileExtensionFromFileName(fileName: string): string {
+	const extension = fileName.split(".").pop() ?? "";
+
+	return "." + extension;
+}
+
 // Helper function to determine MIME type for string content
 export function getContentType(content: string): string {
 	if (isLikelyDitaString(content)) {

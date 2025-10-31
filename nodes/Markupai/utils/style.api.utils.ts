@@ -25,7 +25,7 @@ export async function postStyleRewrite(
 	const baseUrl = await getBaseUrl(this);
 
 	const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
-	const fileName = (formDataDetails.documentName || "unknown") + formDataDetails.fileNameExtension;
+	const fileName = formDataDetails.documentName || "unknown" + formDataDetails.fileNameExtension;
 
 	formData.append("file_upload", blob, fileName);
 	formData.append("dialect", formDataDetails.dialect);

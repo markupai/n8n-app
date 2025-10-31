@@ -119,6 +119,7 @@ describe("style.api.utils", () => {
 	describe("postStyleRewrite", () => {
 		const createFormDataDetails = (overrides: Partial<FormDataDetails> = {}): FormDataDetails => ({
 			content: "test content",
+			contentType: "text/plain",
 			fileNameExtension: ".md",
 			dialect: "american_english",
 			tone: "business",
@@ -159,11 +160,7 @@ describe("style.api.utils", () => {
 			});
 
 			// Verify filename is constructed correctly with documentName
-			expect(formDataAppendSpy).toHaveBeenCalledWith(
-				"file_upload",
-				expect.any(Blob),
-				"test.txt.md",
-			);
+			expect(formDataAppendSpy).toHaveBeenCalledWith("file_upload", expect.any(Blob), "test.txt");
 
 			formDataAppendSpy.mockRestore();
 		});
@@ -209,14 +206,14 @@ describe("style.api.utils", () => {
 
 			// Test with different content types
 			const testCases = [
-				{ documentName: "document", fileNameExtension: ".dita", expected: "document.dita" },
-				{ documentName: "file", fileNameExtension: ".txt", expected: "file.txt" },
-				{ documentName: "page", fileNameExtension: ".md", expected: "page.md" },
+				{ documentName: "document.dita", fileNameExtension: ".dita", expected: "document.dita" },
+				{ documentName: "file.txt", fileNameExtension: ".txt", expected: "file.txt" },
+				{ documentName: undefined, fileNameExtension: ".md", expected: "unknown.md" },
 			];
 
 			for (const testCase of testCases) {
 				const formDataDetails = createFormDataDetails({
-					documentName: testCase.documentName,
+					documentName: testCase?.documentName,
 					fileNameExtension: testCase.fileNameExtension,
 				});
 
@@ -427,6 +424,7 @@ describe("style.api.utils", () => {
 
 		const formDataDetails: FormDataDetails = {
 			content: "test content",
+			contentType: "text/plain",
 			fileNameExtension: ".md",
 			dialect: "american_english",
 			tone: "business",
