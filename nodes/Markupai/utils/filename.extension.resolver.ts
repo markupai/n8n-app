@@ -12,7 +12,7 @@ function isLikelyHtmlString(content: string): boolean {
 
 // Heuristic to detect likely Markdown content in a string
 function isLikelyMarkdownString(content: string): boolean {
-	const sample = content.trimStart().slice(0, 512);
+	const sample = content.trimStart().slice(0, 512).toLocaleLowerCase();
 	// Frontmatter
 	if (/^---\n[\s\S]*?\n---\n/.test(sample)) {
 		return true;
@@ -52,24 +52,28 @@ function isLikelyMarkdownString(content: string): boolean {
 
 // Heuristic to detect likely DITA XML content in a string
 function isLikelyDitaString(content: string): boolean {
-	const sample = content.trimStart().slice(0, 512);
+	const sample = content.trimStart().slice(0, 512).toLocaleLowerCase();
 	// Common DITA root element names (topics and maps)
 	const rootNames = "topic|concept|task|reference|map|bookmap|glossentry|subjectScheme";
 
 	// DOCTYPE with DITA identifiers
-	if (new RegExp(`<!DOCTYPE\\s+(?:${rootNames})\\b[\\s\\S]*DITA`, "i").test(sample)) {
+	if (new RegExp(String.raw`<!DOCTYPE\s+(?:${rootNames})\b/.*/DITA`, "is").test(sample)) {
 		return true;
 	}
 
 	// DOCTYPE declaration referencing a DTD file (any name) for known DITA root elements
 	if (
-		new RegExp(`<!DOCTYPE\\s+(?:${rootNames})\\b[\\s\\S]*?["'][^"']*\\.dtd["']`, "i").test(sample)
+		new RegExp(String.raw`<!DOCTYPE\s+(?:${rootNames})\b[\s\S]*?["'][^"']*\.dtd["']`, "i").test(
+			sample,
+		)
 	) {
 		return true;
 	}
 
 	// Root element check following optional XML declaration
-	if (new RegExp(`^\\s*<\\?xml[\\s\\S]{0,200}?\\?>?\\s*<(?:${rootNames})\\b`, "m").test(sample)) {
+	if (
+		new RegExp(String.raw`^\s*<\?xml[\s\S]{0,200}?\?>?\s*<(?:${rootNames})\b`, "im").test(sample)
+	) {
 		return true;
 	}
 
