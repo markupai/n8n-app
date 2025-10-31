@@ -16,7 +16,7 @@ vi.mock("../../nodes/Markupai/utils/email.generator", () => ({
 	generateEmailHTMLReport: vi.fn(),
 }));
 
-vi.mock("../../nodes/Markupai/utils/filename.extension.resolver", () => ({
+vi.mock("../../nodes/Markupai/utils/file.type.utils", () => ({
 	getContentType: vi.fn(),
 	getFileExtensionFromFileName: vi.fn(),
 	getMimeTypeFromFileName: vi.fn(),
@@ -141,7 +141,7 @@ describe("process.item", () => {
 			getFileExtensionFromFileName,
 			getMimeTypeFromFileName,
 			getFileNameExtension,
-		} = await import("../../nodes/Markupai/utils/filename.extension.resolver");
+		} = await import("../../nodes/Markupai/utils/file.type.utils");
 
 		mockStyleRequest = vi.fn();
 		mockGenerateEmailHTMLReport = vi.fn().mockReturnValue("<html>test report</html>");

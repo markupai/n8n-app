@@ -4,7 +4,7 @@ import {
 	getFileExtensionFromFileName,
 	getFileNameExtension,
 	getMimeTypeFromFileName,
-} from "../../nodes/Markupai/utils/filename.extension.resolver";
+} from "../../nodes/Markupai/utils/file.type.utils";
 
 function getAndValidateFileNameExtension(contentType: string, expectedExtension: string) {
 	const type = getFileNameExtension(contentType);
