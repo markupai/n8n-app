@@ -38,7 +38,7 @@
     "format:fix": "prettier . --write",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepublishOnly": "npm run build && npm run lint:check -c .eslintrc.prepublish.js nodes credentials package.json && npm run check:stable-version",
+    "prepublishOnly": "npm run build && eslint --config .eslintrc.prepublish.js nodes credentials package.json && npm run check:stable-version",
     "setup": "./dev/setup.sh",
     "start": "n8n start",
     "test": "vitest run",
