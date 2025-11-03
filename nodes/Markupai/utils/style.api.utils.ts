@@ -7,7 +7,7 @@ export interface FormDataDetails {
 	contentType: string;
 	fileNameExtension: string;
 	dialect: string;
-	tone: string;
+	tone?: string;
 	styleGuide: string;
 	documentName?: string;
 	documentOwner?: string;
