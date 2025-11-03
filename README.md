@@ -219,7 +219,7 @@ You should now see Markup AI in the list of nodes. Happy hacking!
 2. Build the code: `npm run build`
 3. Test in n8n (refresh the browser if n8n is already running)
 4. Run tests: `npm test`
-5. Run linter: `npm run lint`
+5. Run linter: `npm run lint:check`
 
 ### Testing
 

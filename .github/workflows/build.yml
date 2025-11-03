@@ -31,8 +31,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      - name: Run linting
-        run: npm run lint
+      - name: Run Lint check
+        run: npm run lint:check
 
       - name: Run format check
         run: npm run format:check
