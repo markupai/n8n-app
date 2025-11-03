@@ -232,6 +232,45 @@ describe("style.api.utils", () => {
 			}
 		});
 
+		it("should not append tone to formData when tone is not provided", async () => {
+			const { mockGetBaseUrl, mockHttpRequest, mockHttpRequestWithAuthentication } =
+				createMockFunctions();
+
+			const postResponse = setupMockPostResponse(mockHttpRequestWithAuthentication);
+
+			await setupMocks(mockGetBaseUrl);
+			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
+			const formDataDetails = createFormDataDetails({
+				tone: undefined as any,
+			});
+
+			// Spy on FormData.append to verify tone is not appended
+			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+
+			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+
+			expect(result).toEqual(postResponse);
+			expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
+			expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
+				method: "POST",
+				url: "https://api.markup.ai/v1/style/rewrite",
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+				body: expect.any(Object),
+				returnFullResponse: true,
+			});
+
+			// Verify that tone is NOT appended to formData
+			expect(formDataAppendSpy).not.toHaveBeenCalledWith("tone", expect.anything());
+			// Verify that other required fields are still appended
+			expect(formDataAppendSpy).toHaveBeenCalledWith("file_upload", expect.any(Blob), "test.txt");
+			expect(formDataAppendSpy).toHaveBeenCalledWith("dialect", "american_english");
+			expect(formDataAppendSpy).toHaveBeenCalledWith("style_guide", "test-style-guide");
+
+			formDataAppendSpy.mockRestore();
+		});
+
 		it("should throw an error if httpRequest fails", async () => {
 			const { mockGetBaseUrl, mockHttpRequest, mockHttpRequestWithAuthentication } =
 				createMockFunctions();
