@@ -1,43 +1,68 @@
 #!/bin/bash
+set -euo pipefail
 
 # Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-BRIGHT='\033[1m'
-RESET='\033[0m'
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly BRIGHT='\033[1m'
+readonly RESET='\033[0m'
+
+# Debug mode (set DEBUG=1 to enable verbose output)
+readonly DEBUG="${DEBUG:-0}"
 
 # Logging functions
 log() {
-    echo -e "${1}${2}${RESET}"
+    local -r color="$1"
+    local -r message="$2"
+    echo -e "${color}${message}${RESET}"
+    return 0
 }
 
 log_info() {
-    log "$BLUE" "$1"
+    local -r message="$1"
+    log "$BLUE" "$message"
+    return 0
 }
 
 log_success() {
-    log "$GREEN" "$1"
+    local -r message="$1"
+    log "$GREEN" "$message"
+    return 0
 }
 
 log_warning() {
-    log "$YELLOW" "$1"
+    local -r message="$1"
+    log "$YELLOW" "$message"
+    return 0
 }
 
 log_error() {
-    log "$RED" "$1"
+    local -r message="$1"
+    log "$RED" "$message"
+    return 0
 }
 
 log_bright() {
-    log "$BRIGHT" "$1"
+    local -r message="$1"
+    log "$BRIGHT" "$message"
+    return 0
+}
+
+log_debug() {
+    local -r message="$1"
+    if [[ "$DEBUG" = "1" ]]; then
+        log "$YELLOW" "[DEBUG] $message"
+    fi
+    return 0
 }
 
 # Execute command with error handling
 exec_command() {
-    local description="$1"
-    local command="$2"
-    local cwd="${3:-.}"
+    local -r description="$1"
+    local -r command="$2"
+    local -r cwd="${3:-.}"
     local error_output=""
     
     log_info "$description..."
@@ -51,7 +76,7 @@ exec_command() {
     else
         log_warning "⚠ $description failed (this is normal if the package was not previously linked)"
         # Only show error output if it's not empty and not just a "not found" message
-        if [ -n "$error_output" ] && ! echo "$error_output" | grep -q "not found\|No such file\|command not found"; then
+        if [[ -n "$error_output" ]] && ! echo "$error_output" | grep -q "not found\|No such file\|command not found"; then
             log_error "Error details: $error_output"
         fi
         log_debug "Command failed with output: $error_output"
@@ -61,9 +86,9 @@ exec_command() {
 
 # Execute command with error handling (strict mode - exits on failure)
 exec_command_strict() {
-    local description="$1"
-    local command="$2"
-    local cwd="${3:-.}"
+    local -r description="$1"
+    local -r command="$2"
+    local -r cwd="${3:-.}"
     local error_output=""
     
     log_info "\n$description..."
@@ -77,7 +102,7 @@ exec_command_strict() {
     else
         log_error "✗ $description failed"
         # Always show error output for strict mode
-        if [ -n "$error_output" ]; then
+        if [[ -n "$error_output" ]]; then
             log_error "Error details: $error_output"
         fi
         log_debug "Command failed with output: $error_output"
@@ -85,19 +110,9 @@ exec_command_strict() {
     fi
 }
 
-# Debug mode (set DEBUG=1 to enable verbose output)
-DEBUG="${DEBUG:-0}"
-
 # Common paths
-N8N_DIR="$HOME/.n8n"
-CUSTOM_DIR="$N8N_DIR/custom"
-CUSTOM_PACKAGE_JSON="$CUSTOM_DIR/package.json"
-CONFIG_FILE="$N8N_DIR/config"
-PACKAGE_NAME="@markupai/n8n-nodes-markupai"
-
-# Debug logging function
-log_debug() {
-    if [ "$DEBUG" = "1" ]; then
-        log "$YELLOW" "[DEBUG] $1"
-    fi
-}
+readonly N8N_DIR="$HOME/.n8n"
+readonly CUSTOM_DIR="$N8N_DIR/custom"
+readonly CUSTOM_PACKAGE_JSON="$CUSTOM_DIR/package.json"
+readonly CONFIG_FILE="$N8N_DIR/config"
+readonly PACKAGE_NAME="@markupai/n8n-nodes-markupai"
