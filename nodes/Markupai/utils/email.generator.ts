@@ -130,9 +130,9 @@ export function generateEmailHTMLReport(
                     <div style="font-size:14px;">Clarity</div>
                   </td>
                   <td style="background:${getScoreColor(
-										result.original?.scores?.analysis.tone.score || 0,
+										result.original?.scores?.analysis.tone?.score || 0,
 									)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
-                    <div style="font-size:18px; font-weight:700;">${result.original?.scores?.analysis.tone.score || 0}</div>
+                    <div style="font-size:18px; font-weight:700;">${result.original?.scores?.analysis.tone?.score || 0}</div>
                     <div style="font-size:14px;">Tone</div>
                   </td>
                 </tr>

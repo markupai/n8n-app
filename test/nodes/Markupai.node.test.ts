@@ -364,10 +364,9 @@ describe("Markupai", () => {
 		it('should handle "None (Keep Tone Unchanged)" tone correctly', async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-				"None (keep tone unchanged)",
-				{ waitForCompletion: true },
-			);
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("None", {
+				waitForCompletion: true,
+			});
 
 			await markupai.execute.call(mockExecuteFunctions as any);
 

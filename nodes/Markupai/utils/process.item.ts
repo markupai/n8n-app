@@ -63,7 +63,7 @@ function buildFormDataDetails(
 		contentType,
 		fileNameExtension,
 		styleGuide,
-		...(tone !== "None (keep tone unchanged)" && { tone }),
+		...(tone !== "None" && { tone }),
 		dialect,
 		waitForCompletion,
 		pollingTimeout,

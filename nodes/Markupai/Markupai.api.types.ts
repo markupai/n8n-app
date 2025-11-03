@@ -31,7 +31,7 @@ export interface Scores {
 			vocabulary_complexity: number;
 			sentence_complexity: number;
 		};
-		tone: {
+		tone?: {
 			score: number;
 			informality: number;
 			liveliness: number;
@@ -71,7 +71,7 @@ export interface GetStyleRewriteResponse {
 			style_guide_type: string;
 			style_guide_id: string;
 		};
-		tone: string;
+		tone?: string;
 	};
 	original?: {
 		issues: Issue[];

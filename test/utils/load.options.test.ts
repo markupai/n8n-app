@@ -130,7 +130,7 @@ describe("load.options", () => {
 			const result = await loadTones.call(loadOptionsFunction);
 
 			expect(result).toEqual([
-				{ name: "None (Keep Tone Unchanged)", value: "None (Keep Tone Unchanged)" },
+				{ name: "None", value: "None" },
 				{ name: "tone_1", value: "tone_1" },
 				{ name: "tone_2", value: "tone_2" },
 			]);
@@ -152,7 +152,7 @@ describe("load.options", () => {
 			const result = await loadTones.call(loadOptionsFunction);
 
 			expect(result).toEqual([
-				{ name: "None (Keep Tone Unchanged)", value: "None (Keep Tone Unchanged)" },
+				{ name: "None", value: "None" },
 				{ name: "academic", value: "academic" },
 				{ name: "confident", value: "confident" },
 				{ name: "conversational", value: "conversational" },
@@ -169,7 +169,7 @@ describe("load.options", () => {
 			);
 		});
 
-		it('includes "None (Keep Tone Unchanged)" as the first option when API returns tones', async () => {
+		it('includes "None" as the first option when API returns tones', async () => {
 			const loadOptionsFunction = {
 				getCredentials: vi
 					.fn()
@@ -187,7 +187,7 @@ describe("load.options", () => {
 			const result = await loadTones.call(loadOptionsFunction);
 
 			expect(result).toEqual([
-				{ name: "None (Keep Tone Unchanged)", value: "None (Keep Tone Unchanged)" },
+				{ name: "None", value: "None" },
 				{ name: "tone_1", value: "tone_1" },
 				{ name: "tone_2", value: "tone_2" },
 			]);

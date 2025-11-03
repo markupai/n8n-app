@@ -7,7 +7,7 @@ export interface FormDataDetails {
 	contentType: string;
 	fileNameExtension: string;
 	dialect: string;
-	tone: string;
+	tone?: string;
 	styleGuide: string;
 	documentName?: string;
 	documentOwner?: string;
@@ -29,8 +29,11 @@ export async function postStyleRewrite(
 
 	formData.append("file_upload", blob, fileName);
 	formData.append("dialect", formDataDetails.dialect);
-	formData.append("tone", formDataDetails.tone);
 	formData.append("style_guide", formDataDetails.styleGuide);
+
+	if (formDataDetails.tone) {
+		formData.append("tone", formDataDetails.tone);
+	}
 
 	const requestOptions: IHttpRequestOptions = {
 		method: "POST",

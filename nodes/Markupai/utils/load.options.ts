@@ -28,7 +28,7 @@ const DEFAULT_CONSTANTS = {
 };
 
 const appendDefaultTone = (tones: string[]) => {
-	return ["None (Keep Tone Unchanged)", ...tones];
+	return ["None", ...tones];
 };
 
 const mapTones = (tones: string[]) => {
