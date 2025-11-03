@@ -104,8 +104,6 @@ export async function processMarkupaiItem(
 		) as AdditionalOptions;
 		const formDataDetails = buildFormDataDetails.call(this, itemIndex, additionalOptions);
 
-		console.log("Form Data Details:", formDataDetails);
-
 		const extendedInputData = {
 			document_name: additionalOptions.documentName,
 			document_owner: additionalOptions.documentOwner,
