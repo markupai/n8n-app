@@ -1,7 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
 # Source common functions and constants
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # Main setup function
@@ -38,7 +39,7 @@ main() {
     log_info "\nStep 4: Setting up n8n custom directory"
 
     # Create .n8n directory if it doesn't exist
-    if [ -d "$N8N_DIR" ]; then
+    if [[ -d "$N8N_DIR" ]]; then
         log_success "✓ .n8n directory already exists"
     else
         if mkdir -p "$N8N_DIR"; then
@@ -50,7 +51,7 @@ main() {
     fi
 
     # Fix permissions for n8n config file if it exists
-    if [ -f "$CONFIG_FILE" ]; then
+    if [[ -f "$CONFIG_FILE" ]]; then
         if chmod 600 "$CONFIG_FILE" 2>/dev/null; then
             log_success "✓ Fixed n8n config file permissions"
         else
@@ -60,7 +61,7 @@ main() {
     fi
 
     # Create custom directory if it doesn't exist
-    if [ -d "$CUSTOM_DIR" ]; then
+    if [[ -d "$CUSTOM_DIR" ]]; then
         log_success "✓ Custom directory already exists"
     else
         if mkdir -p "$CUSTOM_DIR"; then
@@ -72,7 +73,7 @@ main() {
     fi
 
     # Initialize npm in custom directory if package.json doesn't exist
-    if [ -f "$CUSTOM_PACKAGE_JSON" ]; then
+    if [[ -f "$CUSTOM_PACKAGE_JSON" ]]; then
         log_success "✓ Custom directory already initialized"
     else
         log_info "Initializing npm in custom directory..."
@@ -106,6 +107,8 @@ main() {
     log_info "This will use the local n8n from devDependencies."
     log_success "You should now see Markup AI in the list of nodes."
     log_success "Happy hacking! 🚀"
+    
+    return 0
 }
 
 # Run main function

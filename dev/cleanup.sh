@@ -1,7 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
 # Source common functions and constants
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # Main cleanup function
@@ -27,6 +28,8 @@ main() {
     log_warning "You can now run:"
     log_bright "  npm run setup"
     log_success "to set up the development environment correctly."
+    
+    return 0
 }
 
 # Run main function
