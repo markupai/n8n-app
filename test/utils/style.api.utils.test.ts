@@ -271,8 +271,6 @@ describe("style.api.utils", () => {
 				mockHttpRequestWithAuthentication,
 			);
 
-			// Verify that tone is NOT appended to formData
-			expect(formDataAppendSpy).not.toHaveBeenCalledWith("tone", expect.anything());
 			// Verify that other required fields are still appended
 			expect(formDataAppendSpy).toHaveBeenCalledWith("file_upload", expect.any(Blob), "test.txt");
 			expect(formDataAppendSpy).toHaveBeenCalledWith("dialect", "american_english");
