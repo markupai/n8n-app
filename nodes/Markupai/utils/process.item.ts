@@ -63,7 +63,7 @@ function buildFormDataDetails(
 		contentType,
 		fileNameExtension,
 		styleGuide,
-		...(tone !== "None (keep tone unchanged)" && { tone }),
+		...(tone !== "None" && { tone }),
 		dialect,
 		waitForCompletion,
 		pollingTimeout,
@@ -103,6 +103,8 @@ export async function processMarkupaiItem(
 			itemIndex,
 		) as AdditionalOptions;
 		const formDataDetails = buildFormDataDetails.call(this, itemIndex, additionalOptions);
+
+		console.log("Form Data Details:", formDataDetails);
 
 		const extendedInputData = {
 			document_name: additionalOptions.documentName,

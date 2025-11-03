@@ -28,7 +28,7 @@ const DEFAULT_CONSTANTS = {
 };
 
 const appendDefaultTone = (tones: string[]) => {
-	return ["None (Keep Tone Unchanged)", ...tones];
+	return ["None", ...tones];
 };
 
 const mapTones = (tones: string[]) => {
@@ -41,7 +41,7 @@ const mapTones = (tones: string[]) => {
 export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
 	const credentials = await functionsBase.getCredentials("markupaiApi");
 
-	return new URL(credentials.baseUrl);
+	return new URL(credentials.baseUrl as string);
 }
 
 export async function loadStyleGuides(

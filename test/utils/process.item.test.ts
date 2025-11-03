@@ -268,11 +268,9 @@ describe("process.item", () => {
 				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
 				const mockExecuteFunctions = createMockExecuteFunctions({
-					getNodeParameter: createMockNodeParameterResponses(
-						"styleCheck",
-						"None (keep tone unchanged)",
-						{ waitForCompletion: true },
-					),
+					getNodeParameter: createMockNodeParameterResponses("styleCheck", "None", {
+						waitForCompletion: true,
+					}),
 				});
 
 				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
