@@ -48,6 +48,33 @@ interface MockFnObject {
 	};
 }
 
+async function mockAndValidatePostStyleRewrite(
+	fn: MockFnObject,
+	formDataDetails: FormDataDetails,
+	postResponse: PostStyleRewriteResponse,
+	mockGetBaseUrl: MockGetBaseUrl,
+	mockHttpRequestWithAuthentication: MockHttpRequest,
+) {
+	// Spy on FormData.append to verify tone is not appended
+	const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+
+	const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+
+	expect(result).toEqual(postResponse);
+	expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
+	expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
+		method: "POST",
+		url: "https://api.markup.ai/v1/style/rewrite",
+		headers: {
+			"Content-Type": "multipart/form-data",
+		},
+		body: expect.any(Object),
+		returnFullResponse: true,
+	});
+
+	return formDataAppendSpy;
+}
+
 describe("style.api.utils", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -143,21 +170,13 @@ describe("style.api.utils", () => {
 			const formDataDetails = createFormDataDetails();
 
 			// Spy on FormData.append to verify filename
-			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
-
-			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
-
-			expect(result).toEqual(postResponse);
-			expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
-			expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
-				method: "POST",
-				url: "https://api.markup.ai/v1/style/rewrite",
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-				body: expect.any(Object),
-				returnFullResponse: true,
-			});
+			const formDataAppendSpy = await mockAndValidatePostStyleRewrite(
+				fn,
+				formDataDetails,
+				postResponse,
+				mockGetBaseUrl,
+				mockHttpRequestWithAuthentication,
+			);
 
 			// Verify filename is constructed correctly with documentName
 			expect(formDataAppendSpy).toHaveBeenCalledWith("file_upload", expect.any(Blob), "test.txt");
@@ -241,27 +260,24 @@ describe("style.api.utils", () => {
 			await setupMocks(mockGetBaseUrl);
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 			const formDataDetails = createFormDataDetails({
-				tone: undefined as any,
+				tone: undefined,
 			});
 
-			// Spy on FormData.append to verify tone is not appended
-			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
+			const formDataAppendSpy = await mockAndValidatePostStyleRewrite(
+				fn,
+				formDataDetails,
+				postResponse,
+				mockGetBaseUrl,
+				mockHttpRequestWithAuthentication,
+			);
 
-			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+			// Verify that tone is NOT appended to formData
+			expect(formDataAppendSpy).not.toHaveBeenCalledWith("tone", expect.anything());
+			// Verify that other required fields are still appended
+			expect(formDataAppendSpy).toHaveBeenCalledWith("file_upload", expect.any(Blob), "test.txt");
+			expect(formDataAppendSpy).toHaveBeenCalledWith("dialect", "american_english");
+			expect(formDataAppendSpy).toHaveBeenCalledWith("style_guide", "test-style-guide");
 
-			expect(result).toEqual(postResponse);
-			expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
-			expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
-				method: "POST",
-				url: "https://api.markup.ai/v1/style/rewrite",
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-				body: expect.any(Object),
-				returnFullResponse: true,
-			});
-
-			// Verify tone is not appended
 			expect(formDataAppendSpy).toHaveBeenCalledTimes(3);
 
 			formDataAppendSpy.mockRestore();
