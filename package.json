@@ -48,7 +48,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "24.10.0",
+    "@types/node": "24.10.1",
     "@typescript-eslint/parser": "8.46.4",
     "@vitest/coverage-v8": "4.0.8",
     "eslint-plugin-n8n-nodes-base": "1.16.4",
