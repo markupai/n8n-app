@@ -70,10 +70,20 @@ function buildFormDataDetails(
 	} as FormDataDetails;
 }
 
-function createErrorResponse(error: any, itemIndex: number) {
+function getErrorMessage(error: unknown): string {
+	if (error instanceof NodeApiError) {
+		return error.description || error.message;
+	}
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return String(error);
+}
+
+function createErrorResponse(error: unknown, itemIndex: number) {
 	return {
 		json: {
-			error: error instanceof NodeApiError ? error.description : error.message,
+			error: getErrorMessage(error),
 		},
 		pairedItem: {
 			item: itemIndex,

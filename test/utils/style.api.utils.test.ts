@@ -31,13 +31,10 @@ vi.mock("n8n-workflow", async () => {
 	};
 });
 
-interface MockHttpRequest extends ReturnType<typeof vi.fn> {
-	(body: IHttpRequestOptions): Promise<{ body: GetStyleRewriteResponse }>;
-}
+type MockHttpRequest = ReturnType<typeof vi.fn> &
+	((_body: IHttpRequestOptions) => Promise<{ body: GetStyleRewriteResponse }>);
 
-interface MockGetBaseUrl extends ReturnType<typeof vi.fn> {
-	(fn: FunctionsBase): Promise<URL>;
-}
+type MockGetBaseUrl = ReturnType<typeof vi.fn> & ((_fn: FunctionsBase) => Promise<URL>);
 
 interface MockFnObject {
 	helpers: {

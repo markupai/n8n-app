@@ -1,10 +1,5 @@
 export type StyleGuides = StyleGuide[];
 
-export interface PostStyleRewriteResponse {
-	status: string;
-	workflow_id: string;
-}
-
 export interface Scores {
 	quality: {
 		score: number;
