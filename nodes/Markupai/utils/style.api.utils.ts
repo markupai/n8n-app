@@ -59,59 +59,50 @@ export async function postStyleRewrite(
 
 export async function pollResponse(
 	this: IExecuteFunctions,
-	styleRewriteResponse: PostStyleRewriteResponse,
+	postStyleRewriteResponse: PostStyleRewriteResponse,
 	waitForCompletion: boolean,
 	pollingTimeout: number,
 	path: string,
-): Promise<GetStyleRewriteResponse> {
+): Promise<PostStyleRewriteResponse | GetStyleRewriteResponse> {
+	if (!waitForCompletion || postStyleRewriteResponse.status !== "running") {
+		return postStyleRewriteResponse;
+	}
+
 	const baseUrl = await getBaseUrl(this);
+	const pollingInterval = 2_000;
+	const startTime = Date.now();
 
-	let result: any = {
-		...styleRewriteResponse,
-	};
+	while (Date.now() - startTime <= pollingTimeout) {
+		await sleep(pollingInterval);
 
-	if (result.status === "running" && waitForCompletion) {
-		const pollingInterval = 2000;
+		const statusOptions: IHttpRequestOptions = {
+			method: "GET",
+			url: `${baseUrl.toString()}${path}/${postStyleRewriteResponse.workflow_id}`,
+			returnFullResponse: true,
+		};
 
-		const startTime = Date.now();
+		const statusResp = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			"markupaiApi",
+			statusOptions,
+		);
+		const statusResponse =
+			typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
 
-		while (result.status === "running") {
-			if (Date.now() - startTime > pollingTimeout) {
-				throw new Error(
-					`Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${styleRewriteResponse.workflow_id}`,
-				);
-			}
+		const currentResponse: GetStyleRewriteResponse = JSON.parse(statusResponse);
 
-			await sleep(pollingInterval);
-
-			const statusOptions: IHttpRequestOptions = {
-				method: "GET",
-				url: `${baseUrl.toString()}${path}/${styleRewriteResponse.workflow_id}`,
-				returnFullResponse: true,
-			};
-
-			const statusResp = await this.helpers.httpRequestWithAuthentication.call(
-				this,
-				"markupaiApi",
-				statusOptions,
-			);
-			const statusResponse =
-				typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
-
-			const responseBody = JSON.parse(statusResponse);
-
-			result = {
-				status: responseBody.workflow.status,
-				...responseBody,
-			};
+		if (currentResponse.workflow.status === "failed") {
+			throw new Error(`Workflow failed: ${currentResponse.workflow.id}`);
 		}
 
-		if (result.status === "failed") {
-			throw new Error(`Workflow failed: ${result.workflow.id}}`);
+		if (currentResponse.workflow.status === "completed") {
+			return currentResponse;
 		}
 	}
 
-	return result;
+	throw new Error(
+		`Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${postStyleRewriteResponse.workflow_id}`,
+	);
 }
 
 export async function styleRequest(
@@ -132,10 +123,8 @@ export async function styleRequest(
 			path,
 		);
 
-		const { status, ...responseWithoutStatus } = pollStyleRewriteResponseComplete as any;
-
 		returnData.push({
-			json: { ...responseWithoutStatus },
+			json: { ...pollStyleRewriteResponseComplete },
 			itemData: itemIndex,
 		});
 	} else {
