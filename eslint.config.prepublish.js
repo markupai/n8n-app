@@ -9,7 +9,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 module.exports = [
 	js.configs.recommended,
-	...tseslint.configs.recommended,
+	...tseslint.configs.strict,
 	{
 		ignores: ["dist"],
 	},
@@ -21,15 +21,7 @@ module.exports = [
 			},
 		},
 		rules: {
-			// Allow CommonJS require() in config/build files
 			"@typescript-eslint/no-require-imports": "off",
-		},
-	},
-	{
-		files: ["test/**/*.ts"],
-		rules: {
-			// Warn about 'any' in test files - prefer proper types even for mocks
-			"@typescript-eslint/no-explicit-any": "warn",
 		},
 	},
 	{
@@ -67,14 +59,6 @@ module.exports = [
 			parserOptions: {
 				project: "tsconfig.json",
 			},
-		},
-		rules: {
-			"n8n-nodes-base/node-execute-block-missing-continue-on-fail": "off",
-			"n8n-nodes-base/node-resource-description-filename-against-convention": "off",
-			"n8n-nodes-base/node-param-fixed-collection-type-unsorted-items": "off",
-			"n8n-nodes-base/node-param-options-type-unsorted-items": "off",
-			"n8n-nodes-base/node-class-description-inputs-wrong-regular-node": "off",
-			"n8n-nodes-base/node-class-description-outputs-wrong": "off",
 		},
 	},
 ];

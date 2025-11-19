@@ -9,7 +9,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 module.exports = [
 	js.configs.recommended,
-	...tseslint.configs.recommended,
+	...tseslint.configs.strict,
 	{
 		ignores: ["dist"],
 	},
@@ -22,13 +22,6 @@ module.exports = [
 		},
 		rules: {
 			"@typescript-eslint/no-require-imports": "off",
-		},
-	},
-	{
-		files: ["test/**/*.ts"],
-		rules: {
-			// Warn about 'any' in test files - prefer proper types even for mocks
-			"@typescript-eslint/no-explicit-any": "warn",
 		},
 	},
 	{
