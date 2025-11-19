@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { IHttpRequestOptions, FunctionsBase } from "n8n-workflow";
+import type { IHttpRequestOptions, FunctionsBase, IExecuteFunctions } from "n8n-workflow";
 
 import {
 	postStyleRewrite,
@@ -45,6 +45,10 @@ interface MockFnObject {
 	};
 }
 
+function createMockExecuteFunctions(mock: MockFnObject): IExecuteFunctions {
+	return mock as unknown as IExecuteFunctions;
+}
+
 async function mockAndValidatePostStyleRewrite(
 	fn: MockFnObject,
 	formDataDetails: FormDataDetails,
@@ -55,7 +59,11 @@ async function mockAndValidatePostStyleRewrite(
 	// Spy on FormData.append to verify tone is not appended
 	const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
 
-	const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+	const result = await postStyleRewrite.call(
+		createMockExecuteFunctions(fn),
+		formDataDetails,
+		"v1/style/rewrite",
+	);
 
 	expect(result).toEqual(postResponse);
 	expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
@@ -197,7 +205,11 @@ describe("style.api.utils", () => {
 			// Spy on FormData.append to verify filename
 			const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
 
-			const result = await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+			const result = await postStyleRewrite.call(
+				createMockExecuteFunctions(fn),
+				formDataDetails,
+				"v1/style/rewrite",
+			);
 
 			expect(result).toEqual(postResponse);
 
@@ -235,7 +247,11 @@ describe("style.api.utils", () => {
 
 				const formDataAppendSpy = vi.spyOn(FormData.prototype, "append");
 
-				await postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite");
+				await postStyleRewrite.call(
+					createMockExecuteFunctions(fn),
+					formDataDetails,
+					"v1/style/rewrite",
+				);
 
 				expect(formDataAppendSpy).toHaveBeenCalledWith(
 					"file_upload",
@@ -292,7 +308,7 @@ describe("style.api.utils", () => {
 			});
 
 			await expect(
-				postStyleRewrite.call(fn as any, formDataDetails, "v1/style/rewrite"),
+				postStyleRewrite.call(createMockExecuteFunctions(fn), formDataDetails, "v1/style/rewrite"),
 			).rejects.toThrow("Network error");
 		});
 	});
@@ -407,7 +423,7 @@ describe("style.api.utils", () => {
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 
 			const result = await pollResponse.call(
-				fn as any,
+				createMockExecuteFunctions(fn),
 				postStyleRewriteResponse,
 				true,
 				30_000,
@@ -416,11 +432,15 @@ describe("style.api.utils", () => {
 
 			expect(result.workflow.status).toBe("completed");
 			expect(result.rewrite?.text).toBe("test-result");
-			expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn as any, "markupaiApi", {
-				method: "GET",
-				url: "https://api.markup.ai/v1/style/rewrite/test-workflow-id",
-				returnFullResponse: true,
-			});
+			expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(
+				createMockExecuteFunctions(fn),
+				"markupaiApi",
+				{
+					method: "GET",
+					url: "https://api.markup.ai/v1/style/rewrite/test-workflow-id",
+					returnFullResponse: true,
+				},
+			);
 		});
 
 		it("should throw error on workflow failure", async () => {
@@ -434,7 +454,13 @@ describe("style.api.utils", () => {
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 
 			await expect(
-				pollResponse.call(fn as any, postStyleRewriteResponse, true, 30_000, "v1/style/rewrite"),
+				pollResponse.call(
+					createMockExecuteFunctions(fn),
+					postStyleRewriteResponse,
+					true,
+					30_000,
+					"v1/style/rewrite",
+				),
 			).rejects.toThrow("Workflow failed: test-workflow-id");
 		});
 
@@ -449,7 +475,7 @@ describe("style.api.utils", () => {
 			const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 
 			const pollPromise = pollResponse.call(
-				fn as any,
+				createMockExecuteFunctions(fn),
 				postStyleRewriteResponse,
 				true,
 				30_000,
@@ -569,7 +595,12 @@ describe("style.api.utils", () => {
 			await setupMocks(mockGetBaseUrl);
 			fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 
-			const result = await styleRequest.call(fn as any, formDataDetails, "v1/style/rewrite", 0);
+			const result = await styleRequest.call(
+				createMockExecuteFunctions(fn),
+				formDataDetails,
+				"v1/style/rewrite",
+				0,
+			);
 
 			expect(result).toEqual([
 				{
@@ -597,7 +628,7 @@ describe("style.api.utils", () => {
 			};
 
 			const result = await styleRequest.call(
-				fn as any,
+				createMockExecuteFunctions(fn),
 				formDataDetailsWithoutCompletion,
 				"v1/style/rewrite",
 				0,

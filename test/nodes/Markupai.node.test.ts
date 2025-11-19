@@ -15,7 +15,7 @@ vi.mock("n8n-workflow", async () => {
 			Main: "main",
 		},
 		NodeApiError: class NodeApiError extends Error {
-			constructor(_: any, error: any) {
+			constructor(_: unknown, error: { message?: string }) {
 				super(error.message || "Node API Error");
 				this.name = "NodeApiError";
 			}
@@ -54,7 +54,7 @@ const validateSecondItem = (
 	secondItemResult: {
 		workflow: { id: string; status: string };
 		config: { style_guide: { style_guide_id: string } };
-		original: { issues: any[]; scores: { quality: { score: number } } };
+		original: { issues: unknown[]; scores: { quality: { score: number } } };
 	},
 ) => {
 	expect(secondElement.json).toMatchObject({
@@ -78,9 +78,9 @@ describe("Markupai", () => {
 			helpers: {
 				createDeferredPromise: vi.fn(),
 				returnJsonArray: vi.fn(),
-			} as any,
+			},
 			getNode: vi.fn(),
-		};
+		} as unknown as Partial<IExecuteFunctions>;
 	});
 
 	afterEach(() => {
@@ -232,7 +232,7 @@ describe("Markupai", () => {
 		const addItemMockReturns = (
 			mock: ReturnType<typeof vi.fn>,
 			tone: string,
-			additionalOptions: Record<string, any>,
+			additionalOptions: Record<string, unknown>,
 			content: string,
 		) => {
 			return mock
@@ -300,9 +300,9 @@ describe("Markupai", () => {
 				documentName: "test.txt",
 				documentOwner: "test-owner",
 				documentLink: "https://test.com",
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				{
@@ -338,9 +338,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				{
@@ -366,9 +366,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("None", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			await markupai.execute.call(mockExecuteFunctions as any);
+			await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				expect.not.objectContaining({ tone: expect.any(String) }),
@@ -388,9 +388,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: false,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -412,19 +412,24 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
 			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
 
-			await expect(markupai.execute.call(mockExecuteFunctions as any)).rejects.toThrow(Error);
+			await expect(
+				markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
+			).rejects.toThrow(Error);
 		});
 
 		it("should handle undefined additional options gracefully", async () => {
 			mockContentCheck();
 
-			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {});
+			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
+				"professional",
+				{},
+			) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			await markupai.execute.call(mockExecuteFunctions as any);
+			await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			expect(mockStyleRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -441,9 +446,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
 			expect(result).toEqual(expectedResult);
@@ -454,9 +459,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
 			expect(result).toEqual(expectedResult);
@@ -473,9 +478,9 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: false,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			const expectedResult = createExpectedExecuteResult(mockResult);
 			expect(result).toEqual(expectedResult);
@@ -509,7 +514,7 @@ describe("Markupai", () => {
 			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
 			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
 
-			const result = await markupai.execute.call(mockExecuteFunctions as any);
+			const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
 			const resultElement = result[0];
 
@@ -534,12 +539,14 @@ describe("Markupai", () => {
 
 			mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
 				waitForCompletion: true,
-			});
+			}) as unknown as IExecuteFunctions["getNodeParameter"];
 
 			mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
 			mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
 
-			await expect(markupai.execute.call(mockExecuteFunctions as any)).rejects.toThrow(Error);
+			await expect(
+				markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
+			).rejects.toThrow(Error);
 
 			expect(mockStyleRequest).toHaveBeenCalledTimes(1);
 			expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();

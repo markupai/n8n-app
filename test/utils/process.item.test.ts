@@ -29,7 +29,7 @@ vi.mock("n8n-workflow", async () => {
 		...actual,
 		NodeApiError: class NodeApiError extends Error {
 			description?: string;
-			constructor(_: any, error: any) {
+			constructor(_: unknown, error: { message?: string; description?: string }) {
 				super(error.message || "Node API Error");
 				this.name = "NodeApiError";
 				this.description = error.description || error.message;
@@ -38,7 +38,11 @@ vi.mock("n8n-workflow", async () => {
 		NodeOperationError: class NodeOperationError extends Error {
 			description?: string;
 			itemIndex?: number;
-			constructor(node: any, error: any, options?: any) {
+			constructor(
+				node: unknown,
+				error: { message?: string },
+				options?: { description?: string; itemIndex?: number },
+			) {
 				super(error.message || "Node Operation Error");
 				this.name = "NodeOperationError";
 				this.description = options?.description || error.message;
@@ -47,6 +51,10 @@ vi.mock("n8n-workflow", async () => {
 		},
 	};
 });
+
+function createMockNode() {
+	return {} as never;
+}
 
 const createGetStyleRewriteResponse = (
 	overrides: Partial<GetStyleRewriteResponse> = {},
@@ -109,7 +117,7 @@ const createMockExecuteFunctions = (
 const createMockNodeParameterResponses = (
 	operation: string,
 	tone: string,
-	additionalOptions: Record<string, any> = {},
+	additionalOptions: Record<string, unknown> = {},
 ) => {
 	return vi
 		.fn()
@@ -151,13 +159,23 @@ describe("process.item", () => {
 		mockGetMimeTypeFromFileName = vi.fn().mockReturnValue("text/plain");
 		mockGetFileNameExtension = vi.fn().mockReturnValue(".txt");
 
-		vi.mocked(styleRequest).mockImplementation(mockStyleRequest);
-		vi.mocked(generateEmailHTMLReport).mockImplementation(mockGenerateEmailHTMLReport);
-		vi.mocked(getPath).mockImplementation(mockGetPath);
-		vi.mocked(getContentType).mockImplementation(mockGetContentType);
-		vi.mocked(getFileExtensionFromFileName).mockImplementation(mockGetFileExtensionFromFileName);
-		vi.mocked(getMimeTypeFromFileName).mockImplementation(mockGetMimeTypeFromFileName);
-		vi.mocked(getFileNameExtension).mockImplementation(mockGetFileNameExtension);
+		vi.mocked(styleRequest).mockImplementation(mockStyleRequest as unknown as typeof styleRequest);
+		vi.mocked(generateEmailHTMLReport).mockImplementation(
+			mockGenerateEmailHTMLReport as unknown as typeof generateEmailHTMLReport,
+		);
+		vi.mocked(getPath).mockImplementation(mockGetPath as unknown as typeof getPath);
+		vi.mocked(getContentType).mockImplementation(
+			mockGetContentType as unknown as typeof getContentType,
+		);
+		vi.mocked(getFileExtensionFromFileName).mockImplementation(
+			mockGetFileExtensionFromFileName as unknown as typeof getFileExtensionFromFileName,
+		);
+		vi.mocked(getMimeTypeFromFileName).mockImplementation(
+			mockGetMimeTypeFromFileName as unknown as typeof getMimeTypeFromFileName,
+		);
+		vi.mocked(getFileNameExtension).mockImplementation(
+			mockGetFileNameExtension as unknown as typeof getFileNameExtension,
+		);
 	});
 
 	afterEach(() => {
@@ -180,7 +198,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					{
@@ -222,7 +240,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -251,7 +269,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockGetPath).toHaveBeenCalledWith("styleRewrite");
 				expect(mockStyleRequest).toHaveBeenCalledWith(
@@ -273,7 +291,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					expect.not.objectContaining({ tone: expect.any(String) }),
@@ -293,7 +311,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -314,7 +332,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -333,7 +351,7 @@ describe("process.item", () => {
 					getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -354,7 +372,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 2);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 2);
 
 				expect(mockStyleRequest).toHaveBeenCalledWith(expect.anything(), "v1/style/checks", 2);
 
@@ -374,7 +392,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockGetMimeTypeFromFileName).toHaveBeenCalledWith("document.dita");
 				expect(mockGetContentType).not.toHaveBeenCalled();
@@ -394,7 +412,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockGetContentType).toHaveBeenCalledWith("test content");
 				expect(mockGetFileExtensionFromFileName).not.toHaveBeenCalled();
@@ -414,7 +432,7 @@ describe("process.item", () => {
 					}),
 				});
 
-				await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(mockGetContentType).toHaveBeenCalledWith("test content");
 				expect(mockGetFileExtensionFromFileName).not.toHaveBeenCalled();
@@ -434,7 +452,7 @@ describe("process.item", () => {
 					continueOnFail: vi.fn().mockReturnValue(true),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(result).toEqual({
 					json: {
@@ -447,7 +465,7 @@ describe("process.item", () => {
 			});
 
 			it("should return NodeApiError description when continueOnFail is true", async () => {
-				const nodeApiError = new NodeApiError({} as any, {
+				const nodeApiError = new NodeApiError(createMockNode(), {
 					message: "API Error",
 					description: "Custom error description",
 				});
@@ -460,7 +478,7 @@ describe("process.item", () => {
 					continueOnFail: vi.fn().mockReturnValue(true),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(result.json).toHaveProperty("error", "Custom error description");
 			});
@@ -476,15 +494,15 @@ describe("process.item", () => {
 					continueOnFail: vi.fn().mockReturnValue(false),
 				});
 
-				await expect(processMarkupaiItem.call(mockExecuteFunctions as any, 0)).rejects.toThrow(
-					NodeOperationError,
-				);
+				await expect(
+					processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0),
+				).rejects.toThrow(NodeOperationError);
 
 				expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();
 			});
 
 			it("should include error description and itemIndex in NodeOperationError", async () => {
-				const nodeApiError = new NodeApiError({} as any, {
+				const nodeApiError = new NodeApiError(createMockNode(), {
 					message: "API Error",
 					description: "Custom error description",
 				});
@@ -498,13 +516,13 @@ describe("process.item", () => {
 				});
 
 				try {
-					await processMarkupaiItem.call(mockExecuteFunctions as any, 3);
+					await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 3);
 					expect.fail("Should have thrown NodeOperationError");
 				} catch (error) {
 					expect(error).toBeInstanceOf(NodeOperationError);
 					if (error instanceof NodeOperationError) {
 						expect(error.description).toBe("Custom error description");
-						expect((error as any).itemIndex).toBe(3);
+						expect((error as { itemIndex?: number }).itemIndex).toBe(3);
 					}
 				}
 			});
@@ -520,7 +538,7 @@ describe("process.item", () => {
 					continueOnFail: vi.fn().mockReturnValue(true),
 				});
 
-				const result = await processMarkupaiItem.call(mockExecuteFunctions as any, 0);
+				const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
 				expect(result.json).toHaveProperty("error", "Simple error message");
 			});
