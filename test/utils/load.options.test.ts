@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { FunctionsBase, ILoadOptionsFunctions } from "n8n-workflow";
+import type { ILoadOptionsFunctions } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import {
 	getBaseUrl,
@@ -43,44 +43,31 @@ describe("load.options", () => {
 		});
 
 		it("returns production URL by default", async () => {
-			const mockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
-			} as unknown as FunctionsBase;
-
-			const result = await getBaseUrl(mockFunctionsBase);
+			const result = await getBaseUrl();
 
 			expect(result.toString()).toBe("https://api.markup.ai/");
 		});
 
 		it("returns production URL when NODE_ENV is production", async () => {
 			process.env.NODE_ENV = "production";
-			const mockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
-			} as unknown as FunctionsBase;
 
-			const result = await getBaseUrl(mockFunctionsBase);
+			const result = await getBaseUrl();
 
 			expect(result.toString()).toBe("https://api.markup.ai/");
 		});
 
 		it("returns production URL when NODE_ENV is not production (no env var set)", async () => {
 			process.env.NODE_ENV = "development";
-			const mockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
-			} as unknown as FunctionsBase;
 
-			const result = await getBaseUrl(mockFunctionsBase);
+			const result = await getBaseUrl();
 
 			expect(result.toString()).toBe("https://api.markup.ai/");
 		});
 
 		it("returns custom URL from MARKUP_AI_BASE_URL environment variable", async () => {
 			process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/";
-			const mockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
-			} as unknown as FunctionsBase;
 
-			const result = await getBaseUrl(mockFunctionsBase);
+			const result = await getBaseUrl();
 
 			expect(result.toString()).toBe("https://api.dev.markup.ai/");
 		});
@@ -88,11 +75,8 @@ describe("load.options", () => {
 		it("returns custom URL from MARKUP_AI_BASE_URL even when NODE_ENV is production", async () => {
 			process.env.NODE_ENV = "production";
 			process.env.MARKUP_AI_BASE_URL = "https://custom.api.markup.ai/";
-			const mockFunctionsBase = {
-				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
-			} as unknown as FunctionsBase;
 
-			const result = await getBaseUrl(mockFunctionsBase);
+			const result = await getBaseUrl();
 
 			expect(result.toString()).toBe("https://custom.api.markup.ai/");
 		});

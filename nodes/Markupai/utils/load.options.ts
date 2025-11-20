@@ -1,5 +1,4 @@
 import type {
-	FunctionsBase,
 	IExecuteFunctions,
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
@@ -39,7 +38,7 @@ const mapTones = (tones: string[]) => {
 	}));
 };
 
-export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
+export async function getBaseUrl(): Promise<URL> {
 	return new URL(getBaseUrlString());
 }
 
@@ -47,7 +46,7 @@ export async function loadStyleGuides(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
 	try {
-		const baseUrl = await getBaseUrl(this);
+		const baseUrl = await getBaseUrl();
 
 		const httpRequestOptions: IHttpRequestOptions = {
 			method: "GET",
@@ -81,7 +80,7 @@ export async function loadStyleGuides(
 }
 
 async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
-	const baseUrl = await getBaseUrl(this);
+	const baseUrl = await getBaseUrl();
 
 	const requestOptions: IHttpRequestOptions = {
 		method: "GET",

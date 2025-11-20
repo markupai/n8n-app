@@ -66,7 +66,7 @@ async function mockAndValidatePostStyleRewrite(
 	);
 
 	expect(result).toEqual(postResponse);
-	expect(mockGetBaseUrl).toHaveBeenCalledWith(fn);
+	expect(mockGetBaseUrl).toHaveBeenCalled();
 	expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
 		method: "POST",
 		url: "https://api.markup.ai/v1/style/rewrite",
