@@ -281,7 +281,7 @@ describe("process.item", () => {
 				);
 			});
 
-			it("should exclude tone when None (keep tone unchanged)", async () => {
+			it("should exclude tone when None", async () => {
 				const mockResponse = createGetStyleRewriteResponse();
 				mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 

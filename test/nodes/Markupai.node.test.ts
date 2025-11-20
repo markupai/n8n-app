@@ -91,7 +91,7 @@ describe("Markupai", () => {
 		it("should have correct basic properties", () => {
 			expect(markupai.description.displayName).toBe("Markup AI");
 			expect(markupai.description.name).toBe("markupai");
-			expect(markupai.description.description).toBe("Markup AI Content Checker");
+			expect(markupai.description.description).toBe("Markup AI Content Guardian");
 			expect(markupai.description.icon).toBe("file:markupai.svg");
 			expect(markupai.description.version).toBe(1);
 		});
@@ -134,7 +134,7 @@ describe("Markupai", () => {
 
 			const toneProp = properties.find((p) => p.name === "tone");
 			expect(toneProp?.type).toBe("options");
-			expect(toneProp?.default).toBe("None (Keep Tone Unchanged)");
+			expect(toneProp?.default).toBe("None");
 			expect(toneProp?.typeOptions?.loadOptionsMethod).toBe("loadTones");
 
 			const dialectProp = properties.find((p) => p.name === "dialect");

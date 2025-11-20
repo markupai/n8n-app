@@ -12,7 +12,7 @@ export class Markupai implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: "Markup AI",
 		name: "markupai",
-		description: "Markup AI Content Checker",
+		description: "Markup AI Content Guardian",
 		icon: "file:markupai.svg",
 		version: 1,
 		defaults: {
@@ -99,11 +99,11 @@ export class Markupai implements INodeType {
 					'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				options: [
 					{
-						name: "None (Keep Tone Unchanged)",
-						value: "None (Keep Tone Unchanged)",
+						name: "None",
+						value: "None",
 					},
 				],
-				default: "None (Keep Tone Unchanged)",
+				default: "None",
 				typeOptions: {
 					loadOptionsMethod: "loadTones",
 				},
