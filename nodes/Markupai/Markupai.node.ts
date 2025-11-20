@@ -5,8 +5,13 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from "n8n-workflow";
+import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
 import { loadDialects, loadStyleGuides, loadTones } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
+
+const LOAD_STYLE_GUIDES = "loadStyleGuides" as const;
+const LOAD_TONES = "loadTones" as const;
+const LOAD_DIALECTS = "loadDialects" as const;
 
 export class Markupai implements INodeType {
 	description: INodeTypeDescription = {
@@ -23,7 +28,7 @@ export class Markupai implements INodeType {
 		group: [],
 		credentials: [
 			{
-				name: "markupaiApi",
+				name: MARKUPAI_API_CREDENTIAL_NAME,
 				required: true,
 			},
 		],
@@ -87,7 +92,7 @@ export class Markupai implements INodeType {
 				options: [],
 				default: "",
 				typeOptions: {
-					loadOptionsMethod: "loadStyleGuides",
+					loadOptionsMethod: LOAD_STYLE_GUIDES,
 				},
 			},
 			{
@@ -105,7 +110,7 @@ export class Markupai implements INodeType {
 				],
 				default: "None (Keep Tone Unchanged)",
 				typeOptions: {
-					loadOptionsMethod: "loadTones",
+					loadOptionsMethod: LOAD_TONES,
 				},
 			},
 			{
@@ -118,7 +123,7 @@ export class Markupai implements INodeType {
 				options: [],
 				default: "",
 				typeOptions: {
-					loadOptionsMethod: "loadDialects",
+					loadOptionsMethod: LOAD_DIALECTS,
 				},
 			},
 			{
@@ -175,9 +180,9 @@ export class Markupai implements INodeType {
 
 	methods = {
 		loadOptions: {
-			loadStyleGuides: loadStyleGuides,
-			loadTones: loadTones,
-			loadDialects: loadDialects,
+			[LOAD_STYLE_GUIDES]: loadStyleGuides,
+			[LOAD_TONES]: loadTones,
+			[LOAD_DIALECTS]: loadDialects,
 		},
 	};
 
