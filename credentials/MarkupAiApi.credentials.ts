@@ -5,8 +5,10 @@ import {
 	INodeProperties,
 } from "n8n-workflow";
 
+export const MARKUPAI_API_CREDENTIAL_NAME = "markupaiApi" as const;
+
 export class MarkupAiApi implements ICredentialType {
-	name = "markupaiApi";
+	name = MARKUPAI_API_CREDENTIAL_NAME;
 	displayName = "Markup AI API";
 	documentationUrl = "https://docs.markup.ai/";
 	properties: INodeProperties[] = [
