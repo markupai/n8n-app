@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { getBaseUrlString } from "../../utils/base-url.utils";
+import { getBaseUrlString } from "../../utils/common.utils";
 
 describe("base-url.utils", () => {
 	beforeEach(() => {

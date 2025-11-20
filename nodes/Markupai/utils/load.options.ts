@@ -7,7 +7,7 @@ import type {
 } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import { StyleGuides } from "../Markupai.api.types";
-import { getBaseUrlString } from "../../../utils/base-url.utils";
+import { getBaseUrlString } from "../../../utils/common.utils";
 
 type Constants = {
 	dialects: string[];

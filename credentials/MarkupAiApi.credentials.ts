@@ -4,7 +4,7 @@ import {
 	ICredentialType,
 	INodeProperties,
 } from "n8n-workflow";
-import { getBaseUrlString } from "../utils/base-url.utils";
+import { getBaseUrlString } from "../utils/common.utils";
 
 export const MARKUPAI_API_CREDENTIAL_NAME = "markupaiApi" as const;
 

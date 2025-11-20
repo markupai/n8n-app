@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { MarkupAiApi } from "../../credentials/MarkupAiApi.credentials";
-import { getBaseUrlString } from "../../utils/base-url.utils";
+import { getBaseUrlString } from "../../utils/common.utils";
 
 describe("MarkupAiApi credentials", () => {
 	describe("MarkupAiApi class", () => {
