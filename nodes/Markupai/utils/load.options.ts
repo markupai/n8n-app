@@ -7,6 +7,7 @@ import type {
 } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import { StyleGuides } from "../Markupai.api.types";
+import { getBaseUrlString } from "../../../utils/base-url.utils";
 
 type Constants = {
 	dialects: string[];
@@ -39,9 +40,7 @@ const mapTones = (tones: string[]) => {
 };
 
 export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
-	const credentials = await functionsBase.getCredentials("markupaiApi");
-
-	return new URL(credentials.baseUrl);
+	return new URL(getBaseUrlString());
 }
 
 export async function loadStyleGuides(

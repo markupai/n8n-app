@@ -36,19 +36,66 @@ describe("load.options", () => {
 	});
 
 	describe("getBaseUrl", () => {
-		it.each(["https://api.markup.ai", "https://api.markup.ai/"])(
-			'normalizes URL from "%s" to "https://api.markup.ai/"',
-			async (input) => {
-				const mockFunctionsBase = {
-					getCredentials: vi.fn().mockResolvedValue({ baseUrl: input }),
-				} as unknown as FunctionsBase;
+		beforeEach(() => {
+			// Clear environment variables before each test
+			delete process.env.MARKUP_AI_BASE_URL;
+			delete process.env.NODE_ENV;
+		});
 
-				const result = await getBaseUrl(mockFunctionsBase);
+		it("returns production URL by default", async () => {
+			const mockFunctionsBase = {
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
+			} as unknown as FunctionsBase;
 
-				expect(result.toString()).toBe("https://api.markup.ai/");
-				expect(mockFunctionsBase.getCredentials).toHaveBeenCalledWith("markupaiApi");
-			},
-		);
+			const result = await getBaseUrl(mockFunctionsBase);
+
+			expect(result.toString()).toBe("https://api.markup.ai/");
+		});
+
+		it("returns production URL when NODE_ENV is production", async () => {
+			process.env.NODE_ENV = "production";
+			const mockFunctionsBase = {
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
+			} as unknown as FunctionsBase;
+
+			const result = await getBaseUrl(mockFunctionsBase);
+
+			expect(result.toString()).toBe("https://api.markup.ai/");
+		});
+
+		it("returns production URL when NODE_ENV is not production (no env var set)", async () => {
+			process.env.NODE_ENV = "development";
+			const mockFunctionsBase = {
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
+			} as unknown as FunctionsBase;
+
+			const result = await getBaseUrl(mockFunctionsBase);
+
+			expect(result.toString()).toBe("https://api.markup.ai/");
+		});
+
+		it("returns custom URL from MARKUP_AI_BASE_URL environment variable", async () => {
+			process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/";
+			const mockFunctionsBase = {
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
+			} as unknown as FunctionsBase;
+
+			const result = await getBaseUrl(mockFunctionsBase);
+
+			expect(result.toString()).toBe("https://api.dev.markup.ai/");
+		});
+
+		it("returns custom URL from MARKUP_AI_BASE_URL even when NODE_ENV is production", async () => {
+			process.env.NODE_ENV = "production";
+			process.env.MARKUP_AI_BASE_URL = "https://custom.api.markup.ai/";
+			const mockFunctionsBase = {
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "test-key" }),
+			} as unknown as FunctionsBase;
+
+			const result = await getBaseUrl(mockFunctionsBase);
+
+			expect(result.toString()).toBe("https://custom.api.markup.ai/");
+		});
 	});
 
 	describe("loadStyleGuides", () => {
@@ -59,9 +106,7 @@ describe("load.options", () => {
 
 		it("returns the style guides from the API", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -78,7 +123,6 @@ describe("load.options", () => {
 				{ name: "Style Guide 1", value: "1" },
 				{ name: "Style Guide 2", value: "2" },
 			]);
-			expect(loadOptionsFunction.getCredentials).toHaveBeenCalledWith("markupaiApi");
 		});
 
 		it("throws an error if the API key is not found", async () => {
@@ -98,9 +142,7 @@ describe("load.options", () => {
 
 		it("throws an error if the API returns an error", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -121,9 +163,7 @@ describe("load.options", () => {
 		const tonesResponse = { tones: ["tone_1", "tone_2"] };
 		it("returns the tones from the API", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -145,7 +185,7 @@ describe("load.options", () => {
 
 		it("returns the default tones if the API returns an error", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi.fn().mockResolvedValue({ baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -178,9 +218,7 @@ describe("load.options", () => {
 
 		it('includes "None" as the first option when API returns tones', async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -204,9 +242,7 @@ describe("load.options", () => {
 	describe("loadDialects", () => {
 		it("returns the dialects from the API", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
@@ -227,9 +263,7 @@ describe("load.options", () => {
 
 		it("returns the default dialects if the API returns an error", async () => {
 			const loadOptionsFunction = createMockLoadOptionsFunctions({
-				getCredentials: vi
-					.fn()
-					.mockResolvedValue({ apiKey: "mocked-key-123", baseUrl: "https://api.markup.ai" }),
+				getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
 				helpers: {
 					httpRequestWithAuthentication: {
 						call: vi.fn().mockResolvedValue({
