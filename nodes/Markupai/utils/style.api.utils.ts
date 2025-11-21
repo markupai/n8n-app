@@ -22,7 +22,7 @@ export async function postStyleRewrite(
 	path: string,
 ): Promise<PostStyleRewriteResponse> {
 	const formData = new FormData();
-	const baseUrl = await getBaseUrl(this);
+	const baseUrl = await getBaseUrl();
 
 	const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
 	const fileName = formDataDetails.documentName || "unknown" + formDataDetails.fileNameExtension;
@@ -68,7 +68,7 @@ export async function pollResponse(
 		return postStyleRewriteResponse;
 	}
 
-	const baseUrl = await getBaseUrl(this);
+	const baseUrl = await getBaseUrl();
 	const pollingInterval = 2_000;
 	const startTime = Date.now();
 

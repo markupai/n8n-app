@@ -159,6 +159,38 @@ This uses the local n8n installation from devDependencies — no global installa
 
 **Note:** The setup links from the `dist` folder rather than the project root. This ensures that n8n only loads the compiled code without development dependencies, preventing module loading conflicts.
 
+### Environment Configuration
+
+For development, you can configure the API base URL using environment variables:
+
+**Option 1: Using a `.env` file**
+
+1. Copy the example environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and set your development API URL:
+
+   ```bash
+   MARKUP_AI_BASE_URL=https://api.dev.markup.ai/
+   ```
+
+3. Start n8n (it will automatically load the `.env` file):
+   ```bash
+   npm start
+   ```
+
+**Option 2: Export environment variable directly**
+
+```bash
+export MARKUP_AI_BASE_URL=https://api.dev.markup.ai/
+npm start
+```
+
+**Note:** By default, the node uses the production API URL (`https://api.markup.ai/`). The environment variable is only needed for development or custom API endpoints. n8n automatically loads `.env` files from the current working directory, so no additional tools are required.
+
 ### Manual Setup
 
 If you prefer to set things up manually:

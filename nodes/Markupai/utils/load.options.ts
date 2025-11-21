@@ -1,5 +1,4 @@
 import type {
-	FunctionsBase,
 	IExecuteFunctions,
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
@@ -7,6 +6,7 @@ import type {
 } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import { StyleGuides } from "../Markupai.api.types";
+import { getBaseUrlString } from "../../../utils/common.utils";
 
 type Constants = {
 	dialects: string[];
@@ -38,17 +38,15 @@ const mapTones = (tones: string[]) => {
 	}));
 };
 
-export async function getBaseUrl(functionsBase: FunctionsBase): Promise<URL> {
-	const credentials = await functionsBase.getCredentials("markupaiApi");
-
-	return new URL(credentials.baseUrl);
+export async function getBaseUrl(): Promise<URL> {
+	return new URL(getBaseUrlString());
 }
 
 export async function loadStyleGuides(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
 	try {
-		const baseUrl = await getBaseUrl(this);
+		const baseUrl = await getBaseUrl();
 
 		const httpRequestOptions: IHttpRequestOptions = {
 			method: "GET",
@@ -82,7 +80,7 @@ export async function loadStyleGuides(
 }
 
 async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
-	const baseUrl = await getBaseUrl(this);
+	const baseUrl = await getBaseUrl();
 
 	const requestOptions: IHttpRequestOptions = {
 		method: "GET",

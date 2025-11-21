@@ -4,6 +4,7 @@ import {
 	ICredentialType,
 	INodeProperties,
 } from "n8n-workflow";
+import { getBaseUrlString } from "../utils/common.utils";
 
 export const MARKUPAI_API_CREDENTIAL_NAME = "markupaiApi" as const;
 
@@ -20,14 +21,6 @@ export class MarkupAiApi implements ICredentialType {
 			default: "",
 			required: true,
 		},
-		{
-			displayName: "Base URL",
-			name: "baseUrl",
-			type: "string",
-			default: "https://api.markup.ai/",
-			description: "The base URL for the MarkupAI API",
-			placeholder: "e.g. https://api.markup.ai/",
-		},
 	];
 
 	authenticate: IAuthenticateGeneric = {
@@ -41,7 +34,7 @@ export class MarkupAiApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: "={{$credentials.baseUrl}}",
+			baseURL: getBaseUrlString(),
 			url: "/v1/internal/constants",
 		},
 	};
