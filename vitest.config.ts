@@ -1,5 +1,4 @@
 import { defineConfig } from "vitest/config";
-import { resolve } from "node:path";
 
 export default defineConfig({
 	test: {
@@ -12,12 +11,6 @@ export default defineConfig({
 			reporter: ["text", "html", "lcov"],
 			include: ["nodes/**/*.ts", "credentials/**/*.ts", "utils/**/*.ts"],
 			exclude: ["**/*.d.ts", "**/*.test.ts", "**/*.spec.ts"],
-		},
-	},
-	resolve: {
-		alias: {
-			"@": resolve(__dirname, "./"),
-			"n8n-workflow": resolve(__dirname, "./"),
 		},
 	},
 	define: {
