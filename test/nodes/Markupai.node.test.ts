@@ -266,9 +266,8 @@ describe("Markupai", () => {
 
 		beforeEach(async () => {
 			const { styleRequest } = await import("../../nodes/Markupai/utils/style.api.utils");
-			const { generateEmailHTMLReport } = await import(
-				"../../nodes/Markupai/utils/email.generator"
-			);
+			const { generateEmailHTMLReport } =
+				await import("../../nodes/Markupai/utils/email.generator");
 			const { getPath } = await import("../../nodes/Markupai/utils/style.api.utils");
 
 			vi.mocked(styleRequest).mockImplementation(mockStyleRequest);
