@@ -1,8 +1,8 @@
 import {
-	IExecuteFunctions,
-	INodeExecutionData,
-	NodeApiError,
-	NodeOperationError,
+  IExecuteFunctions,
+  INodeExecutionData,
+  NodeApiError,
+  NodeOperationError,
 } from "n8n-workflow";
 import { FormDataDetails, getPath, styleRequest } from "./style.api.utils";
 import { generateEmailHTMLReport } from "./email.generator";
@@ -10,133 +10,133 @@ import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.a
 import { getContentType, getMimeTypeFromFileName, getFileNameExtension } from "./file.type.utils";
 
 type AdditionalOptions = {
-	waitForCompletion?: boolean;
-	pollingTimeout?: number;
-	documentName?: string;
-	documentOwner?: string;
-	documentLink?: string;
+  waitForCompletion?: boolean;
+  pollingTimeout?: number;
+  documentName?: string;
+  documentOwner?: string;
+  documentLink?: string;
 };
 
 function addHtmlReportToWorkflowResponse(
-	resultElement: INodeExecutionData,
-	extendedInputData: {
-		document_name: string | undefined;
-		document_owner: string | undefined;
-		document_link: string | undefined;
-	},
-	itemIndex: number,
+  resultElement: INodeExecutionData,
+  extendedInputData: {
+    document_name: string | undefined;
+    document_owner: string | undefined;
+    document_link: string | undefined;
+  },
+  itemIndex: number,
 ) {
-	const emailHTMLReport = generateEmailHTMLReport(
-		resultElement.json as unknown as GetStyleRewriteResponse,
-		extendedInputData,
-	);
+  const emailHTMLReport = generateEmailHTMLReport(
+    resultElement.json as unknown as GetStyleRewriteResponse,
+    extendedInputData,
+  );
 
-	return {
-		json: {
-			...(resultElement.json as unknown as GetStyleRewriteResponse),
-			html_email: emailHTMLReport,
-		},
-		pairedItem: {
-			item: itemIndex,
-		},
-	};
+  return {
+    json: {
+      ...(resultElement.json as unknown as GetStyleRewriteResponse),
+      html_email: emailHTMLReport,
+    },
+    pairedItem: {
+      item: itemIndex,
+    },
+  };
 }
 
 function buildFormDataDetails(
-	this: IExecuteFunctions,
-	itemIndex: number,
-	additionalOptions: AdditionalOptions,
+  this: IExecuteFunctions,
+  itemIndex: number,
+  additionalOptions: AdditionalOptions,
 ): FormDataDetails {
-	const content = this.getNodeParameter("content", itemIndex);
-	const styleGuide = this.getNodeParameter("styleGuide", itemIndex);
-	const tone = this.getNodeParameter("tone", itemIndex);
-	const dialect = this.getNodeParameter("dialect", itemIndex);
-	const waitForCompletion = additionalOptions.waitForCompletion ?? true;
-	const pollingTimeout = additionalOptions.pollingTimeout || 60000;
-	const contentType = additionalOptions.documentName
-		? getMimeTypeFromFileName(additionalOptions.documentName)
-		: getContentType(content as string);
-	const fileNameExtension = getFileNameExtension(contentType);
+  const content = this.getNodeParameter("content", itemIndex);
+  const styleGuide = this.getNodeParameter("styleGuide", itemIndex);
+  const tone = this.getNodeParameter("tone", itemIndex);
+  const dialect = this.getNodeParameter("dialect", itemIndex);
+  const waitForCompletion = additionalOptions.waitForCompletion ?? true;
+  const pollingTimeout = additionalOptions.pollingTimeout || 60000;
+  const contentType = additionalOptions.documentName
+    ? getMimeTypeFromFileName(additionalOptions.documentName)
+    : getContentType(content as string);
+  const fileNameExtension = getFileNameExtension(contentType);
 
-	return {
-		content,
-		contentType,
-		fileNameExtension,
-		styleGuide,
-		...(tone !== "None" && { tone }),
-		dialect,
-		waitForCompletion,
-		pollingTimeout,
-	} as FormDataDetails;
+  return {
+    content,
+    contentType,
+    fileNameExtension,
+    styleGuide,
+    ...(tone !== "None" && { tone }),
+    dialect,
+    waitForCompletion,
+    pollingTimeout,
+  } as FormDataDetails;
 }
 
 function getErrorMessage(error: unknown): string {
-	if (error instanceof NodeApiError) {
-		return error.description || error.message;
-	}
-	if (error instanceof Error) {
-		return error.message;
-	}
-	return String(error);
+  if (error instanceof NodeApiError) {
+    return error.description || error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }
 
 function createErrorResponse(error: unknown, itemIndex: number) {
-	return {
-		json: {
-			error: getErrorMessage(error),
-		},
-		pairedItem: {
-			item: itemIndex,
-		},
-	};
+  return {
+    json: {
+      error: getErrorMessage(error),
+    },
+    pairedItem: {
+      item: itemIndex,
+    },
+  };
 }
 
 function createWorkflowResponse(resultElement: INodeExecutionData, itemIndex: number) {
-	return {
-		json: {
-			...(resultElement.json as unknown as PostStyleRewriteResponse),
-		},
-		pairedItem: {
-			item: itemIndex,
-		},
-	};
+  return {
+    json: {
+      ...(resultElement.json as unknown as PostStyleRewriteResponse),
+    },
+    pairedItem: {
+      item: itemIndex,
+    },
+  };
 }
 
 export async function processMarkupaiItem(
-	this: IExecuteFunctions,
-	itemIndex: number,
+  this: IExecuteFunctions,
+  itemIndex: number,
 ): Promise<INodeExecutionData> {
-	try {
-		const operation = this.getNodeParameter("operation", itemIndex);
-		const additionalOptions = this.getNodeParameter(
-			"additionalOptions",
-			itemIndex,
-		) as AdditionalOptions;
-		const formDataDetails = buildFormDataDetails.call(this, itemIndex, additionalOptions);
+  try {
+    const operation = this.getNodeParameter("operation", itemIndex);
+    const additionalOptions = this.getNodeParameter(
+      "additionalOptions",
+      itemIndex,
+    ) as AdditionalOptions;
+    const formDataDetails = buildFormDataDetails.call(this, itemIndex, additionalOptions);
 
-		const extendedInputData = {
-			document_name: additionalOptions.documentName,
-			document_owner: additionalOptions.documentOwner,
-			document_link: additionalOptions.documentLink,
-		};
+    const extendedInputData = {
+      document_name: additionalOptions.documentName,
+      document_owner: additionalOptions.documentOwner,
+      document_link: additionalOptions.documentLink,
+    };
 
-		const result = await styleRequest.call(this, formDataDetails, getPath(operation), itemIndex);
+    const result = await styleRequest.call(this, formDataDetails, getPath(operation), itemIndex);
 
-		const resultElement = result[0];
+    const resultElement = result[0];
 
-		if (formDataDetails.waitForCompletion) {
-			return addHtmlReportToWorkflowResponse(resultElement, extendedInputData, itemIndex);
-		}
+    if (formDataDetails.waitForCompletion) {
+      return addHtmlReportToWorkflowResponse(resultElement, extendedInputData, itemIndex);
+    }
 
-		return createWorkflowResponse(resultElement, itemIndex);
-	} catch (error) {
-		if (this.continueOnFail()) {
-			return createErrorResponse(error, itemIndex);
-		}
+    return createWorkflowResponse(resultElement, itemIndex);
+  } catch (error) {
+    if (this.continueOnFail()) {
+      return createErrorResponse(error, itemIndex);
+    }
 
-		throw new NodeOperationError(this.getNode(), error as Error, {
-			description: error instanceof NodeApiError ? error.description : error.message,
-			itemIndex: itemIndex,
-		});
-	}
+    throw new NodeOperationError(this.getNode(), error as Error, {
+      description: error instanceof NodeApiError ? error.description : error.message,
+      itemIndex: itemIndex,
+    });
+  }
 }

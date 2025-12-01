@@ -1,6 +1,6 @@
 {
-	"sonarlint.connectedMode.project": {
-		"connectionId": "markupai",
-		"projectKey": "markupai_n8n-app"
-	}
+  "sonarlint.connectedMode.project": {
+    "connectionId": "markupai",
+    "projectKey": "markupai_n8n-app"
+  }
 }
