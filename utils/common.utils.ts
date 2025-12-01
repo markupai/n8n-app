@@ -4,14 +4,14 @@
  * @returns The base URL string
  */
 export function getBaseUrlString(): string {
-	// Check for custom base URL from environment variable (useful for dev)
-	// If MARKUP_AI_BASE_URL is set and not empty, use it; otherwise use production URL
-	const customBaseUrl = process.env.MARKUP_AI_BASE_URL;
+  // Check for custom base URL from environment variable (useful for dev)
+  // If MARKUP_AI_BASE_URL is set and not empty, use it; otherwise use production URL
+  const customBaseUrl = process.env.MARKUP_AI_BASE_URL;
 
-	if (customBaseUrl && customBaseUrl.trim() !== "") {
-		return customBaseUrl;
-	}
+  if (customBaseUrl && customBaseUrl.trim() !== "") {
+    return customBaseUrl;
+  }
 
-	// Default to production URL
-	return "https://api.markup.ai/";
+  // Default to production URL
+  return "https://api.markup.ai/";
 }

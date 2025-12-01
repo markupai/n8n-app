@@ -3,144 +3,144 @@ import { getBaseUrl } from "./load.options";
 import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
 
 export interface FormDataDetails {
-	content: string;
-	contentType: string;
-	fileNameExtension: string;
-	dialect: string;
-	tone?: string;
-	styleGuide: string;
-	documentName?: string;
-	documentOwner?: string;
-	documentLink?: string;
-	waitForCompletion: boolean;
-	pollingTimeout: number;
+  content: string;
+  contentType: string;
+  fileNameExtension: string;
+  dialect: string;
+  tone?: string;
+  styleGuide: string;
+  documentName?: string;
+  documentOwner?: string;
+  documentLink?: string;
+  waitForCompletion: boolean;
+  pollingTimeout: number;
 }
 
 export async function postStyleRewrite(
-	this: IExecuteFunctions,
-	formDataDetails: FormDataDetails,
-	path: string,
+  this: IExecuteFunctions,
+  formDataDetails: FormDataDetails,
+  path: string,
 ): Promise<PostStyleRewriteResponse> {
-	const formData = new FormData();
-	const baseUrl = await getBaseUrl();
+  const formData = new FormData();
+  const baseUrl = await getBaseUrl();
 
-	const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
-	const fileName = formDataDetails.documentName || "unknown" + formDataDetails.fileNameExtension;
+  const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
+  const fileName = formDataDetails.documentName || "unknown" + formDataDetails.fileNameExtension;
 
-	formData.append("file_upload", blob, fileName);
-	formData.append("dialect", formDataDetails.dialect);
-	formData.append("style_guide", formDataDetails.styleGuide);
+  formData.append("file_upload", blob, fileName);
+  formData.append("dialect", formDataDetails.dialect);
+  formData.append("style_guide", formDataDetails.styleGuide);
 
-	if (formDataDetails.tone) {
-		formData.append("tone", formDataDetails.tone);
-	}
+  if (formDataDetails.tone) {
+    formData.append("tone", formDataDetails.tone);
+  }
 
-	const requestOptions: IHttpRequestOptions = {
-		method: "POST",
-		url: `${baseUrl.toString()}${path}`,
-		headers: {
-			"Content-Type": "multipart/form-data",
-		},
-		body: formData,
-		returnFullResponse: true,
-	};
+  const requestOptions: IHttpRequestOptions = {
+    method: "POST",
+    url: `${baseUrl.toString()}${path}`,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    body: formData,
+    returnFullResponse: true,
+  };
 
-	const response = await this.helpers.httpRequestWithAuthentication.call(
-		this,
-		"markupaiApi",
-		requestOptions,
-	);
+  const response = await this.helpers.httpRequestWithAuthentication.call(
+    this,
+    "markupaiApi",
+    requestOptions,
+  );
 
-	const submitResponse =
-		typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  const submitResponse =
+    typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 
-	return JSON.parse(submitResponse);
+  return JSON.parse(submitResponse);
 }
 
 export async function pollResponse(
-	this: IExecuteFunctions,
-	postStyleRewriteResponse: PostStyleRewriteResponse,
-	waitForCompletion: boolean,
-	pollingTimeout: number,
-	path: string,
+  this: IExecuteFunctions,
+  postStyleRewriteResponse: PostStyleRewriteResponse,
+  waitForCompletion: boolean,
+  pollingTimeout: number,
+  path: string,
 ): Promise<PostStyleRewriteResponse | GetStyleRewriteResponse> {
-	if (!waitForCompletion || postStyleRewriteResponse.status !== "running") {
-		return postStyleRewriteResponse;
-	}
+  if (!waitForCompletion || postStyleRewriteResponse.status !== "running") {
+    return postStyleRewriteResponse;
+  }
 
-	const baseUrl = await getBaseUrl();
-	const pollingInterval = 2_000;
-	const startTime = Date.now();
+  const baseUrl = await getBaseUrl();
+  const pollingInterval = 2_000;
+  const startTime = Date.now();
 
-	while (Date.now() - startTime <= pollingTimeout) {
-		await sleep(pollingInterval);
+  while (Date.now() - startTime <= pollingTimeout) {
+    await sleep(pollingInterval);
 
-		const statusOptions: IHttpRequestOptions = {
-			method: "GET",
-			url: `${baseUrl.toString()}${path}/${postStyleRewriteResponse.workflow_id}`,
-			returnFullResponse: true,
-		};
+    const statusOptions: IHttpRequestOptions = {
+      method: "GET",
+      url: `${baseUrl.toString()}${path}/${postStyleRewriteResponse.workflow_id}`,
+      returnFullResponse: true,
+    };
 
-		const statusResp = await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			"markupaiApi",
-			statusOptions,
-		);
-		const statusResponse =
-			typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
+    const statusResp = await this.helpers.httpRequestWithAuthentication.call(
+      this,
+      "markupaiApi",
+      statusOptions,
+    );
+    const statusResponse =
+      typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
 
-		const currentResponse: GetStyleRewriteResponse = JSON.parse(statusResponse);
+    const currentResponse: GetStyleRewriteResponse = JSON.parse(statusResponse);
 
-		if (currentResponse.workflow.status === "failed") {
-			throw new Error(`Workflow failed: ${currentResponse.workflow.id}`);
-		}
+    if (currentResponse.workflow.status === "failed") {
+      throw new Error(`Workflow failed: ${currentResponse.workflow.id}`);
+    }
 
-		if (currentResponse.workflow.status === "completed") {
-			return currentResponse;
-		}
-	}
+    if (currentResponse.workflow.status === "completed") {
+      return currentResponse;
+    }
+  }
 
-	throw new Error(
-		`Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${postStyleRewriteResponse.workflow_id}`,
-	);
+  throw new Error(
+    `Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${postStyleRewriteResponse.workflow_id}`,
+  );
 }
 
 export async function styleRequest(
-	this: IExecuteFunctions,
-	formDataDetails: FormDataDetails,
-	path: string,
-	itemIndex: number,
+  this: IExecuteFunctions,
+  formDataDetails: FormDataDetails,
+  path: string,
+  itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const returnData: INodeExecutionData[] = [];
-	const postStyleRewriteResponse = await postStyleRewrite.call(this, formDataDetails, path);
+  const returnData: INodeExecutionData[] = [];
+  const postStyleRewriteResponse = await postStyleRewrite.call(this, formDataDetails, path);
 
-	if (formDataDetails.waitForCompletion) {
-		const pollStyleRewriteResponseComplete = await pollResponse.call(
-			this,
-			postStyleRewriteResponse,
-			formDataDetails.waitForCompletion,
-			formDataDetails.pollingTimeout,
-			path,
-		);
+  if (formDataDetails.waitForCompletion) {
+    const pollStyleRewriteResponseComplete = await pollResponse.call(
+      this,
+      postStyleRewriteResponse,
+      formDataDetails.waitForCompletion,
+      formDataDetails.pollingTimeout,
+      path,
+    );
 
-		returnData.push({
-			json: { ...pollStyleRewriteResponseComplete },
-			itemData: itemIndex,
-		});
-	} else {
-		returnData.push({
-			json: { ...postStyleRewriteResponse },
-			itemData: itemIndex,
-		});
-	}
+    returnData.push({
+      json: { ...pollStyleRewriteResponseComplete },
+      itemData: itemIndex,
+    });
+  } else {
+    returnData.push({
+      json: { ...postStyleRewriteResponse },
+      itemData: itemIndex,
+    });
+  }
 
-	return returnData;
+  return returnData;
 }
 
 export function getPath(operation: string): string {
-	if (operation === "styleRewrite") {
-		return "v1/style/rewrites";
-	} else {
-		return "v1/style/checks";
-	}
+  if (operation === "styleRewrite") {
+    return "v1/style/rewrites";
+  } else {
+    return "v1/style/checks";
+  }
 }

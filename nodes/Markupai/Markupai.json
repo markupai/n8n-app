@@ -1,18 +1,18 @@
 {
-	"node": "n8n-nodes-base.markupai",
-	"nodeVersion": "1.0",
-	"codexVersion": "1.0",
-	"categories": ["Miscellaneous"],
-	"resources": {
-		"credentialDocumentation": [
-			{
-				"url": "https://docs.markup.ai/"
-			}
-		],
-		"primaryDocumentation": [
-			{
-				"url": "https://docs.markup.ai/"
-			}
-		]
-	}
+  "node": "n8n-nodes-base.markupai",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": ["Miscellaneous"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://docs.markup.ai/"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://docs.markup.ai/"
+      }
+    ]
+  }
 }

@@ -5,11 +5,11 @@ import { LoggerProxy } from "n8n-workflow";
  * Base interface for categorized issues
  */
 export interface CategorizedIssues<T extends Issue = Issue> {
-	clarity: T[];
-	consistency: T[];
-	grammar: T[];
-	terminology: T[];
-	tone: T[];
+  clarity: T[];
+  consistency: T[];
+  grammar: T[];
+  terminology: T[];
+  tone: T[];
 }
 
 /**
@@ -40,39 +40,39 @@ export interface CategorizedIssues<T extends Issue = Issue> {
  * ```
  */
 export function categorizeIssues<T extends Issue>(issues: T[]): CategorizedIssues<T> {
-	// Initialize empty arrays for each category
-	const categorized: CategorizedIssues<T> = {
-		clarity: [],
-		consistency: [],
-		grammar: [],
-		terminology: [],
-		tone: [],
-	};
+  // Initialize empty arrays for each category
+  const categorized: CategorizedIssues<T> = {
+    clarity: [],
+    consistency: [],
+    grammar: [],
+    terminology: [],
+    tone: [],
+  };
 
-	// Group issues by category using a single pass through the array
-	for (const issue of issues) {
-		switch (issue.category) {
-			case IssueCategory.Clarity:
-				categorized.clarity.push(issue);
-				break;
-			case IssueCategory.Consistency:
-				categorized.consistency.push(issue);
-				break;
-			case IssueCategory.Grammar:
-				categorized.grammar.push(issue);
-				break;
-			case IssueCategory.Tone:
-				categorized.tone.push(issue);
-				break;
-			case IssueCategory.Terminology:
-				categorized.terminology.push(issue);
-				break;
-			default:
-				// Handle any future categories that might be added
-				LoggerProxy.warn(`Unknown issue category: ${issue.category}`);
-				break;
-		}
-	}
+  // Group issues by category using a single pass through the array
+  for (const issue of issues) {
+    switch (issue.category) {
+      case IssueCategory.Clarity:
+        categorized.clarity.push(issue);
+        break;
+      case IssueCategory.Consistency:
+        categorized.consistency.push(issue);
+        break;
+      case IssueCategory.Grammar:
+        categorized.grammar.push(issue);
+        break;
+      case IssueCategory.Tone:
+        categorized.tone.push(issue);
+        break;
+      case IssueCategory.Terminology:
+        categorized.terminology.push(issue);
+        break;
+      default:
+        // Handle any future categories that might be added
+        LoggerProxy.warn(`Unknown issue category: ${issue.category}`);
+        break;
+    }
+  }
 
-	return categorized;
+  return categorized;
 }

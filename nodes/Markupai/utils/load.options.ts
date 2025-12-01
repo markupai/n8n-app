@@ -1,132 +1,132 @@
 import type {
-	IExecuteFunctions,
-	IHttpRequestOptions,
-	ILoadOptionsFunctions,
-	INodePropertyOptions,
+  IExecuteFunctions,
+  IHttpRequestOptions,
+  ILoadOptionsFunctions,
+  INodePropertyOptions,
 } from "n8n-workflow";
 import { LoggerProxy } from "n8n-workflow";
 import { StyleGuides } from "../Markupai.api.types";
 import { getBaseUrlString } from "../../../utils/common.utils";
 
 type Constants = {
-	dialects: string[];
-	tones: string[];
+  dialects: string[];
+  tones: string[];
 };
 
 const DEFAULT_CONSTANTS = {
-	dialects: ["american_english", "british_english", "canadian_english"],
-	tones: [
-		"academic",
-		"confident",
-		"conversational",
-		"empathetic",
-		"engaging",
-		"friendly",
-		"professional",
-		"technical",
-	],
+  dialects: ["american_english", "british_english", "canadian_english"],
+  tones: [
+    "academic",
+    "confident",
+    "conversational",
+    "empathetic",
+    "engaging",
+    "friendly",
+    "professional",
+    "technical",
+  ],
 };
 
 const appendDefaultTone = (tones: string[]) => {
-	return ["None", ...tones];
+  return ["None", ...tones];
 };
 
 const mapTones = (tones: string[]) => {
-	return appendDefaultTone(tones).map((tone) => ({
-		name: tone,
-		value: tone,
-	}));
+  return appendDefaultTone(tones).map((tone) => ({
+    name: tone,
+    value: tone,
+  }));
 };
 
 export async function getBaseUrl(): Promise<URL> {
-	return new URL(getBaseUrlString());
+  return new URL(getBaseUrlString());
 }
 
 export async function loadStyleGuides(
-	this: ILoadOptionsFunctions,
+  this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-	try {
-		const baseUrl = await getBaseUrl();
+  try {
+    const baseUrl = await getBaseUrl();
 
-		const httpRequestOptions: IHttpRequestOptions = {
-			method: "GET",
-			url: `${baseUrl.toString()}v1/style-guides`,
-			returnFullResponse: true,
-		};
+    const httpRequestOptions: IHttpRequestOptions = {
+      method: "GET",
+      url: `${baseUrl.toString()}v1/style-guides`,
+      returnFullResponse: true,
+    };
 
-		const response = await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			"markupaiApi",
-			httpRequestOptions,
-		);
+    const response = await this.helpers.httpRequestWithAuthentication.call(
+      this,
+      "markupaiApi",
+      httpRequestOptions,
+    );
 
-		if (response.statusCode !== 200) {
-			throw new Error("Error loading style guides: " + response.body);
-		}
+    if (response.statusCode !== 200) {
+      throw new Error("Error loading style guides: " + response.body);
+    }
 
-		const styleGuides = response.body as StyleGuides;
+    const styleGuides = response.body as StyleGuides;
 
-		if (!styleGuides) {
-			throw new Error("Error loading style guides: empty response");
-		}
+    if (!styleGuides) {
+      throw new Error("Error loading style guides: empty response");
+    }
 
-		return styleGuides.map((styleGuide) => ({
-			name: styleGuide.name,
-			value: styleGuide.id,
-		}));
-	} catch (error) {
-		throw new Error("Error loading style guides", error as Error);
-	}
+    return styleGuides.map((styleGuide) => ({
+      name: styleGuide.name,
+      value: styleGuide.id,
+    }));
+  } catch (error) {
+    throw new Error("Error loading style guides", error as Error);
+  }
 }
 
 async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
-	const baseUrl = await getBaseUrl();
+  const baseUrl = await getBaseUrl();
 
-	const requestOptions: IHttpRequestOptions = {
-		method: "GET",
-		url: `${baseUrl.toString()}v1/internal/constants`,
-		returnFullResponse: true,
-	};
+  const requestOptions: IHttpRequestOptions = {
+    method: "GET",
+    url: `${baseUrl.toString()}v1/internal/constants`,
+    returnFullResponse: true,
+  };
 
-	const response = await this.helpers.httpRequestWithAuthentication.call(
-		this,
-		"markupaiApi",
-		requestOptions,
-	);
+  const response = await this.helpers.httpRequestWithAuthentication.call(
+    this,
+    "markupaiApi",
+    requestOptions,
+  );
 
-	if (response.statusCode !== 200) {
-		throw new Error(JSON.parse(response.body as string).error);
-	}
+  if (response.statusCode !== 200) {
+    throw new Error(JSON.parse(response.body as string).error);
+  }
 
-	return {
-		...response.body,
-	} as Constants;
+  return {
+    ...response.body,
+  } as Constants;
 }
 
 export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	try {
-		const constants = await getConstants.call(this);
+  try {
+    const constants = await getConstants.call(this);
 
-		return mapTones(constants.tones);
-	} catch (error) {
-		LoggerProxy.error("Couldn't fetch tones from API, using default tones.", error);
-		return mapTones(DEFAULT_CONSTANTS.tones);
-	}
+    return mapTones(constants.tones);
+  } catch (error) {
+    LoggerProxy.error("Couldn't fetch tones from API, using default tones.", error);
+    return mapTones(DEFAULT_CONSTANTS.tones);
+  }
 }
 
 export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	try {
-		const constants = await getConstants.call(this);
+  try {
+    const constants = await getConstants.call(this);
 
-		return constants.dialects.map((dialect: string) => ({
-			name: dialect,
-			value: dialect,
-		}));
-	} catch (error) {
-		LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", error);
-		return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
-			name: dialect,
-			value: dialect,
-		}));
-	}
+    return constants.dialects.map((dialect: string) => ({
+      name: dialect,
+      value: dialect,
+    }));
+  } catch (error) {
+    LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", error);
+    return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
+      name: dialect,
+      value: dialect,
+    }));
+  }
 }

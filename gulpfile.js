@@ -8,34 +8,34 @@ task("build:icons", copyIcons);
 task("build:package", copyPackageJson);
 
 function copyIcons() {
-	const nodeSource = path.resolve("nodes", "**", "*.{png,svg}");
-	const nodeDestination = path.resolve("dist", "nodes");
+  const nodeSource = path.resolve("nodes", "**", "*.{png,svg}");
+  const nodeDestination = path.resolve("dist", "nodes");
 
-	src(nodeSource).pipe(dest(nodeDestination));
+  src(nodeSource).pipe(dest(nodeDestination));
 
-	const credSource = path.resolve("credentials", "**", "*.{png,svg}");
-	const credDestination = path.resolve("dist", "credentials");
+  const credSource = path.resolve("credentials", "**", "*.{png,svg}");
+  const credDestination = path.resolve("dist", "credentials");
 
-	return src(credSource).pipe(dest(credDestination));
+  return src(credSource).pipe(dest(credDestination));
 }
 
 function copyPackageJson(callback) {
-	try {
-		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+  try {
+    const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
-		// Remove devDependencies and scripts that are only needed for development
-		const distPackageJson = { ...packageJson };
-		delete distPackageJson.devDependencies;
-		delete distPackageJson.scripts;
+    // Remove devDependencies and scripts that are only needed for development
+    const distPackageJson = { ...packageJson };
+    delete distPackageJson.devDependencies;
+    delete distPackageJson.scripts;
 
-		fs.writeFileSync(
-			path.resolve("dist", "package.json"),
-			JSON.stringify(distPackageJson, null, 2),
-		);
+    fs.writeFileSync(
+      path.resolve("dist", "package.json"),
+      JSON.stringify(distPackageJson, null, 2),
+    );
 
-		callback();
-	} catch (err) {
-		console.error("Error copying package.json:", err.message);
-		callback(err);
-	}
+    callback();
+  } catch (err) {
+    console.error("Error copying package.json:", err.message);
+    callback(err);
+  }
 }
