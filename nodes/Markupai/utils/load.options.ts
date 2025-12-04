@@ -38,7 +38,7 @@ const mapTones = (tones: string[]) => {
   }));
 };
 
-export async function getBaseUrl(): Promise<URL> {
+export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
 }
 
@@ -46,7 +46,7 @@ export async function loadStyleGuides(
   this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
   try {
-    const baseUrl = await getBaseUrl();
+    const baseUrl = getBaseUrl();
 
     const httpRequestOptions: IHttpRequestOptions = {
       method: "GET",
@@ -54,21 +54,18 @@ export async function loadStyleGuides(
       returnFullResponse: true,
     };
 
-    const response = await this.helpers.httpRequestWithAuthentication.call(
+    const response = (await this.helpers.httpRequestWithAuthentication.call(
       this,
       "markupaiApi",
       httpRequestOptions,
-    );
+    )) as { statusCode: number; body: unknown };
 
     if (response.statusCode !== 200) {
-      throw new Error("Error loading style guides: " + response.body);
+      const bodyStr = typeof response.body === "string" ? response.body : String(response.body);
+      throw new Error("Error loading style guides: " + bodyStr);
     }
 
     const styleGuides = response.body as StyleGuides;
-
-    if (!styleGuides) {
-      throw new Error("Error loading style guides: empty response");
-    }
 
     return styleGuides.map((styleGuide) => ({
       name: styleGuide.name,
@@ -80,7 +77,7 @@ export async function loadStyleGuides(
 }
 
 async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
-  const baseUrl = await getBaseUrl();
+  const baseUrl = getBaseUrl();
 
   const requestOptions: IHttpRequestOptions = {
     method: "GET",
@@ -88,19 +85,20 @@ async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Pr
     returnFullResponse: true,
   };
 
-  const response = await this.helpers.httpRequestWithAuthentication.call(
+  const response = (await this.helpers.httpRequestWithAuthentication.call(
     this,
     "markupaiApi",
     requestOptions,
-  );
+  )) as { statusCode: number; body: unknown };
 
   if (response.statusCode !== 200) {
-    throw new Error(JSON.parse(response.body as string).error);
+    const bodyStr =
+      typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+    const parsed = JSON.parse(bodyStr) as { error?: string };
+    throw new Error(parsed.error ?? "Unknown error");
   }
 
-  return {
-    ...response.body,
-  } as Constants;
+  return response.body as Constants;
 }
 
 export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -109,7 +107,9 @@ export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePrope
 
     return mapTones(constants.tones);
   } catch (error) {
-    LoggerProxy.error("Couldn't fetch tones from API, using default tones.", error);
+    LoggerProxy.error("Couldn't fetch tones from API, using default tones.", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return mapTones(DEFAULT_CONSTANTS.tones);
   }
 }
@@ -123,7 +123,9 @@ export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePr
       value: dialect,
     }));
   } catch (error) {
-    LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", error);
+    LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
       name: dialect,
       value: dialect,

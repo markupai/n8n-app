@@ -1,12 +1,8 @@
-node_modules
 .DS_Store
-.tmp
-tmp
-dist
-npm-debug.log*
-yarn.lock
-.vscode/launch.json
 .env
-.npmrc
+.env.*
+!.env*.example
+.idea
 coverage/
-.idea/
+dist/
+node_modules/

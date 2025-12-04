@@ -9,9 +9,21 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 module.exports = [
   js.configs.recommended,
-  ...tseslint.configs.strict,
+  ...tseslint.configs.strictTypeChecked,
   {
-    ignores: ["dist"],
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.eslint.json",
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
+    files: ["eslint.config.js", "eslint.config.prepublish.js", "gulpfile.js", "vitest.config.ts"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    ignores: ["coverage", "dist"],
   },
   {
     files: ["eslint.config.js", "eslint.config.prepublish.js", "gulpfile.js"],

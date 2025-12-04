@@ -293,11 +293,10 @@ describe("process.item", () => {
 
         await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
 
-        expect(mockStyleRequest).toHaveBeenCalledWith(
-          expect.not.objectContaining({ tone: expect.any(String) }),
-          "v1/style/checks",
-          0,
-        );
+        const callArgs = mockStyleRequest.mock.calls[0];
+        expect(callArgs[0]).not.toHaveProperty("tone");
+        expect(callArgs[1]).toBe("v1/style/checks");
+        expect(callArgs[2]).toBe(0);
       });
 
       it("should use custom pollingTimeout when provided", async () => {

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { IHttpRequestOptions, FunctionsBase, IExecuteFunctions } from "n8n-workflow";
+import type { IHttpRequestOptions, IExecuteFunctions } from "n8n-workflow";
+import type {
+  GetStyleRewriteResponse,
+  PostStyleRewriteResponse,
+} from "../../nodes/Markupai/Markupai.api.types";
 
 import {
   postStyleRewrite,
@@ -8,10 +12,6 @@ import {
   getPath,
   FormDataDetails,
 } from "../../nodes/Markupai/utils/style.api.utils";
-import type {
-  GetStyleRewriteResponse,
-  PostStyleRewriteResponse,
-} from "../../nodes/Markupai/Markupai.api.types";
 
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
   getBaseUrl: vi.fn(),
@@ -34,7 +34,7 @@ vi.mock("n8n-workflow", async () => {
 type MockHttpRequest = ReturnType<typeof vi.fn> &
   ((_body: IHttpRequestOptions) => Promise<{ body: GetStyleRewriteResponse }>);
 
-type MockGetBaseUrl = ReturnType<typeof vi.fn> & ((_fn: FunctionsBase) => Promise<URL>);
+type MockGetBaseUrl = ReturnType<typeof vi.fn> & (() => URL);
 
 interface MockFnObject {
   helpers: {
@@ -67,15 +67,20 @@ async function mockAndValidatePostStyleRewrite(
 
   expect(result).toEqual(postResponse);
   expect(mockGetBaseUrl).toHaveBeenCalled();
-  expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(fn, "markupaiApi", {
-    method: "POST",
-    url: "https://api.markup.ai/v1/style/rewrite",
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-    body: expect.any(Object),
-    returnFullResponse: true,
-  });
+  expect(mockHttpRequestWithAuthentication).toHaveBeenCalledWith(
+    createMockExecuteFunctions(fn),
+    "markupaiApi",
+    expect.objectContaining({
+      method: "POST",
+      url: "https://api.markup.ai/v1/style/rewrite",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      returnFullResponse: true,
+    }),
+  );
+  const httpCall = mockHttpRequestWithAuthentication.mock.calls[0];
+  expect(httpCall[2]).toHaveProperty("body");
 
   return formDataAppendSpy;
 }
@@ -93,7 +98,7 @@ describe("style.api.utils", () => {
   const createMockFunctions = () => {
     const mockGetBaseUrl = vi
       .fn()
-      .mockResolvedValue(new URL("https://api.markup.ai/")) as MockGetBaseUrl;
+      .mockReturnValue(new URL("https://api.markup.ai/")) as MockGetBaseUrl;
     const mockHttpRequest = vi.fn() as MockHttpRequest;
     const mockHttpRequestWithAuthentication = vi.fn() as MockHttpRequest;
 
@@ -422,13 +427,13 @@ describe("style.api.utils", () => {
       await setupMocks(mockGetBaseUrl);
       const fn = createFnObject(mockHttpRequest, mockHttpRequestWithAuthentication);
 
-      const result = await pollResponse.call(
+      const result = (await pollResponse.call(
         createMockExecuteFunctions(fn),
         postStyleRewriteResponse,
         true,
         30_000,
         "v1/style/rewrite",
-      );
+      )) as GetStyleRewriteResponse;
 
       expect(result.workflow.status).toBe("completed");
       expect(result.rewrite?.text).toBe("test-result");

@@ -80,6 +80,16 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
+function getErrorDescription(error: unknown): string | undefined {
+  if (error instanceof NodeApiError) {
+    return error.description ?? undefined;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 function createErrorResponse(error: unknown, itemIndex: number) {
   return {
     json: {
@@ -134,9 +144,13 @@ export async function processMarkupaiItem(
       return createErrorResponse(error, itemIndex);
     }
 
-    throw new NodeOperationError(this.getNode(), error as Error, {
-      description: error instanceof NodeApiError ? error.description : error.message,
-      itemIndex: itemIndex,
-    });
+    throw new NodeOperationError(
+      this.getNode(),
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        description: getErrorDescription(error),
+        itemIndex: itemIndex,
+      },
+    );
   }
 }
