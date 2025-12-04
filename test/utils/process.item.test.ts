@@ -209,7 +209,7 @@ describe("process.item", () => {
             tone: "professional",
             dialect: "american_english",
             waitForCompletion: true,
-            pollingTimeout: 60000,
+            pollingTimeout: 60_000,
           },
           "v1/style/checks",
           0,
@@ -306,7 +306,7 @@ describe("process.item", () => {
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
             waitForCompletion: true,
-            pollingTimeout: 30000,
+            pollingTimeout: 30_000,
           }),
         });
 
@@ -314,7 +314,7 @@ describe("process.item", () => {
 
         expect(mockStyleRequest).toHaveBeenCalledWith(
           expect.objectContaining({
-            pollingTimeout: 30000,
+            pollingTimeout: 30_000,
           }),
           "v1/style/checks",
           0,
@@ -335,7 +335,7 @@ describe("process.item", () => {
 
         expect(mockStyleRequest).toHaveBeenCalledWith(
           expect.objectContaining({
-            pollingTimeout: 60000,
+            pollingTimeout: 60_000,
           }),
           "v1/style/checks",
           0,

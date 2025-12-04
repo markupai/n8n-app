@@ -52,7 +52,7 @@ function buildFormDataDetails(
   const tone = this.getNodeParameter("tone", itemIndex);
   const dialect = this.getNodeParameter("dialect", itemIndex);
   const waitForCompletion = additionalOptions.waitForCompletion ?? true;
-  const pollingTimeout = additionalOptions.pollingTimeout || 60000;
+  const pollingTimeout = additionalOptions.pollingTimeout || 60_000;
   const contentType = additionalOptions.documentName
     ? getMimeTypeFromFileName(additionalOptions.documentName)
     : getContentType(content as string);

@@ -295,7 +295,7 @@ describe("Markupai", () => {
 
       mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
         waitForCompletion: true,
-        pollingTimeout: 30000,
+        pollingTimeout: 30_000,
         documentName: "test.txt",
         documentOwner: "test-owner",
         documentLink: "https://test.com",
@@ -312,7 +312,7 @@ describe("Markupai", () => {
           tone: "professional",
           dialect: "american_english",
           waitForCompletion: true,
-          pollingTimeout: 30000,
+          pollingTimeout: 30_000,
         },
         "v1/style/checks",
         0,
@@ -350,7 +350,7 @@ describe("Markupai", () => {
           tone: "professional",
           dialect: "american_english",
           waitForCompletion: true,
-          pollingTimeout: 60000, // default value
+          pollingTimeout: 60_000, // default value
         },
         "v1/style/rewrites",
         0,
@@ -432,7 +432,7 @@ describe("Markupai", () => {
       expect(mockStyleRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           waitForCompletion: true, // default value when undefined
-          pollingTimeout: 60000, // default value when undefined
+          pollingTimeout: 60_000, // default value when undefined
         }),
         "v1/style/checks",
         0,
