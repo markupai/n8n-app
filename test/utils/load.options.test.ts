@@ -42,41 +42,41 @@ describe("load.options", () => {
       delete process.env.NODE_ENV;
     });
 
-    it("returns production URL by default", async () => {
-      const result = await getBaseUrl();
+    it("returns production URL by default", () => {
+      const result = getBaseUrl();
 
       expect(result.toString()).toBe("https://api.markup.ai/");
     });
 
-    it("returns production URL when NODE_ENV is production", async () => {
+    it("returns production URL when NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";
 
-      const result = await getBaseUrl();
+      const result = getBaseUrl();
 
       expect(result.toString()).toBe("https://api.markup.ai/");
     });
 
-    it("returns production URL when NODE_ENV is not production (no env var set)", async () => {
+    it("returns production URL when NODE_ENV is not production (no env var set)", () => {
       process.env.NODE_ENV = "development";
 
-      const result = await getBaseUrl();
+      const result = getBaseUrl();
 
       expect(result.toString()).toBe("https://api.markup.ai/");
     });
 
-    it("returns custom URL from MARKUP_AI_BASE_URL environment variable", async () => {
+    it("returns custom URL from MARKUP_AI_BASE_URL environment variable", () => {
       process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/";
 
-      const result = await getBaseUrl();
+      const result = getBaseUrl();
 
       expect(result.toString()).toBe("https://api.dev.markup.ai/");
     });
 
-    it("returns custom URL from MARKUP_AI_BASE_URL even when NODE_ENV is production", async () => {
+    it("returns custom URL from MARKUP_AI_BASE_URL even when NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";
       process.env.MARKUP_AI_BASE_URL = "https://custom.api.markup.ai/";
 
-      const result = await getBaseUrl();
+      const result = getBaseUrl();
 
       expect(result.toString()).toBe("https://custom.api.markup.ai/");
     });
@@ -196,7 +196,7 @@ describe("load.options", () => {
 
       expect(LoggerProxy.error).toHaveBeenCalledWith(
         "Couldn't fetch tones from API, using default tones.",
-        expect.any(Error),
+        expect.objectContaining({ error: expect.any(String) as string }),
       );
     });
 
@@ -268,7 +268,7 @@ describe("load.options", () => {
 
       expect(LoggerProxy.error).toHaveBeenCalledWith(
         "Couldn't fetch dialects from API, using default dialects.",
-        expect.any(Error),
+        expect.objectContaining({ error: expect.any(String) as string }),
       );
     });
   });

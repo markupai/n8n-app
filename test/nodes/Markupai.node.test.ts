@@ -153,29 +153,29 @@ describe("Markupai", () => {
       const documentLinkOption = options?.find(
         (o) => o.name === "documentLink",
       ) as INodePropertyTypeOptions;
-      expect(documentLinkOption?.type).toBe("string");
+      expect(documentLinkOption.type).toBe("string");
 
       const documentNameOption = options?.find(
         (o) => o.name === "documentName",
       ) as INodePropertyTypeOptions;
-      expect(documentNameOption?.type).toBe("string");
+      expect(documentNameOption.type).toBe("string");
 
       const documentOwnerOption = options?.find(
         (o) => o.name === "documentOwner",
       ) as INodePropertyTypeOptions;
-      expect(documentOwnerOption?.type).toBe("string");
+      expect(documentOwnerOption.type).toBe("string");
 
       const pollingTimeoutOption = options?.find(
         (o) => o.name === "pollingTimeout",
       ) as INodePropertyTypeOptions;
-      expect(pollingTimeoutOption?.type).toBe("number");
-      expect(pollingTimeoutOption?.default).toBe(60000);
+      expect(pollingTimeoutOption.type).toBe("number");
+      expect(pollingTimeoutOption.default).toBe(60_000);
 
       const waitForCompletionOption = options?.find(
         (o) => o.name === "waitForCompletion",
       ) as INodePropertyTypeOptions;
-      expect(waitForCompletionOption?.type).toBe("boolean");
-      expect(waitForCompletionOption?.default).toBe(true);
+      expect(waitForCompletionOption.type).toBe("boolean");
+      expect(waitForCompletionOption.default).toBe(true);
     });
   });
 
@@ -295,7 +295,7 @@ describe("Markupai", () => {
 
       mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
         waitForCompletion: true,
-        pollingTimeout: 30000,
+        pollingTimeout: 30_000,
         documentName: "test.txt",
         documentOwner: "test-owner",
         documentLink: "https://test.com",
@@ -312,7 +312,7 @@ describe("Markupai", () => {
           tone: "professional",
           dialect: "american_english",
           waitForCompletion: true,
-          pollingTimeout: 30000,
+          pollingTimeout: 30_000,
         },
         "v1/style/checks",
         0,
@@ -350,7 +350,7 @@ describe("Markupai", () => {
           tone: "professional",
           dialect: "american_english",
           waitForCompletion: true,
-          pollingTimeout: 60000, // default value
+          pollingTimeout: 60_000, // default value
         },
         "v1/style/rewrites",
         0,
@@ -369,11 +369,10 @@ describe("Markupai", () => {
 
       await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
-      expect(mockStyleRequest).toHaveBeenCalledWith(
-        expect.not.objectContaining({ tone: expect.any(String) }),
-        "v1/style/checks",
-        0,
-      );
+      const callArgs = mockStyleRequest.mock.calls[0];
+      expect(callArgs[0]).not.toHaveProperty("tone");
+      expect(callArgs[1]).toBe("v1/style/checks");
+      expect(callArgs[2]).toBe(0);
     });
 
     it("should execute without waiting for completion", async () => {
@@ -433,7 +432,7 @@ describe("Markupai", () => {
       expect(mockStyleRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           waitForCompletion: true, // default value when undefined
-          pollingTimeout: 60000, // default value when undefined
+          pollingTimeout: 60_000, // default value when undefined
         }),
         "v1/style/checks",
         0,

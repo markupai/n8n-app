@@ -51,7 +51,7 @@ export function categorizeIssues<T extends Issue>(issues: T[]): CategorizedIssue
 
   // Group issues by category using a single pass through the array
   for (const issue of issues) {
-    switch (issue.category) {
+    switch (issue.category as IssueCategory) {
       case IssueCategory.Clarity:
         categorized.clarity.push(issue);
         break;

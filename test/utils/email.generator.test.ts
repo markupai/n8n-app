@@ -84,7 +84,7 @@ const mockResult = {
     dialect: "US English",
     tone: "Professional",
   },
-} as GetStyleRewriteResponse;
+} satisfies GetStyleRewriteResponse;
 
 function validateCommonFields(result: string) {
   expect(result).toContain("<!DOCTYPE html>");
@@ -114,34 +114,62 @@ describe("email.generator", () => {
       expect(result).toContain("https://example.com/doc");
     });
 
-    it("should handle missing optional fields", () => {
-      const mockInputData = {};
-      const result = generateEmailHTMLReport(mockResult, mockInputData);
-
-      validateCommonFields(result);
-
-      expect(result).toContain("Title: <strong>undefined</strong>");
-      expect(result).toContain("Owner: <strong>undefined</strong>");
-      expect(result).toContain('href="undefined"');
-    });
-
-    it("should handle issues data correctly", () => {
-      const mockInputData = {
-        document_name: "Technical Report",
-        document_owner: "Jane Smith",
-        document_link: "https://example.com/tech-report",
+    it("should handle all missing/undefined/empty optional data", () => {
+      // Create a result with everything optional missing or empty
+      const minimalResult: GetStyleRewriteResponse = {
+        workflow: {
+          id: "",
+          status: "completed",
+          api_version: "1.0.0",
+          type: "rewrites",
+        },
+        original: undefined,
+        config: undefined,
       };
 
-      const result = generateEmailHTMLReport(mockResult, mockInputData);
+      const result = generateEmailHTMLReport(minimalResult, {});
 
-      validateCommonFields(result);
-      expect(result).toContain("Jane Smith");
-      expect(result).toContain("https://example.com/tech-report");
+      // Should contain basic HTML structure
+      expect(result).toContain("<!DOCTYPE html>");
+      expect(result).toContain("<title>MarkupAI Document Analysis Report</title>");
+
+      // Document info should show N/A
+      expect(result).toContain("Title: <strong>N/A</strong>");
+      expect(result).toContain("Owner: <strong>N/A</strong>");
+      expect(result).not.toContain("Open document");
+
+      // Scores should show N/A with gray background
+      expect(result).toContain("Quality Score");
+      expect(result).toContain(
+        '<td align="center" style="font-size:28px; font-weight:600; color:#000;">N/A</td>',
+      );
+      expect(result).toContain("background-color:#888");
+
+      // Document statistics should show N/A
+      expect(result).toContain(
+        '<strong>N/A</strong></span><br><span style="font-size:14px;">Words Analyzed</span>',
+      );
+      expect(result).toContain(
+        '<strong>N/A</strong></span><br><span style="font-size:14px;">Total Sentences</span>',
+      );
+      expect(result).toContain(
+        '<strong>N/A</strong></span><br><span style="font-size:14px;">Average Sentence Length</span>',
+      );
+
+      // Issues should show 0
       expect(result).toContain("Total issues found: <strong>0</strong>");
+
+      // Config fields should show N/A
+      expect(result).toContain("Style Guide: <strong>N/A</strong>");
+      expect(result).toContain("Dialect: <strong>N/A</strong>");
+      expect(result).toContain("Tone: <strong>N/A</strong>");
+
+      // Workflow ID should show N/A
+      expect(result).toContain("Workflow ID: <strong>N/A</strong>");
     });
 
     it("should handle different score ranges for color coding", () => {
-      const lowScoreResult = {
+      const lowScoreResult: GetStyleRewriteResponse = {
         ...mockResult,
         original: {
           ...mockResult.original,
@@ -164,7 +192,7 @@ describe("email.generator", () => {
     });
 
     it("should handle medium score range (60-79)", () => {
-      const mediumScoreResult = {
+      const mediumScoreResult: GetStyleRewriteResponse = {
         ...mockResult,
         original: {
           ...mockResult.original,
@@ -187,7 +215,7 @@ describe("email.generator", () => {
     });
 
     it("should handle high score range (>= 80)", () => {
-      const highScoreResult = {
+      const highScoreResult: GetStyleRewriteResponse = {
         ...mockResult,
         original: {
           ...mockResult.original,
@@ -209,124 +237,17 @@ describe("email.generator", () => {
       expect(result).toContain("95");
     });
 
-    it("should handle missing scores with default values", () => {
-      const resultWithMissingScores = {
-        ...mockResult,
-        original: {
-          ...mockResult.original,
-          scores: {
-            quality: {
-              score: undefined,
-              grammar: { score: undefined },
-              consistency: { score: undefined },
-              terminology: { score: undefined },
-            },
-            analysis: {
-              clarity: {
-                score: undefined,
-                word_count: undefined,
-                sentence_count: undefined,
-                average_sentence_length: undefined,
-              },
-              tone: {
-                score: undefined,
-              },
-            },
-          },
-        },
-      };
-
-      const result = generateEmailHTMLReport(resultWithMissingScores, {
-        document_name: "Test",
-      });
-
-      // Should use default value 0 for missing scores
-      expect(result).toContain("0");
-      expect(result).toContain("Quality Score");
-    });
-
-    it("should handle missing original.issues array", () => {
-      const resultWithoutIssues = {
-        ...mockResult,
-        original: {
-          ...mockResult.original,
-          issues: undefined,
-        },
-      };
-
-      const result = generateEmailHTMLReport(resultWithoutIssues, {
-        document_name: "Test",
-      });
-
-      expect(result).toContain("Total issues found: <strong>0</strong>");
-      expect(result).toContain("<strong>0</strong>"); // All issue counts should be 0
-    });
-
-    it("should handle empty issues array", () => {
-      const resultWithEmptyIssues = {
-        ...mockResult,
-        original: {
-          ...mockResult.original,
-          issues: [],
-        },
-      };
-
-      const result = generateEmailHTMLReport(resultWithEmptyIssues, {
-        document_name: "Test",
-      });
-
-      expect(result).toContain("Total issues found: <strong>0</strong>");
-    });
-
-    it("should handle missing config fields", () => {
-      const resultWithoutConfig = {
-        ...mockResult,
-        config: {
-          style_guide: {
-            style_guide_type: undefined,
-            style_guide_id: undefined,
-          },
-          dialect: undefined,
-          tone: undefined,
-        },
-      };
-
-      const result = generateEmailHTMLReport(resultWithoutConfig, {
-        document_name: "Test",
-      });
-
-      expect(result).toContain("Style Guide: <strong>undefined</strong>");
-      expect(result).toContain("Dialect: <strong>undefined</strong>");
-      expect(result).toContain("Tone: <strong>undefined</strong>");
-    });
-
-    it("should handle missing workflow id", () => {
-      const resultWithoutWorkflowId = {
-        ...mockResult,
-        workflow: {
-          ...mockResult.workflow,
-          id: undefined,
-        },
-      };
-
-      const result = generateEmailHTMLReport(resultWithoutWorkflowId, {
-        document_name: "Test",
-      });
-
-      expect(result).toContain("Workflow ID: <strong></strong>");
-    });
-
     it("should handle all score color ranges in detail section", () => {
-      const mixedScoresResult = {
+      const mixedScoresResult: GetStyleRewriteResponse = {
         ...mockResult,
         original: {
           ...mockResult.original,
           scores: {
             quality: {
               score: 85,
-              grammar: { score: 45 }, // Low
-              consistency: { score: 70 }, // Medium
-              terminology: { score: 95 }, // High
+              grammar: { score: 45, issues: 0 }, // Low
+              consistency: { score: 70, issues: 0 }, // Medium
+              terminology: { score: 95, issues: 0 }, // High
             },
             analysis: {
               clarity: {
@@ -334,9 +255,16 @@ describe("email.generator", () => {
                 word_count: 150,
                 sentence_count: 10,
                 average_sentence_length: 15,
+                flesch_reading_ease: 0,
+                vocabulary_complexity: 0,
+                sentence_complexity: 0,
               },
               tone: {
                 score: 85, // High
+                informality: 0,
+                liveliness: 0,
+                informality_alignment: 0,
+                liveliness_alignment: 0,
               },
             },
           },
@@ -354,16 +282,16 @@ describe("email.generator", () => {
     });
 
     it("should handle boundary score values", () => {
-      const boundaryScoresResult = {
+      const boundaryScoresResult: GetStyleRewriteResponse = {
         ...mockResult,
         original: {
           ...mockResult.original,
           scores: {
             quality: {
               score: 60, // Exactly at boundary
-              grammar: { score: 59 }, // Just below boundary
-              consistency: { score: 80 }, // Exactly at boundary
-              terminology: { score: 79 }, // Just below boundary
+              grammar: { score: 59, issues: 0 }, // Just below boundary
+              consistency: { score: 80, issues: 0 }, // Exactly at boundary
+              terminology: { score: 79, issues: 0 }, // Just below boundary
             },
             analysis: {
               clarity: {
@@ -371,9 +299,16 @@ describe("email.generator", () => {
                 word_count: 0,
                 sentence_count: 0,
                 average_sentence_length: 0,
+                flesch_reading_ease: 0,
+                vocabulary_complexity: 0,
+                sentence_complexity: 0,
               },
               tone: {
                 score: 100, // Maximum score
+                informality: 0,
+                liveliness: 0,
+                informality_alignment: 0,
+                liveliness_alignment: 0,
               },
             },
           },
@@ -392,7 +327,7 @@ describe("email.generator", () => {
       expect(result).toContain("100");
     });
 
-    it("should handle special characters in document name", () => {
+    it("should properly escape HTML special characters", () => {
       const mockInputData = {
         document_name: "Test & <Report> \"Special\" 'Chars'",
         document_owner: "John & Jane",
@@ -401,10 +336,10 @@ describe("email.generator", () => {
 
       const result = generateEmailHTMLReport(mockResult, mockInputData);
 
-      // HTML should be properly escaped or handled
-      expect(result).toContain("Test & <Report>");
-      expect(result).toContain("John & Jane");
-      expect(result).toContain("https://example.com/test?param=value&other=test");
+      // HTML special characters should be escaped
+      expect(result).toContain("Test &amp; &lt;Report&gt; &quot;Special&quot; &#039;Chars&#039;");
+      expect(result).toContain("John &amp; Jane");
+      expect(result).toContain("https://example.com/test?param=value&amp;other=test");
     });
 
     it("should display all document statistics correctly", () => {

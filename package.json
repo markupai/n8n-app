@@ -45,7 +45,8 @@
     "test:coverage": "vitest run --coverage",
     "test:debug": "node --inspect-brk node_modules/vitest/vitest.mjs run --no-file-parallelism",
     "test:debug:watch": "node --inspect node_modules/vitest/vitest.mjs watch --no-file-parallelism",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "type-check": "tsc --project tsconfig.eslint.json --noEmit"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",

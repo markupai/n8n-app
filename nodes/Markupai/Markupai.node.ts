@@ -158,7 +158,7 @@ export class Markupai implements INodeType {
             displayName: "Polling Timeout (Ms)",
             name: "pollingTimeout",
             type: "number",
-            default: 60000,
+            default: 60_000,
             description: "Maximum time to wait for workflow completion in milliseconds",
             displayOptions: {
               show: {

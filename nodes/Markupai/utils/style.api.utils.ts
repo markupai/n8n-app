@@ -22,7 +22,7 @@ export async function postStyleRewrite(
   path: string,
 ): Promise<PostStyleRewriteResponse> {
   const formData = new FormData();
-  const baseUrl = await getBaseUrl();
+  const baseUrl = getBaseUrl();
 
   const blob = new Blob([formDataDetails.content], { type: formDataDetails.contentType });
   const fileName = formDataDetails.documentName || "unknown" + formDataDetails.fileNameExtension;
@@ -45,16 +45,16 @@ export async function postStyleRewrite(
     returnFullResponse: true,
   };
 
-  const response = await this.helpers.httpRequestWithAuthentication.call(
+  const response = (await this.helpers.httpRequestWithAuthentication.call(
     this,
     "markupaiApi",
     requestOptions,
-  );
+  )) as { body: unknown };
 
   const submitResponse =
     typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 
-  return JSON.parse(submitResponse);
+  return JSON.parse(submitResponse) as PostStyleRewriteResponse;
 }
 
 export async function pollResponse(
@@ -68,7 +68,7 @@ export async function pollResponse(
     return postStyleRewriteResponse;
   }
 
-  const baseUrl = await getBaseUrl();
+  const baseUrl = getBaseUrl();
   const pollingInterval = 2_000;
   const startTime = Date.now();
 
@@ -81,15 +81,15 @@ export async function pollResponse(
       returnFullResponse: true,
     };
 
-    const statusResp = await this.helpers.httpRequestWithAuthentication.call(
+    const statusResp = (await this.helpers.httpRequestWithAuthentication.call(
       this,
       "markupaiApi",
       statusOptions,
-    );
+    )) as { body: unknown };
     const statusResponse =
       typeof statusResp.body === "string" ? statusResp.body : JSON.stringify(statusResp.body);
 
-    const currentResponse: GetStyleRewriteResponse = JSON.parse(statusResponse);
+    const currentResponse = JSON.parse(statusResponse) as GetStyleRewriteResponse;
 
     if (currentResponse.workflow.status === "failed") {
       throw new Error(`Workflow failed: ${currentResponse.workflow.id}`);
@@ -101,7 +101,7 @@ export async function pollResponse(
   }
 
   throw new Error(
-    `Workflow timeout after ${pollingTimeout}ms. Workflow ID: ${postStyleRewriteResponse.workflow_id}`,
+    `Workflow timeout after ${String(pollingTimeout)}ms. Workflow ID: ${postStyleRewriteResponse.workflow_id}`,
   );
 }
 

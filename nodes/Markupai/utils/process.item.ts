@@ -52,7 +52,7 @@ function buildFormDataDetails(
   const tone = this.getNodeParameter("tone", itemIndex);
   const dialect = this.getNodeParameter("dialect", itemIndex);
   const waitForCompletion = additionalOptions.waitForCompletion ?? true;
-  const pollingTimeout = additionalOptions.pollingTimeout || 60000;
+  const pollingTimeout = additionalOptions.pollingTimeout || 60_000;
   const contentType = additionalOptions.documentName
     ? getMimeTypeFromFileName(additionalOptions.documentName)
     : getContentType(content as string);
@@ -73,6 +73,16 @@ function buildFormDataDetails(
 function getErrorMessage(error: unknown): string {
   if (error instanceof NodeApiError) {
     return error.description || error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+function getErrorDescription(error: unknown): string | undefined {
+  if (error instanceof NodeApiError) {
+    return error.description ?? undefined;
   }
   if (error instanceof Error) {
     return error.message;
@@ -134,9 +144,13 @@ export async function processMarkupaiItem(
       return createErrorResponse(error, itemIndex);
     }
 
-    throw new NodeOperationError(this.getNode(), error as Error, {
-      description: error instanceof NodeApiError ? error.description : error.message,
-      itemIndex: itemIndex,
-    });
+    throw new NodeOperationError(
+      this.getNode(),
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        description: getErrorDescription(error),
+        itemIndex: itemIndex,
+      },
+    );
   }
 }
