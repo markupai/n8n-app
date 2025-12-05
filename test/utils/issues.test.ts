@@ -312,7 +312,6 @@ describe("issues", () => {
           original: "test issue",
           position: {
             start_index: 5,
-            end_index: 10,
           },
           subcategory: "test subcategory",
           category: IssueCategory.Grammar,
@@ -326,7 +325,6 @@ describe("issues", () => {
       const categorizedIssue = result.grammar[0];
       expect(categorizedIssue.original).toBe("test issue");
       expect(categorizedIssue.position.start_index).toBe(5);
-      expect(categorizedIssue.position.end_index).toBe(10);
       expect(categorizedIssue.subcategory).toBe("test subcategory");
       expect(categorizedIssue.category).toBe(IssueCategory.Grammar);
       expect(categorizedIssue.suggestion).toBe("test suggestion");
@@ -349,7 +347,6 @@ describe("issues", () => {
 
       expect(result.clarity).toHaveLength(1);
       expect(result.clarity[0].position.start_index).toBe(0);
-      expect(result.clarity[0].position.end_index).toBeUndefined();
     });
 
     it("should not call LoggerProxy.warn for known categories", () => {
