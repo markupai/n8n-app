@@ -128,7 +128,7 @@ Contributions are welcome! This section is for developers who want to contribute
 
 ### Prerequisites
 
-- Node.js >= 20
+- Node.js >= 24
 - npm
 - Basic familiarity with n8n and TypeScript
 
