@@ -29,10 +29,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && gulp build:icons && gulp build:package",
+    "build": "tsc --project tsconfig.build.json && gulp build:icons && gulp build:package",
     "check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
     "cleanup": "./dev/cleanup.sh",
-    "dev": "tsc --watch",
+    "dev": "tsc --project tsconfig.build.json --watch",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "lint:check": "eslint --config eslint.config.js .",
@@ -46,20 +46,20 @@
     "test:debug": "node --inspect-brk node_modules/vitest/vitest.mjs run --no-file-parallelism",
     "test:debug:watch": "node --inspect node_modules/vitest/vitest.mjs watch --no-file-parallelism",
     "test:watch": "vitest",
-    "type-check": "tsc --project tsconfig.eslint.json --noEmit"
+    "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",
-    "@types/node": "24.10.1",
+    "@types/node": "24.10.2",
     "@vitest/coverage-v8": "4.0.15",
     "eslint-plugin-n8n-nodes-base": "1.16.4",
     "globals": "16.5.0",
     "gulp": "5.0.1",
-    "n8n": "1.122.4",
-    "prettier": "3.7.3",
+    "n8n": "1.123.4",
+    "prettier": "3.7.4",
     "prettier-plugin-packagejson": "2.5.20",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.48.1",
+    "typescript-eslint": "8.49.0",
     "vitest": "4.0.15"
   },
   "peerDependencies": {

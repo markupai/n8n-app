@@ -13,7 +13,7 @@ module.exports = [
   {
     languageOptions: {
       parserOptions: {
-        project: "./tsconfig.eslint.json",
+        project: "./tsconfig.json",
         tsconfigRootDir: __dirname,
       },
     },

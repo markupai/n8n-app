@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "outDir": "./dist/"
   },
-  "include": ["credentials", "nodes", "package.json", "utils"]
+  "include": ["credentials", "nodes", "package.json", "utils", "test"]
 }

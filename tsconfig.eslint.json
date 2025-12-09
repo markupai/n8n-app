@@ -1,4 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "include": ["credentials", "nodes", "package.json", "utils", "test"]
-}
