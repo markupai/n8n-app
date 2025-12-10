@@ -52,6 +52,7 @@ describe("MarkupAiApi credentials", () => {
         properties: {
           headers: {
             Authorization: "=Bearer {{$credentials.apiKey}}",
+            "x-integration-id": "markupai-n8n-app",
           },
         },
       };
