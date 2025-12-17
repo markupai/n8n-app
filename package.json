@@ -51,7 +51,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",
     "@types/node": "25.0.2",
-    "@vitest/coverage-v8": "4.0.15",
+    "@vitest/coverage-v8": "4.0.16",
     "eslint-plugin-n8n-nodes-base": "1.16.4",
     "globals": "16.5.0",
     "gulp": "5.0.1",
@@ -60,7 +60,7 @@
     "prettier-plugin-packagejson": "2.5.20",
     "typescript": "5.9.3",
     "typescript-eslint": "8.50.0",
-    "vitest": "4.0.15"
+    "vitest": "4.0.16"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
