@@ -174,23 +174,18 @@ export function generateEmailHTMLReport(
               <div style="font-size:14px; color:#555; text-align:left;">Total issues found: <strong>${String(result.original?.issues ? result.original.issues.length : 0)}</strong></div><br>
               <table width="100%" cellpadding="8" cellspacing="0">
                 <tr>
-					        <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${String(
+					        <td align="center" style="width:25%;"><span style="font-size:18px;"><strong>${String(
                     categorizedIssues.grammar.length,
                   )}</strong></span><br><span style="font-size:14px;">Grammar &amp; Spelling</span></td>
-                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${String(
+                  <td align="center" style="width:25%;"><span style="font-size:18px;"><strong>${String(
                     categorizedIssues.terminology.length,
                   )}</strong></span><br><span style="font-size:14px;">Terminology</span></td>
-                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${String(
+                  <td align="center" style="width:25%;"><span style="font-size:18px;"><strong>${String(
                     categorizedIssues.consistency.length,
                   )}</strong></span><br><span style="font-size:14px;">Consistency</span></td>
-                </tr>
-                <tr>
-                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${String(
+                  <td align="center" style="width:25%;"><span style="font-size:18px;"><strong>${String(
                     categorizedIssues.clarity.length,
                   )}</strong></span><br><span style="font-size:14px;">Clarity</span></td>
-                  <td align="center" style="width:33.33%;"><span style="font-size:18px;"><strong>${String(
-                    categorizedIssues.tone.length,
-                  )}</strong></span><br><span style="font-size:14px;">Tone &amp; Voice</span></td>
                 </tr>
               </table>
             </td>
