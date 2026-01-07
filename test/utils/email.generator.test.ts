@@ -36,13 +36,6 @@ const mockResult = {
           vocabulary_complexity: 0.6,
           sentence_complexity: 0.5,
         },
-        tone: {
-          score: 88,
-          informality: 0.3,
-          liveliness: 0.4,
-          informality_alignment: 150,
-          liveliness_alignment: 120,
-        },
       },
     },
     issues: [],
@@ -65,13 +58,6 @@ const mockResult = {
           flesch_reading_ease: 70,
           vocabulary_complexity: 0.6,
           sentence_complexity: 0.5,
-        },
-        tone: {
-          score: 88,
-          informality: 0.3,
-          liveliness: 0.4,
-          informality_alignment: 150,
-          liveliness_alignment: 120,
         },
       },
     },
@@ -259,13 +245,6 @@ describe("email.generator", () => {
                 vocabulary_complexity: 0,
                 sentence_complexity: 0,
               },
-              tone: {
-                score: 85, // High
-                informality: 0,
-                liveliness: 0,
-                informality_alignment: 0,
-                liveliness_alignment: 0,
-              },
             },
           },
         },
@@ -303,13 +282,6 @@ describe("email.generator", () => {
                 vocabulary_complexity: 0,
                 sentence_complexity: 0,
               },
-              tone: {
-                score: 100, // Maximum score
-                informality: 0,
-                liveliness: 0,
-                informality_alignment: 0,
-                liveliness_alignment: 0,
-              },
             },
           },
         },
@@ -324,7 +296,6 @@ describe("email.generator", () => {
       expect(result).toContain("80");
       expect(result).toContain("79");
       expect(result).toContain("0");
-      expect(result).toContain("100");
     });
 
     it("should properly escape HTML special characters", () => {
