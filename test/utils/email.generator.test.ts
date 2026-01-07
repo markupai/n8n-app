@@ -260,7 +260,7 @@ describe("email.generator", () => {
                 sentence_complexity: 0,
               },
               tone: {
-                score: 85, // High
+                score: 85,
                 informality: 0,
                 liveliness: 0,
                 informality_alignment: 0,
@@ -304,7 +304,7 @@ describe("email.generator", () => {
                 sentence_complexity: 0,
               },
               tone: {
-                score: 100, // Maximum score
+                score: 88,
                 informality: 0,
                 liveliness: 0,
                 informality_alignment: 0,
@@ -324,7 +324,6 @@ describe("email.generator", () => {
       expect(result).toContain("80");
       expect(result).toContain("79");
       expect(result).toContain("0");
-      expect(result).toContain("100");
     });
 
     it("should properly escape HTML special characters", () => {

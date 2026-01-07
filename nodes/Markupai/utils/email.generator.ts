@@ -112,35 +112,29 @@ export function generateEmailHTMLReport(
               <div style="font-weight:500; padding-bottom:12px; font-size:20px;">Score details</div>
               <table width="100%" cellpadding="0" cellspacing="8">
                 <tr>
-                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.grammar.score)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
+                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.grammar.score)}; border-radius:8px; text-align:center; padding:12px; width:25%;">
                     <div style="font-size:18px; font-weight:700;">${formatScore(
                       result.original?.scores.quality.grammar.score,
                     )}</div>
                     <div style="font-size:14px;">Grammar</div>
                   </td>
-                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.consistency.score)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
+                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.consistency.score)}; border-radius:8px; text-align:center; padding:12px; width:25%;">
                     <div style="font-size:18px; font-weight:700;">${formatScore(
                       result.original?.scores.quality.consistency.score,
                     )}</div>
                     <div style="font-size:14px;">Consistency</div>
                   </td>
-                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.terminology.score)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
+                  <td style="background:${getScoreBackgroundColor(result.original?.scores.quality.terminology.score)}; border-radius:8px; text-align:center; padding:12px; width:25%;">
                     <div style="font-size:18px; font-weight:700;">${formatScore(
                       result.original?.scores.quality.terminology.score,
                     )}</div>
                     <div style="font-size:14px;">Terminology</div>
                   </td>
-                  <td style="background:${getScoreBackgroundColor(result.original?.scores.analysis.clarity.score)}; border-radius:8px; text-align:center; padding:12px; width:20%;">
+                  <td style="background:${getScoreBackgroundColor(result.original?.scores.analysis.clarity.score)}; border-radius:8px; text-align:center; padding:12px; width:25%;">
                     <div style="font-size:18px; font-weight:700;">${formatScore(
                       result.original?.scores.analysis.clarity.score,
                     )}</div>
                     <div style="font-size:14px;">Clarity</div>
-                  </td>
-                  <td style="background:${getScoreBackgroundColor(
-                    result.original?.scores.analysis.tone?.score,
-                  )}; border-radius:8px; text-align:center; padding:12px; width:20%;">
-                    <div style="font-size:18px; font-weight:700;">${formatScore(result.original?.scores.analysis.tone?.score)}</div>
-                    <div style="font-size:14px;">Tone</div>
                   </td>
                 </tr>
               </table>
