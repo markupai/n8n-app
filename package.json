@@ -1,6 +1,6 @@
 {
   "name": "@markupai/n8n-nodes-markupai",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "n8n node for MarkupAI",
   "keywords": [
     "n8n-community-node-package",
