@@ -50,17 +50,17 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",
-    "@types/node": "25.0.6",
-    "@vitest/coverage-v8": "4.0.16",
+    "@types/node": "25.0.8",
+    "@vitest/coverage-v8": "4.0.17",
     "eslint-plugin-n8n-nodes-base": "1.16.4",
     "globals": "17.0.0",
     "gulp": "5.0.1",
-    "n8n": "2.2.6",
+    "n8n": "2.3.4",
     "prettier": "3.7.4",
-    "prettier-plugin-packagejson": "2.5.20",
+    "prettier-plugin-packagejson": "2.5.21",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.52.0",
-    "vitest": "4.0.16"
+    "typescript-eslint": "8.53.0",
+    "vitest": "4.0.17"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
