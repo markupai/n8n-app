@@ -2,8 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "module": "commonjs",
-    "target": "es2019",
-    "lib": ["es2020", "es2022.error"],
+    "target": "es2021",
+    "lib": ["es2021", "es2022.error"],
     "removeComments": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
