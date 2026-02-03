@@ -137,10 +137,6 @@ export async function styleRequest(
   return returnData;
 }
 
-export function getPath(operation: string): string {
-  if (operation === "styleRewrite") {
-    return "v1/style/rewrites";
-  } else {
-    return "v1/style/checks";
-  }
+export function getPath(): string {
+  return "v1/style/checks";
 }

@@ -198,7 +198,7 @@ export function generateEmailHTMLReport(
           <!-- Configuration -->
           <tr>
             <td colspan="2" style="padding:16px; border:1px solid #eee; border-radius:12px;">
-              <div style="font-weight:500; padding-bottom:12px;font-size:20px;">Check and rewrite configuration</div>
+              <div style="font-weight:500; padding-bottom:12px;font-size:20px;">Check configuration</div>
               <div style="font-size:14px; line-height:21px;">Style Guide: <strong>${result.config?.style_guide.style_guide_type ?? "N/A"}</strong></div>
               <div style="font-size:14px; line-height:21px;">Dialect: <strong>${result.config?.dialect ?? "N/A"}</strong></div>
               <div style="font-size:14px; line-height:21px;">Tone: <strong>${result.config?.tone ?? "N/A"}</strong></div>

@@ -115,13 +115,11 @@ const createMockExecuteFunctions = (
 });
 
 const createMockNodeParameterResponses = (
-  operation: string,
   tone: string,
   additionalOptions: Record<string, unknown> = {},
 ) => {
   return vi
     .fn()
-    .mockReturnValueOnce(operation)
     .mockReturnValueOnce(additionalOptions)
     .mockReturnValueOnce("test content")
     .mockReturnValueOnce("test-style-guide")
@@ -190,7 +188,7 @@ describe("process.item", () => {
         mockGetMimeTypeFromFileName.mockReturnValue("text/plain");
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
             documentName: "test.txt",
             documentOwner: "test-owner",
@@ -235,7 +233,7 @@ describe("process.item", () => {
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: false,
           }),
         });
@@ -258,35 +256,12 @@ describe("process.item", () => {
         });
       });
 
-      it("should handle styleRewrite operation correctly", async () => {
-        const mockResponse = createGetStyleRewriteResponse();
-        mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
-        mockGetPath.mockReturnValue("v1/style/rewrites");
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleRewrite", "casual", {
-            waitForCompletion: true,
-          }),
-        });
-
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
-
-        expect(mockGetPath).toHaveBeenCalledWith("styleRewrite");
-        expect(mockStyleRequest).toHaveBeenCalledWith(
-          expect.objectContaining({
-            tone: "casual",
-          }),
-          "v1/style/rewrites",
-          0,
-        );
-      });
-
       it("should exclude tone when None", async () => {
         const mockResponse = createGetStyleRewriteResponse();
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "None", {
+          getNodeParameter: createMockNodeParameterResponses("None", {
             waitForCompletion: true,
           }),
         });
@@ -304,7 +279,7 @@ describe("process.item", () => {
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
             pollingTimeout: 30_000,
           }),
@@ -326,7 +301,7 @@ describe("process.item", () => {
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
         });
@@ -347,7 +322,7 @@ describe("process.item", () => {
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {}),
+          getNodeParameter: createMockNodeParameterResponses("professional", {}),
         });
 
         await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
@@ -366,7 +341,7 @@ describe("process.item", () => {
         mockStyleRequest.mockResolvedValue([{ json: mockResponse }]);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
         });
@@ -385,7 +360,7 @@ describe("process.item", () => {
         mockGetFileNameExtension.mockReturnValue(".dita");
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
             documentName: "document.dita",
           }),
@@ -405,7 +380,7 @@ describe("process.item", () => {
         mockGetFileNameExtension.mockReturnValue(".html");
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
             // documentName is not provided
           }),
@@ -425,7 +400,7 @@ describe("process.item", () => {
         mockGetFileNameExtension.mockReturnValue(".dita");
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
             documentName: undefined,
           }),
@@ -445,7 +420,7 @@ describe("process.item", () => {
         mockStyleRequest.mockRejectedValue(error);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
           continueOnFail: vi.fn().mockReturnValue(true),
@@ -471,7 +446,7 @@ describe("process.item", () => {
         mockStyleRequest.mockRejectedValue(nodeApiError);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
           continueOnFail: vi.fn().mockReturnValue(true),
@@ -487,7 +462,7 @@ describe("process.item", () => {
         mockStyleRequest.mockRejectedValue(error);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
           continueOnFail: vi.fn().mockReturnValue(false),
@@ -508,7 +483,7 @@ describe("process.item", () => {
         mockStyleRequest.mockRejectedValue(nodeApiError);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
           continueOnFail: vi.fn().mockReturnValue(false),
@@ -531,7 +506,7 @@ describe("process.item", () => {
         mockStyleRequest.mockRejectedValue(error);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createMockNodeParameterResponses("styleCheck", "professional", {
+          getNodeParameter: createMockNodeParameterResponses("professional", {
             waitForCompletion: true,
           }),
           continueOnFail: vi.fn().mockReturnValue(true),
