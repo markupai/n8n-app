@@ -117,7 +117,6 @@ export async function processMarkupaiItem(
   itemIndex: number,
 ): Promise<INodeExecutionData> {
   try {
-    const operation = this.getNodeParameter("operation", itemIndex);
     const additionalOptions = this.getNodeParameter(
       "additionalOptions",
       itemIndex,
@@ -130,7 +129,7 @@ export async function processMarkupaiItem(
       document_link: additionalOptions.documentLink,
     };
 
-    const result = await styleRequest.call(this, formDataDetails, getPath(operation), itemIndex);
+    const result = await styleRequest.call(this, formDataDetails, getPath(), itemIndex);
 
     const resultElement = result[0];
 

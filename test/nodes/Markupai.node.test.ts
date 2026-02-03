@@ -236,7 +236,6 @@ describe("Markupai", () => {
       content: string,
     ) => {
       return mock
-        .mockReturnValueOnce("styleCheck")
         .mockReturnValueOnce(additionalOptions)
         .mockReturnValueOnce(content)
         .mockReturnValueOnce("test-style-guide")
@@ -325,38 +324,6 @@ describe("Markupai", () => {
       });
 
       const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
-      expect(result).toEqual(expectedResult);
-    });
-
-    it("should execute styleRewrite operation successfully with completion", async () => {
-      const mockResult = createCheckWorkflowResponse();
-
-      mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
-      mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
-      mockGetPath.mockReturnValue("v1/style/rewrites");
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      expect(mockStyleRequest).toHaveBeenCalledWith(
-        {
-          content: "test content",
-          contentType: "text/plain",
-          fileNameExtension: ".txt",
-          styleGuide: "test-style-guide",
-          tone: "professional",
-          dialect: "american_english",
-          waitForCompletion: true,
-          pollingTimeout: 60_000, // default value
-        },
-        "v1/style/rewrites",
-        0,
-      );
-
-      const expectedResult = createExpectedResultWithCompletion(mockResult);
       expect(result).toEqual(expectedResult);
     });
 

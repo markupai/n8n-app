@@ -142,14 +142,9 @@ describe("style.api.utils", () => {
   };
 
   describe("getPath", () => {
-    it("should return correct path for styleCheck operation", () => {
-      const result = getPath("styleCheck");
+    it("should return correct path for style check", () => {
+      const result = getPath();
       expect(result).toBe("v1/style/checks");
-    });
-
-    it("should return correct path for rewrite operation", () => {
-      const result = getPath("styleRewrite");
-      expect(result).toBe("v1/style/rewrites");
     });
   });
 

@@ -43,17 +43,6 @@ Analyze content for quality issues without making changes.
 - Readability metrics
 - Detailed list of identified issues
 
-### Style Rewrite
-
-Automatically rewrite and improve content using AI.
-
-**Returns:**
-
-- Improved content version
-- Before/after quality scores
-- Score improvements
-- Comparison metrics
-
 ## Credentials
 
 To use this node, you'll need a Markup AI API account.
@@ -97,8 +86,7 @@ All operations support the following options:
 
 1. Trigger: Webhook receives content for publication
 2. **Markup AI** → Style Check: Analyze initial quality
-3. **Markup AI** → Style Rewrite: Improve content
-4. Send improved version to CMS for publication
+3. Send improved version to CMS for publication
 
 ### Common Use Cases
 
