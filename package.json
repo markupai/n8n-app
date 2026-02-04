@@ -52,7 +52,7 @@
     "@eslint/eslintrc": "3.3.3",
     "@types/node": "25.2.0",
     "@vitest/coverage-v8": "4.0.17",
-    "eslint-plugin-n8n-nodes-base": "1.16.4",
+    "eslint-plugin-n8n-nodes-base": "1.16.6",
     "globals": "17.0.0",
     "gulp": "5.0.1",
     "n8n": "2.6.3",
