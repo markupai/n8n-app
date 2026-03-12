@@ -6,18 +6,16 @@ import {
   NodeConnectionTypes,
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
-import { loadDialects, loadStyleGuides, loadTones } from "./utils/load.options";
+import { loadAgents } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 
-const LOAD_STYLE_GUIDES = "loadStyleGuides" as const;
-const LOAD_TONES = "loadTones" as const;
-const LOAD_DIALECTS = "loadDialects" as const;
+const LOAD_AGENTS = "loadAgents" as const;
 
 export class Markupai implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Markup AI",
     name: "markupai",
-    description: "Markup AI Content Guardian",
+    description: "Run Markup AI agents for content analysis",
     icon: "file:markupai.svg",
     version: 1,
     defaults: {
@@ -40,11 +38,11 @@ export class Markupai implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: "Content",
-            value: "content",
+            name: "Agent",
+            value: "agent",
           },
         ],
-        default: "content",
+        default: "agent",
       },
       {
         displayName: "Operation",
@@ -53,71 +51,54 @@ export class Markupai implements INodeType {
         noDataExpression: true,
         displayOptions: {
           show: {
-            resource: ["content"],
+            resource: ["agent"],
           },
         },
         options: [
           {
-            name: "Style Check",
-            value: "styleCheck",
-            action: "Content style check",
-            description: "Check the content against your style and branding guidelines",
+            name: "Run Agent",
+            value: "runAgent",
+            action: "Run an agent",
+            description: "Run an agent on the given text",
           },
         ],
-        default: "styleCheck",
+        default: "runAgent",
       },
       {
-        displayName: "Content",
-        name: "content",
+        displayName: "Agents",
+        name: "agents",
+        type: "multiOptions",
+        noDataExpression: true,
+        required: true,
+        description:
+          "Select one or more agents to run. One agent runs alone; multiple agents run in parallel via the parallel executor (up to 10).",
+        options: [],
+        default: [],
+        typeOptions: {
+          loadOptionsMethod: LOAD_AGENTS,
+        },
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+          },
+        },
+      },
+      {
+        displayName: "Text",
+        name: "text",
         type: "string",
         typeOptions: {
           rows: 10,
         },
         required: true,
         default: "",
-      },
-      {
-        displayName: "Style Guide Name or ID",
-        name: "styleGuide",
-        type: "options",
-        noDataExpression: true,
-        description:
-          'Select style guide. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        options: [],
-        default: "",
-        typeOptions: {
-          loadOptionsMethod: LOAD_STYLE_GUIDES,
-        },
-      },
-      {
-        displayName: "Tone Name or ID",
-        name: "tone",
-        type: "options",
-        noDataExpression: true,
-        description:
-          'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        options: [
-          {
-            name: "None",
-            value: "None",
+        description: "Document text to analyze",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
           },
-        ],
-        default: "None",
-        typeOptions: {
-          loadOptionsMethod: LOAD_TONES,
-        },
-      },
-      {
-        displayName: "Dialect Name or ID",
-        name: "dialect",
-        type: "options",
-        description:
-          'Select dialect. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        noDataExpression: true,
-        options: [],
-        default: "",
-        typeOptions: {
-          loadOptionsMethod: LOAD_DIALECTS,
         },
       },
       {
@@ -126,46 +107,41 @@ export class Markupai implements INodeType {
         type: "collection",
         placeholder: "Add Option",
         default: {},
-        options: [
-          {
-            displayName: "Document Link",
-            name: "documentLink",
-            type: "string",
-            default: "",
-            description: "URL or link to the original document",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
           },
+        },
+        options: [
           {
             displayName: "Document Name",
             name: "documentName",
             type: "string",
             default: "",
-            description: "Name of the document being checked",
+            description: "Name of the document being analyzed",
           },
           {
-            displayName: "Document Owner",
-            name: "documentOwner",
+            displayName: "Document URL",
+            name: "documentLink",
             type: "string",
             default: "",
-            description: "Name of the document owner",
+            description: "URL or link to the source document",
           },
           {
-            displayName: "Polling Timeout (Ms)",
-            name: "pollingTimeout",
+            displayName: "Domain IDs",
+            name: "domainIds",
+            type: "string",
+            default: "",
+            description: "Terminology domain IDs (comma-separated)",
+          },
+          {
+            displayName: "Timeout (Ms)",
+            name: "timeout",
             type: "number",
-            default: 60_000,
-            description: "Maximum time to wait for workflow completion in milliseconds",
-            displayOptions: {
-              show: {
-                waitForCompletion: [true],
-              },
-            },
-          },
-          {
-            displayName: "Wait For Completion",
-            name: "waitForCompletion",
-            type: "boolean",
-            default: true,
-            description: "Whether to wait for the workflow to complete before returning",
+            default: 120_000,
+            description:
+              "Maximum time to wait for workflow completion when polling (milliseconds)",
           },
         ],
       },
@@ -174,9 +150,7 @@ export class Markupai implements INodeType {
 
   methods = {
     loadOptions: {
-      [LOAD_STYLE_GUIDES]: loadStyleGuides,
-      [LOAD_TONES]: loadTones,
-      [LOAD_DIALECTS]: loadDialects,
+      [LOAD_AGENTS]: loadAgents,
     },
   };
 
@@ -186,7 +160,6 @@ export class Markupai implements INodeType {
 
     for (let i = 0; i < items.length; i++) {
       const result = await processMarkupaiItem.call(this, i);
-
       returnData.push(result);
     }
 

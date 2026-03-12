@@ -1,73 +1,45 @@
 import {
+  IDataObject,
   IExecuteFunctions,
   INodeExecutionData,
   NodeApiError,
   NodeOperationError,
 } from "n8n-workflow";
-import { FormDataDetails, getPath, styleRequest } from "./style.api.utils";
-import { generateEmailHTMLReport } from "./email.generator";
-import { GetStyleRewriteResponse, PostStyleRewriteResponse } from "../Markupai.api.types";
-import { getContentType, getMimeTypeFromFileName, getFileNameExtension } from "./file.type.utils";
+import { runAgent, pollWorkflowUntilDone, listAllAgents } from "./agents.api.utils";
+import { buildIssuesHtmlReport } from "./html.report";
+import type { AgentMetadata, AgentRunRequest, AgentRunResponse } from "../Markupai.api.types";
+
+const PARALLEL_EXECUTOR_AGENT_ID = "ag_cnct5nkhtfNk";
 
 type AdditionalOptions = {
-  waitForCompletion?: boolean;
-  pollingTimeout?: number;
   documentName?: string;
-  documentOwner?: string;
   documentLink?: string;
+  domainIds?: string;
+  timeout?: number;
 };
 
-function addHtmlReportToWorkflowResponse(
-  resultElement: INodeExecutionData,
-  extendedInputData: {
-    document_name: string | undefined;
-    document_owner: string | undefined;
-    document_link: string | undefined;
-  },
-  itemIndex: number,
-) {
-  const emailHTMLReport = generateEmailHTMLReport(
-    resultElement.json as unknown as GetStyleRewriteResponse,
-    extendedInputData,
-  );
-
-  return {
-    json: {
-      ...(resultElement.json as unknown as GetStyleRewriteResponse),
-      html_email: emailHTMLReport,
-    },
-    pairedItem: {
-      item: itemIndex,
-    },
-  };
-}
-
-function buildFormDataDetails(
+function buildRunRequest(
   this: IExecuteFunctions,
   itemIndex: number,
   additionalOptions: AdditionalOptions,
-): FormDataDetails {
-  const content = this.getNodeParameter("content", itemIndex);
-  const styleGuide = this.getNodeParameter("styleGuide", itemIndex);
-  const tone = this.getNodeParameter("tone", itemIndex);
-  const dialect = this.getNodeParameter("dialect", itemIndex);
-  const waitForCompletion = additionalOptions.waitForCompletion ?? true;
-  const pollingTimeout = additionalOptions.pollingTimeout || 60_000;
-  const contentType = additionalOptions.documentName
-    ? getMimeTypeFromFileName(additionalOptions.documentName)
-    : getContentType(content as string);
-  const fileNameExtension = getFileNameExtension(contentType);
+): AgentRunRequest {
+  const text = this.getNodeParameter("text", itemIndex) as string;
+  const request: AgentRunRequest = { text };
 
-  return {
-    content,
-    contentType,
-    fileNameExtension,
-    styleGuide,
-    ...(tone !== "None" && { tone }),
-    dialect,
-    waitForCompletion,
-    pollingTimeout,
-  } as FormDataDetails;
+  if (additionalOptions.documentName) {
+    request.document_name = additionalOptions.documentName;
+  }
+  if (additionalOptions.documentLink) {
+    request.url = additionalOptions.documentLink;
+  }
+  if (additionalOptions.domainIds) {
+    request.domain_ids = additionalOptions.domainIds
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }
+
+  return request;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -90,25 +62,44 @@ function getErrorDescription(error: unknown): string | undefined {
   return String(error);
 }
 
-function createErrorResponse(error: unknown, itemIndex: number) {
+function createErrorResponse(error: unknown, itemIndex: number): INodeExecutionData {
   return {
-    json: {
-      error: getErrorMessage(error),
-    },
-    pairedItem: {
-      item: itemIndex,
-    },
+    json: { error: getErrorMessage(error) },
+    pairedItem: { item: itemIndex },
   };
 }
 
-function createWorkflowResponse(resultElement: INodeExecutionData, itemIndex: number) {
+function createSuccessResponse(
+  response: AgentRunResponse,
+  itemIndex: number,
+  allAgents: AgentMetadata[],
+  selectedAgentIds: string[],
+  additionalOptions: AdditionalOptions,
+): INodeExecutionData {
+  const htmlReport = buildIssuesHtmlReport({
+    allAgents,
+    selectedAgentIds,
+    result: response.result ?? undefined,
+    documentName: additionalOptions.documentName,
+    documentUrl: additionalOptions.documentLink,
+    workflowId: response.workflow_id,
+    status: response.status,
+    startedAt: response.started_at,
+    completedAt: response.completed_at ?? undefined,
+  });
+  const json: Record<string, unknown> = {
+    workflow_id: response.workflow_id,
+    status: response.status,
+    result: response.result,
+    started_at: response.started_at,
+    completed_at: response.completed_at,
+    duration_seconds: response.duration_seconds,
+    error: response.error,
+    html_report: htmlReport,
+  };
   return {
-    json: {
-      ...(resultElement.json as unknown as PostStyleRewriteResponse),
-    },
-    pairedItem: {
-      item: itemIndex,
-    },
+    json: json as IDataObject,
+    pairedItem: { item: itemIndex },
   };
 }
 
@@ -117,27 +108,41 @@ export async function processMarkupaiItem(
   itemIndex: number,
 ): Promise<INodeExecutionData> {
   try {
-    const additionalOptions = this.getNodeParameter(
-      "additionalOptions",
-      itemIndex,
-    ) as AdditionalOptions;
-    const formDataDetails = buildFormDataDetails.call(this, itemIndex, additionalOptions);
-
-    const extendedInputData = {
-      document_name: additionalOptions.documentName,
-      document_owner: additionalOptions.documentOwner,
-      document_link: additionalOptions.documentLink,
-    };
-
-    const result = await styleRequest.call(this, formDataDetails, getPath(), itemIndex);
-
-    const resultElement = result[0];
-
-    if (formDataDetails.waitForCompletion) {
-      return addHtmlReportToWorkflowResponse(resultElement, extendedInputData, itemIndex);
+    const selectedAgents = this.getNodeParameter("agents", itemIndex) as string[];
+    if (!selectedAgents?.length) {
+      throw new Error("Select at least one agent");
     }
 
-    return createWorkflowResponse(resultElement, itemIndex);
+    const additionalOptions = (this.getNodeParameter("additionalOptions", itemIndex) ??
+      {}) as AdditionalOptions;
+
+    const body = buildRunRequest.call(this, itemIndex, additionalOptions);
+
+    const agentId =
+      selectedAgents.length === 1
+        ? selectedAgents[0]
+        : PARALLEL_EXECUTOR_AGENT_ID;
+    if (selectedAgents.length > 1) {
+      body.agents = selectedAgents.slice(0, 10);
+    }
+
+    const [runResponse, allAgents] = await Promise.all([
+      runAgent.call(this, agentId, body),
+      listAllAgents.call(this),
+    ]);
+
+    const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
+    if (runResponse.status && terminalStatuses.includes(runResponse.status)) {
+      return createSuccessResponse(runResponse, itemIndex, allAgents, selectedAgents, additionalOptions);
+    }
+
+    const pollTimeoutMs = additionalOptions.timeout ?? 120_000;
+    const finalResponse = await pollWorkflowUntilDone.call(
+      this,
+      runResponse.workflow_id,
+      pollTimeoutMs,
+    );
+    return createSuccessResponse(finalResponse, itemIndex, allAgents, selectedAgents, additionalOptions);
   } catch (error) {
     if (this.continueOnFail()) {
       return createErrorResponse(error, itemIndex);
@@ -148,7 +153,7 @@ export async function processMarkupaiItem(
       error instanceof Error ? error : new Error(String(error)),
       {
         description: getErrorDescription(error),
-        itemIndex: itemIndex,
+        itemIndex,
       },
     );
   }

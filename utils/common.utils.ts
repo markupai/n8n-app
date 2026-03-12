@@ -13,5 +13,5 @@ export function getBaseUrlString(): string {
   }
 
   // Default to production URL
-  return "https://api.markup.ai/";
+  return "https://api.dev.markup.ai/";
 }

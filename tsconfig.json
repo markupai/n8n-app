@@ -3,7 +3,7 @@
     "strict": true,
     "module": "commonjs",
     "target": "es2021",
-    "lib": ["es2021", "es2022.error"],
+    "lib": ["es2021", "es2022.error", "dom"],
     "removeComments": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
