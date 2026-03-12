@@ -36,7 +36,7 @@ export class MarkupAiApi implements ICredentialType {
   test: ICredentialTestRequest = {
     request: {
       baseURL: getBaseUrlString(),
-      url: "/v1/internal/constants",
+      url: "/agents?page=1&page_size=1",
     },
   };
 }
