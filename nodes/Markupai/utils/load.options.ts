@@ -6,6 +6,8 @@ import type {
 import { getBaseUrlString } from "../../../utils/common.utils";
 import type { AgentListResult } from "../Markupai.api.types";
 
+const ORCHESTRATOR_AGENT_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
+
 export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
 }
@@ -40,9 +42,11 @@ export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodeProp
 
   const listResult = response.body as AgentListResult;
 
-  return listResult.agents.map((agent) => ({
-    name: agent.name,
-    value: agent.id,
-    description: agent.description ?? undefined,
-  }));
+  return listResult.agents
+    .filter((agent) => !ORCHESTRATOR_AGENT_IDS.has(agent.id))
+    .map((agent) => ({
+      name: agent.name,
+      value: agent.id,
+      description: agent.description ?? undefined,
+    }));
 }
