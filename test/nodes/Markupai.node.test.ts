@@ -126,9 +126,15 @@ describe("Markupai", () => {
       expect(names).toContain("timeout");
       expect(names).not.toContain("waitForCompletion");
 
-      const timeoutOption = options.find((o) => o.name === "timeout");
-      expect(timeoutOption?.type).toBe("number");
-      expect(timeoutOption?.default).toBe(120_000);
+      const timeoutOption = options.find(
+        (o) => o.name === "timeout" && "type" in o && "default" in o,
+      );
+      expect(timeoutOption).toBeDefined();
+      if (!timeoutOption || !("type" in timeoutOption) || !("default" in timeoutOption)) {
+        throw new Error("Timeout option not found");
+      }
+      expect(timeoutOption.type).toBe("number");
+      expect(timeoutOption.default).toBe(120_000);
     });
   });
 
