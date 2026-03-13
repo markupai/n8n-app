@@ -42,14 +42,20 @@ describe("load.options", () => {
       agents: [
         { id: "ag_1", name: "terminology", description: "Checks terminology" },
         { id: "ag_2", name: "content_analysis", description: "Full content analysis" },
+        { id: "ag_cnct5nkhtfNk", name: "parallel_executor", description: "Internal orchestrator" },
+        {
+          id: "ag__48WjfPsyKCX",
+          name: "content_analysis_orchestrator",
+          description: "Internal orchestrator",
+        },
       ],
-      total: 2,
+      total: 4,
       page: 1,
       page_size: 100,
       total_pages: 1,
     };
 
-    it("returns agents from the API as options", async () => {
+    it("returns selectable agents from the API as options", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
