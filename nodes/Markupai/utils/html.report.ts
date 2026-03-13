@@ -9,7 +9,8 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { AgentMetadata } from "../Markupai.api.types";
+import { getIssueCountsFromResult } from "./issue.counts";
+import type { AgentMetadata, IssueCounts } from "../Markupai.api.types";
 
 // Markup AI brand palette
 const BRAND = {
@@ -146,6 +147,7 @@ export interface ReportInput {
   allAgents: AgentMetadata[];
   selectedAgentIds: string[];
   result: Record<string, unknown> | null | undefined;
+  issueCounts?: IssueCounts;
   documentName?: string;
   documentUrl?: string;
   workflowId?: string;
@@ -359,19 +361,15 @@ export function buildIssuesHtmlReport(input: ReportInput): string {
   const issues = Array.isArray(result?.issues) ? (result.issues as unknown[]) : [];
   const issuesByAgent = aggregateIssuesByAgent(issues);
   const issuesByCategory = aggregateIssuesByCategory(issues);
+  const severityTotals = input.issueCounts ?? getIssueCountsFromResult(result);
 
   const selectedSet = new Set(selectedAgentIds);
   const displayAgents = allAgents.filter((a) => !ORCHESTRATOR_IDS.has(a.id));
 
-  let totalHigh = 0;
-  let totalMedium = 0;
-  let totalLow = 0;
-  for (const counts of issuesByAgent.values()) {
-    totalHigh += counts.high;
-    totalMedium += counts.medium;
-    totalLow += counts.low;
-  }
-  const totalIssues = totalHigh + totalMedium + totalLow;
+  const totalHigh = severityTotals.high;
+  const totalMedium = severityTotals.medium;
+  const totalLow = severityTotals.low;
+  const totalIssues = severityTotals.total;
 
   const placeholders: Record<string, string> = {
     statusBadge: input.status ? renderStatusBadge(input.status) : "—",

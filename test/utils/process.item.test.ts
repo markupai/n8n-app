@@ -186,6 +186,40 @@ describe("process.item", () => {
         expect(html).toContain("Agents");
       });
 
+      it("adds issue_counts to response json", async () => {
+        mockRunAgent.mockResolvedValue(
+          createCompletedResponse({
+            result: {
+              issues: [
+                { severity: "high", agent_id: "ag_content_analysis" },
+                { severity: "high", agent_id: "ag_content_analysis" },
+                { severity: "medium", agent_id: "ag_content_analysis" },
+                { severity: "low", agent_id: "ag_content_analysis" },
+                { severity: "not_a_valid_severity", agent_id: "ag_content_analysis" },
+              ],
+            },
+          }),
+        );
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: createGetNodeParameter({}),
+        });
+
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+        );
+
+        expect(result.json).toMatchObject({
+          issue_counts: {
+            total: 4,
+            high: 2,
+            medium: 1,
+            low: 1,
+          },
+        });
+      });
+
       it("passes documentName, documentLink, domainIds in request body", async () => {
         mockRunAgent.mockResolvedValue(createCompletedResponse());
 

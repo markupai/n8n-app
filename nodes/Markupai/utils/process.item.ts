@@ -7,7 +7,13 @@ import {
 } from "n8n-workflow";
 import { runAgent, pollWorkflowUntilDone, listAllAgents } from "./agents.api.utils";
 import { buildIssuesHtmlReport } from "./html.report";
-import type { AgentMetadata, AgentRunRequest, AgentRunResponse } from "../Markupai.api.types";
+import { getIssueCountsFromResult } from "./issue.counts";
+import type {
+  AgentMetadata,
+  AgentRunRequest,
+  AgentRunResponse,
+  IssueCounts,
+} from "../Markupai.api.types";
 
 const PARALLEL_EXECUTOR_AGENT_ID = "ag_cnct5nkhtfNk";
 
@@ -76,10 +82,12 @@ function createSuccessResponse(
   selectedAgentIds: string[],
   additionalOptions: AdditionalOptions,
 ): INodeExecutionData {
+  const issueCounts: IssueCounts = getIssueCountsFromResult(response.result);
   const htmlReport = buildIssuesHtmlReport({
     allAgents,
     selectedAgentIds,
     result: response.result ?? undefined,
+    issueCounts,
     documentName: additionalOptions.documentName,
     documentUrl: additionalOptions.documentLink,
     workflowId: response.workflow_id,
@@ -95,6 +103,7 @@ function createSuccessResponse(
     completed_at: response.completed_at,
     duration_seconds: response.duration_seconds,
     error: response.error,
+    issue_counts: issueCounts,
     html_report: htmlReport,
   };
   return {

@@ -142,6 +142,24 @@ describe("html.report", () => {
       expect(html).toContain("0");
     });
 
+    it("uses precomputed issueCounts when provided", () => {
+      const html = buildIssuesHtmlReport({
+        allAgents,
+        selectedAgentIds: ["ag_1"],
+        result: { issues: [] },
+        issueCounts: {
+          total: 7,
+          high: 3,
+          medium: 2,
+          low: 2,
+        },
+      });
+
+      expect(html).toContain(">7<");
+      expect(html).toContain(">3<");
+      expect(html).toContain(">2<");
+    });
+
     it("renders workflow summary with status and timing", () => {
       const html = buildIssuesHtmlReport({
         allAgents,

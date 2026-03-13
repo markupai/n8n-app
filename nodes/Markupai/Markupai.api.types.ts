@@ -41,3 +41,10 @@ export interface AgentRunResponse {
   duration_seconds?: number | null;
   error?: string | null;
 }
+
+export interface IssueCounts {
+  total: number;
+  high: number;
+  medium: number;
+  low: number;
+}
