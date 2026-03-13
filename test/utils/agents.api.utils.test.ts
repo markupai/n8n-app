@@ -225,9 +225,9 @@ describe("agents.api.utils", () => {
         helpers: { httpRequestWithAuthentication: { call: mockCall } },
       });
 
-      await expect(
-        pollWorkflowUntilDone.call(mock, "wf_123", 100),
-      ).rejects.toThrow(/Workflow polling timeout/);
+      await expect(pollWorkflowUntilDone.call(mock, "wf_123", 100)).rejects.toThrow(
+        /Workflow polling timeout/,
+      );
     });
   });
 });

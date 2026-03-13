@@ -83,9 +83,7 @@ describe("load.options", () => {
         },
       });
 
-      await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow(
-        "Error loading agents",
-      );
+      await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow("Error loading agents");
     });
 
     it("throws if the request fails", async () => {

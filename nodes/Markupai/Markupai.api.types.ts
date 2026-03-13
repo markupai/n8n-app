@@ -1,10 +1,5 @@
 /** Workflow status from Agents API */
-export type WorkflowStatus =
-  | "running"
-  | "completed"
-  | "failed"
-  | "timed_out"
-  | "cancelled";
+export type WorkflowStatus = "running" | "completed" | "failed" | "timed_out" | "cancelled";
 
 export interface AgentMetadata {
   id: string;

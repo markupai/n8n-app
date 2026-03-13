@@ -118,7 +118,7 @@ export async function processMarkupaiItem(
 ): Promise<INodeExecutionData> {
   try {
     const selectedAgents = this.getNodeParameter("agents", itemIndex) as string[];
-    if (!selectedAgents?.length) {
+    if (selectedAgents.length === 0) {
       throw new Error("Select at least one agent");
     }
 
@@ -127,10 +127,7 @@ export async function processMarkupaiItem(
 
     const body = buildRunRequest.call(this, itemIndex, additionalOptions);
 
-    const agentId =
-      selectedAgents.length === 1
-        ? selectedAgents[0]
-        : PARALLEL_EXECUTOR_AGENT_ID;
+    const agentId = selectedAgents.length === 1 ? selectedAgents[0] : PARALLEL_EXECUTOR_AGENT_ID;
     if (selectedAgents.length > 1) {
       body.agents = selectedAgents.slice(0, 10);
     }
@@ -141,8 +138,14 @@ export async function processMarkupaiItem(
     ]);
 
     const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
-    if (runResponse.status && terminalStatuses.includes(runResponse.status)) {
-      return createSuccessResponse(runResponse, itemIndex, allAgents, selectedAgents, additionalOptions);
+    if (terminalStatuses.includes(runResponse.status)) {
+      return createSuccessResponse(
+        runResponse,
+        itemIndex,
+        allAgents,
+        selectedAgents,
+        additionalOptions,
+      );
     }
 
     const pollTimeoutMs = additionalOptions.timeout ?? 120_000;
@@ -151,7 +154,13 @@ export async function processMarkupaiItem(
       runResponse.workflow_id,
       pollTimeoutMs,
     );
-    return createSuccessResponse(finalResponse, itemIndex, allAgents, selectedAgents, additionalOptions);
+    return createSuccessResponse(
+      finalResponse,
+      itemIndex,
+      allAgents,
+      selectedAgents,
+      additionalOptions,
+    );
   } catch (error) {
     if (this.continueOnFail()) {
       return createErrorResponse(error, itemIndex);
