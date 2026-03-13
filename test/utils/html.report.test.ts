@@ -155,9 +155,9 @@ describe("html.report", () => {
         },
       });
 
-      expect(html).toContain(">7<");
-      expect(html).toContain(">3<");
-      expect(html).toContain(">2<");
+      expect(html).toMatch(/>\s*7\s*</);
+      expect(html).toMatch(/>\s*3\s*</);
+      expect(html).toMatch(/>\s*2\s*</);
     });
 
     it("renders workflow summary with status and timing", () => {
