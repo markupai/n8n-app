@@ -5,6 +5,7 @@ const { task, src, dest } = require("gulp");
 const fs = require("node:fs");
 
 task("build:icons", copyIcons);
+task("build:templates", copyTemplates);
 task("build:package", copyPackageJson);
 
 function copyIcons() {
@@ -17,6 +18,13 @@ function copyIcons() {
   const credDestination = path.resolve("dist", "credentials");
 
   return src(credSource).pipe(dest(credDestination));
+}
+
+function copyTemplates() {
+  const templateSource = path.resolve("nodes", "**", "*.html");
+  const templateDestination = path.resolve("dist", "nodes");
+
+  return src(templateSource).pipe(dest(templateDestination));
 }
 
 function copyPackageJson(callback) {

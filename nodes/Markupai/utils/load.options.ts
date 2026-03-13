@@ -1,134 +1,52 @@
 import type {
-  IExecuteFunctions,
   IHttpRequestOptions,
   ILoadOptionsFunctions,
   INodePropertyOptions,
 } from "n8n-workflow";
-import { LoggerProxy } from "n8n-workflow";
-import { StyleGuides } from "../Markupai.api.types";
 import { getBaseUrlString } from "../../../utils/common.utils";
+import type { AgentListResult } from "../Markupai.api.types";
 
-type Constants = {
-  dialects: string[];
-  tones: string[];
-};
-
-const DEFAULT_CONSTANTS = {
-  dialects: ["american_english", "british_english", "canadian_english"],
-  tones: [
-    "academic",
-    "confident",
-    "conversational",
-    "empathetic",
-    "engaging",
-    "friendly",
-    "professional",
-    "technical",
-  ],
-};
-
-const appendDefaultTone = (tones: string[]) => {
-  return ["None", ...tones];
-};
-
-const mapTones = (tones: string[]) => {
-  return appendDefaultTone(tones).map((tone) => ({
-    name: tone,
-    value: tone,
-  }));
-};
+const ORCHESTRATOR_AGENT_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
 
 export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
 }
 
-export async function loadStyleGuides(
-  this: ILoadOptionsFunctions,
-): Promise<INodePropertyOptions[]> {
-  try {
-    const baseUrl = getBaseUrl();
-
-    const httpRequestOptions: IHttpRequestOptions = {
-      method: "GET",
-      url: `${baseUrl.toString()}v1/style-guides`,
-      returnFullResponse: true,
-    };
-
-    const response = (await this.helpers.httpRequestWithAuthentication.call(
-      this,
-      "markupaiApi",
-      httpRequestOptions,
-    )) as { statusCode: number; body: unknown };
-
-    if (response.statusCode !== 200) {
-      const bodyStr = typeof response.body === "string" ? response.body : String(response.body);
-      throw new Error("Error loading style guides: " + bodyStr);
-    }
-
-    const styleGuides = response.body as StyleGuides;
-
-    return styleGuides.map((styleGuide) => ({
-      name: styleGuide.name,
-      value: styleGuide.id,
-    }));
-  } catch (error) {
-    throw new Error("Error loading style guides", error as Error);
-  }
-}
-
-async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
+export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
   const baseUrl = getBaseUrl();
 
-  const requestOptions: IHttpRequestOptions = {
+  const httpRequestOptions: IHttpRequestOptions = {
     method: "GET",
-    url: `${baseUrl.toString()}v1/internal/constants`,
+    url: `${baseUrl.toString()}agents`,
+    qs: { page: 1, page_size: 100 },
     returnFullResponse: true,
   };
 
   const response = (await this.helpers.httpRequestWithAuthentication.call(
     this,
     "markupaiApi",
-    requestOptions,
+    httpRequestOptions,
   )) as { statusCode: number; body: unknown };
 
   if (response.statusCode !== 200) {
-    const bodyStr =
-      typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-    const parsed = JSON.parse(bodyStr) as { error?: string };
-    throw new Error(parsed.error ?? "Unknown error");
+    let bodyStr: string;
+    if (typeof response.body === "string") {
+      bodyStr = response.body;
+    } else if (typeof response.body === "object" && response.body !== null) {
+      bodyStr = JSON.stringify(response.body);
+    } else {
+      bodyStr = String(response.body);
+    }
+    throw new Error("Error loading agents: " + bodyStr);
   }
 
-  return response.body as Constants;
-}
+  const listResult = response.body as AgentListResult;
 
-export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-  try {
-    const constants = await getConstants.call(this);
-
-    return mapTones(constants.tones);
-  } catch (error) {
-    LoggerProxy.error("Couldn't fetch tones from API, using default tones.", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return mapTones(DEFAULT_CONSTANTS.tones);
-  }
-}
-
-export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-  try {
-    const constants = await getConstants.call(this);
-
-    return constants.dialects.map((dialect: string) => ({
-      name: dialect,
-      value: dialect,
+  return listResult.agents
+    .filter((agent) => !ORCHESTRATOR_AGENT_IDS.has(agent.id))
+    .map((agent) => ({
+      name: agent.name,
+      value: agent.id,
+      description: agent.description ?? undefined,
     }));
-  } catch (error) {
-    LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
-      name: dialect,
-      value: dialect,
-    }));
-  }
 }

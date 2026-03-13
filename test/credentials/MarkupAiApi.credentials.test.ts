@@ -64,7 +64,8 @@ describe("MarkupAiApi credentials", () => {
       const expected = {
         request: {
           baseURL: "https://api.markup.ai/",
-          url: "/v1/internal/constants",
+          url: "/agents",
+          qs: { page: 1, page_size: 1 },
         },
       };
 

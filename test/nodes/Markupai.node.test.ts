@@ -3,7 +3,6 @@ import type {
   IExecuteFunctions,
   INodeCredentialDescription,
   INodeExecutionData,
-  INodePropertyTypeOptions,
 } from "n8n-workflow";
 import { Markupai } from "../../nodes/Markupai/Markupai.node";
 
@@ -24,45 +23,23 @@ vi.mock("n8n-workflow", async () => {
 });
 
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
-  loadStyleGuides: vi.fn(),
-  loadTones: vi.fn(),
-  loadDialects: vi.fn(),
+  loadAgents: vi.fn(),
 }));
 
-vi.mock("../../nodes/Markupai/utils/style.api.utils", () => ({
-  styleRequest: vi.fn(),
-  getPath: vi.fn(),
+vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
+  runAgent: vi.fn(),
+  listAllAgents: vi
+    .fn()
+    .mockResolvedValue([{ id: "ag_content_analysis", name: "Content Analysis" }]),
 }));
 
-vi.mock("../../nodes/Markupai/utils/email.generator", () => ({
-  generateEmailHTMLReport: vi.fn(),
-}));
-
-const createCheckWorkflowResponse = () => ({
-  workflow: { id: "test-id", status: "completed" },
-  config: { style_guide: { style_guide_id: "test-guide" } },
-  original: { issues: [], scores: { quality: { score: 85 } } },
+const createRunResponse = () => ({
+  workflow_id: "wf_123",
+  status: "completed" as const,
+  result: { issues: [] },
+  started_at: "2025-01-01T00:00:00Z",
+  completed_at: "2025-01-01T00:01:00Z",
 });
-
-const validateFirstItem = (firstElement: INodeExecutionData, firstItemError: Error) => {
-  expect(firstElement.json).toHaveProperty("error", firstItemError.message);
-  expect(firstElement.pairedItem).toEqual({ item: 0 });
-};
-
-const validateSecondItem = (
-  secondElement: INodeExecutionData,
-  secondItemResult: {
-    workflow: { id: string; status: string };
-    config: { style_guide: { style_guide_id: string } };
-    original: { issues: unknown[]; scores: { quality: { score: number } } };
-  },
-) => {
-  expect(secondElement.json).toMatchObject({
-    ...secondItemResult,
-    html_email: "<html>test report</html>",
-  });
-  expect(secondElement.pairedItem).toEqual({ item: 1 });
-};
 
 describe("Markupai", () => {
   let markupai: Markupai;
@@ -91,7 +68,7 @@ describe("Markupai", () => {
     it("should have correct basic properties", () => {
       expect(markupai.description.displayName).toBe("Markup AI");
       expect(markupai.description.name).toBe("markupai");
-      expect(markupai.description.description).toBe("Markup AI Content Guardian");
+      expect(markupai.description.description).toBe("Run Markup AI agents for content analysis");
       expect(markupai.description.icon).toBe("file:markupai.svg");
       expect(markupai.description.version).toBe(1);
     });
@@ -107,414 +84,126 @@ describe("Markupai", () => {
 
     it("should have correct credentials configuration", () => {
       const credentials = markupai.description.credentials as INodeCredentialDescription[];
-
       expect(credentials).toHaveLength(1);
       expect(credentials[0].name).toBe("markupaiApi");
       expect(credentials[0].required).toBe(true);
     });
 
-    it("should have correct properties structure", () => {
+    it("should have resource Agent and operation Run Agent", () => {
       const properties = markupai.description.properties;
-
       const resourceProp = properties.find((p) => p.name === "resource");
       expect(resourceProp?.type).toBe("options");
-      expect(resourceProp?.default).toBe("content");
+      expect(resourceProp?.default).toBe("agent");
 
       const operationProp = properties.find((p) => p.name === "operation");
       expect(operationProp?.type).toBe("options");
-      expect(operationProp?.default).toBe("styleCheck");
-
-      const contentProp = properties.find((p) => p.name === "content");
-      expect(contentProp?.type).toBe("string");
-      expect(contentProp?.required).toBe(true);
-
-      const styleGuideProp = properties.find((p) => p.name === "styleGuide");
-      expect(styleGuideProp?.type).toBe("options");
-      expect(styleGuideProp?.typeOptions?.loadOptionsMethod).toBe("loadStyleGuides");
-
-      const toneProp = properties.find((p) => p.name === "tone");
-      expect(toneProp?.type).toBe("options");
-      expect(toneProp?.default).toBe("None");
-      expect(toneProp?.typeOptions?.loadOptionsMethod).toBe("loadTones");
-
-      const dialectProp = properties.find((p) => p.name === "dialect");
-      expect(dialectProp?.type).toBe("options");
-      expect(dialectProp?.typeOptions?.loadOptionsMethod).toBe("loadDialects");
+      expect(operationProp?.default).toBe("runAgent");
     });
 
-    it("should have correct additional options structure", () => {
+    it("should have agents (multiOptions) and text parameters with loadAgents", () => {
+      const properties = markupai.description.properties;
+      const agentsProp = properties.find((p) => p.name === "agents");
+      expect(agentsProp?.type).toBe("multiOptions");
+      expect(agentsProp?.typeOptions?.loadOptionsMethod).toBe("loadAgents");
+      expect(agentsProp?.required).toBe(true);
+
+      const textProp = properties.find((p) => p.name === "text");
+      expect(textProp?.type).toBe("string");
+      expect(textProp?.required).toBe(true);
+    });
+
+    it("should have additional options (documentName, documentLink, domainIds, timeout)", () => {
       const additionalOptionsProp = markupai.description.properties.find(
         (p) => p.name === "additionalOptions",
       );
       expect(additionalOptionsProp?.type).toBe("collection");
 
-      const options = additionalOptionsProp?.options;
+      const options = additionalOptionsProp?.options ?? [];
+      const names = options.map((o) => o.name);
+      expect(names).toContain("documentName");
+      expect(names).toContain("documentLink");
+      expect(names).toContain("domainIds");
+      expect(names).toContain("timeout");
+      expect(names).not.toContain("waitForCompletion");
 
-      const documentLinkOption = options?.find(
-        (o) => o.name === "documentLink",
-      ) as INodePropertyTypeOptions;
-      expect(documentLinkOption.type).toBe("string");
-
-      const documentNameOption = options?.find(
-        (o) => o.name === "documentName",
-      ) as INodePropertyTypeOptions;
-      expect(documentNameOption.type).toBe("string");
-
-      const documentOwnerOption = options?.find(
-        (o) => o.name === "documentOwner",
-      ) as INodePropertyTypeOptions;
-      expect(documentOwnerOption.type).toBe("string");
-
-      const pollingTimeoutOption = options?.find(
-        (o) => o.name === "pollingTimeout",
-      ) as INodePropertyTypeOptions;
-      expect(pollingTimeoutOption.type).toBe("number");
-      expect(pollingTimeoutOption.default).toBe(60_000);
-
-      const waitForCompletionOption = options?.find(
-        (o) => o.name === "waitForCompletion",
-      ) as INodePropertyTypeOptions;
-      expect(waitForCompletionOption.type).toBe("boolean");
-      expect(waitForCompletionOption.default).toBe(true);
+      const timeoutOption = options.find(
+        (o) => o.name === "timeout" && "type" in o && "default" in o,
+      );
+      expect(timeoutOption).toBeDefined();
+      if (!timeoutOption || !("type" in timeoutOption) || !("default" in timeoutOption)) {
+        throw new Error("Timeout option not found");
+      }
+      expect(timeoutOption.type).toBe("number");
+      expect(timeoutOption.default).toBe(120_000);
     });
   });
 
   describe("Methods", () => {
-    it("should have correct loadOptions methods", () => {
-      expect(markupai.methods.loadOptions.loadStyleGuides).toBeDefined();
-      expect(markupai.methods.loadOptions.loadTones).toBeDefined();
-      expect(markupai.methods.loadOptions.loadDialects).toBeDefined();
+    it("should have loadAgents in loadOptions", () => {
+      expect(markupai.methods.loadOptions.loadAgents).toBeDefined();
     });
   });
 
   describe("Execute Method", () => {
     const mockInputData: INodeExecutionData[] = [{ json: { test: "data" } }];
 
-    const mockStyleRequest = vi.fn();
-    const mockGenerateEmailHTMLReport = vi.fn();
-    const mockGetPath = vi.fn();
-
-    const createExpectedExecuteResult = (
-      jsonData: INodeExecutionData["json"],
-      itemIndex = 0,
-    ): INodeExecutionData[][] => {
-      return [
-        [
-          {
-            json: jsonData,
-            pairedItem: { item: itemIndex },
-          },
-        ],
-      ];
-    };
-
-    const createExpectedResultWithCompletion = (
-      workflowResponse: ReturnType<typeof createCheckWorkflowResponse>,
-      itemIndex = 0,
-    ): INodeExecutionData[][] => {
-      return createExpectedExecuteResult(
-        {
-          ...workflowResponse,
-          html_email: "<html>test report</html>",
-        },
-        itemIndex,
-      );
-    };
-
-    const mockContentCheck = () => {
-      const mockResult = createCheckWorkflowResponse();
-
-      mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
-      mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
-      mockGetPath.mockReturnValue("v1/style/checks");
-    };
-
-    const addItemMockReturns = (
-      mock: ReturnType<typeof vi.fn>,
-      tone: string,
-      additionalOptions: Record<string, unknown>,
-      content: string,
-    ) => {
-      return mock
-        .mockReturnValueOnce(additionalOptions)
-        .mockReturnValueOnce(content)
-        .mockReturnValueOnce("test-style-guide")
-        .mockReturnValueOnce(tone)
-        .mockReturnValueOnce("american_english");
-    };
-
-    const mockCommonFunctionResponses = (
-      tone: string,
-      additionalOptions = {},
-      content = "test content",
-    ) => {
-      return addItemMockReturns(vi.fn(), tone, additionalOptions, content);
-    };
-
-    const mockMultipleItemsFunctionResponses = (
-      tone: string,
-      additionalOptions = {},
-      ...contents: string[]
-    ) => {
-      const mock = vi.fn();
-      for (const content of contents) {
-        addItemMockReturns(mock, tone, additionalOptions, content);
-      }
-      return mock;
-    };
-
     beforeEach(async () => {
-      const { styleRequest } = await import("../../nodes/Markupai/utils/style.api.utils");
-      const { generateEmailHTMLReport } =
-        await import("../../nodes/Markupai/utils/email.generator");
-      const { getPath } = await import("../../nodes/Markupai/utils/style.api.utils");
-
-      vi.mocked(styleRequest).mockImplementation(mockStyleRequest);
-      vi.mocked(generateEmailHTMLReport).mockImplementation(mockGenerateEmailHTMLReport);
-      vi.mocked(getPath).mockImplementation(mockGetPath);
+      const { runAgent } = await import("../../nodes/Markupai/utils/agents.api.utils");
+      vi.mocked(runAgent).mockResolvedValue(createRunResponse());
 
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(mockInputData);
-
+      mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
+        if (name === "agents") return ["ag_content_analysis"];
+        if (name === "text") return "test content";
+        if (name === "additionalOptions") return {};
+        return undefined;
+      });
       if (mockExecuteFunctions.helpers) {
-        const addPairedItem = (item: INodeExecutionData, index: number) => ({
-          ...item,
-          pairedItem: { item: index },
-        });
-        const returnJsonArrayImpl = (data: INodeExecutionData[]) => {
-          return data.map(addPairedItem);
-        };
         mockExecuteFunctions.helpers.returnJsonArray = vi
           .fn()
-          .mockImplementation(returnJsonArrayImpl);
+          .mockImplementation((data: INodeExecutionData[]) => data);
       }
+      mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
     });
 
-    it("should execute styleCheck operation successfully with completion", async () => {
-      mockContentCheck();
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-        pollingTimeout: 30_000,
-        documentName: "test.txt",
-        documentOwner: "test-owner",
-        documentLink: "https://test.com",
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
+    it("should execute and return workflow result", async () => {
       const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
-      expect(mockStyleRequest).toHaveBeenCalledWith(
-        {
-          content: "test content",
-          contentType: "text/plain",
-          fileNameExtension: ".txt",
-          styleGuide: "test-style-guide",
-          tone: "professional",
-          dialect: "american_english",
-          waitForCompletion: true,
-          pollingTimeout: 30_000,
-        },
-        "v1/style/checks",
-        0,
-      );
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveLength(1);
+      expect(result[0][0].json).toMatchObject({
+        workflow_id: "wf_123",
+        status: "completed",
+        result: { issues: [] },
+      });
+      expect(result[0][0].pairedItem).toEqual({ item: 0 });
+    });
 
-      expect(mockGenerateEmailHTMLReport).toHaveBeenCalledWith(createCheckWorkflowResponse(), {
-        document_name: "test.txt",
-        document_owner: "test-owner",
-        document_link: "https://test.com",
+    it("should handle multiple items", async () => {
+      const twoItems: INodeExecutionData[] = [{ json: {} }, { json: {} }];
+      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
+      mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
+        if (name === "agents") return ["ag_1"];
+        if (name === "text") return "content";
+        if (name === "additionalOptions") return {};
+        return undefined;
       });
 
-      const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('should handle "None (Keep Tone Unchanged)" tone correctly', async () => {
-      mockContentCheck();
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("None", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      const callArgs = mockStyleRequest.mock.calls[0];
-      expect(callArgs[0]).not.toHaveProperty("tone");
-      expect(callArgs[1]).toBe("v1/style/checks");
-      expect(callArgs[2]).toBe(0);
-    });
-
-    it("should execute without waiting for completion", async () => {
-      const mockResult = {
-        status: "running",
-        workflow_id: "test-id",
-      };
-
-      mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
-      mockGetPath.mockReturnValue("v1/style/checks");
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: false,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
       const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 
-      expect(mockStyleRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          waitForCompletion: false,
-        }),
-        "v1/style/checks",
-        0,
-      );
-
-      const expectedResult = createExpectedExecuteResult(mockResult);
-      expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();
-      expect(result).toEqual(expectedResult);
+      expect(result[0]).toHaveLength(2);
+      expect(result[0][0].pairedItem).toEqual({ item: 0 });
+      expect(result[0][1].pairedItem).toEqual({ item: 1 });
     });
 
-    it("should throw NodeApiError when styleRequest fails", async () => {
-      const error = new Error("API request failed");
-      mockStyleRequest.mockRejectedValue(error);
-      mockGetPath.mockReturnValue("v1/style/checks");
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
+    it("should throw when processMarkupaiItem throws and continueOnFail is false", async () => {
+      const { runAgent } = await import("../../nodes/Markupai/utils/agents.api.utils");
+      vi.mocked(runAgent).mockRejectedValue(new Error("API failed"));
       mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
 
       await expect(
         markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
-      ).rejects.toThrow(Error);
-    });
-
-    it("should handle undefined additional options gracefully", async () => {
-      mockContentCheck();
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses(
-        "professional",
-        {},
-      ) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      expect(mockStyleRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          waitForCompletion: true, // default value when undefined
-          pollingTimeout: 60_000, // default value when undefined
-        }),
-        "v1/style/checks",
-        0,
-      );
-    });
-
-    it("should include pairedItem object in execute response", async () => {
-      mockContentCheck();
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
-      expect(result).toEqual(expectedResult);
-    });
-
-    it("should only return json and pairedItem properties in execute response", async () => {
-      mockContentCheck();
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      const expectedResult = createExpectedResultWithCompletion(createCheckWorkflowResponse());
-      expect(result).toEqual(expectedResult);
-    });
-
-    it("should only return json and pairedItem properties when waitForCompletion is false", async () => {
-      const mockResult = {
-        status: "running",
-        workflow_id: "test-id",
-      };
-
-      mockStyleRequest.mockResolvedValue([{ json: mockResult }]);
-      mockGetPath.mockReturnValue("v1/style/checks");
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: false,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      const expectedResult = createExpectedExecuteResult(mockResult);
-      expect(result).toEqual(expectedResult);
-    });
-
-    it("should handle multiple items with continueOnFail when one fails", async () => {
-      const twoItemsInputData: INodeExecutionData[] = [
-        { json: { test: "data1" } },
-        { json: { test: "data2" } },
-      ];
-
-      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItemsInputData);
-
-      const firstItemError = new Error("API request failed for first item");
-      const secondItemResult = createCheckWorkflowResponse();
-
-      mockStyleRequest
-        .mockRejectedValueOnce(firstItemError)
-        .mockResolvedValueOnce([{ json: secondItemResult }]);
-
-      mockGetPath.mockReturnValue("v1/style/checks");
-      mockGenerateEmailHTMLReport.mockReturnValue("<html>test report</html>");
-
-      mockExecuteFunctions.getNodeParameter = mockMultipleItemsFunctionResponses(
-        "professional",
-        { waitForCompletion: true },
-        "test content 1",
-        "test content 2",
-      );
-
-      mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
-      mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
-
-      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
-
-      const resultElement = result[0];
-
-      expect(resultElement).toHaveLength(2);
-
-      validateFirstItem(resultElement[0], firstItemError);
-      validateSecondItem(resultElement[1], secondItemResult);
-
-      expect(mockStyleRequest).toHaveBeenCalledTimes(2);
-
-      expect(mockGenerateEmailHTMLReport).toHaveBeenCalledTimes(1);
-    });
-
-    it("should throw error when continueOnFail is false and error occurs", async () => {
-      const singleItemInputData: INodeExecutionData[] = [{ json: { test: "data" } }];
-
-      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(singleItemInputData);
-
-      const error = new Error("API request failed");
-      mockStyleRequest.mockRejectedValue(error);
-      mockGetPath.mockReturnValue("v1/style/checks");
-
-      mockExecuteFunctions.getNodeParameter = mockCommonFunctionResponses("professional", {
-        waitForCompletion: true,
-      }) as unknown as IExecuteFunctions["getNodeParameter"];
-
-      mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(false);
-      mockExecuteFunctions.getNode = vi.fn().mockReturnValue({ name: "Markup AI" });
-
-      await expect(
-        markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
-      ).rejects.toThrow(Error);
-
-      expect(mockStyleRequest).toHaveBeenCalledTimes(1);
-      expect(mockGenerateEmailHTMLReport).not.toHaveBeenCalled();
+      ).rejects.toThrow();
     });
   });
 });

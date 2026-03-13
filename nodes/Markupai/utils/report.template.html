@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Content Analysis Report</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f9f8f2">
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      align="center"
+      width="100%"
+      style="background-color: #f9f8f2"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            width="800"
+            style="
+              font-family: &quot;Roboto&quot;, Helvetica, Arial, sans-serif;
+              color: #333332;
+              background-color: #ffffff;
+              padding: 24px;
+              border-radius: 12px;
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td style="font-size: 24px; font-weight: 600; color: #5d1a2c; padding-bottom: 10px">
+                Content Analysis Report
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size: 16px; font-weight: 500; color: #333332; padding-bottom: 26px">
+                Statistics overview of your content analysis
+              </td>
+            </tr>
+
+            <!-- Document Info + Total Issues -->
+            <tr>
+              <td>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="vertical-align: top">
+                      <table role="presentation" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td
+                            style="
+                              font-weight: 500;
+                              padding-bottom: 8px;
+                              font-size: 20px;
+                              color: #5d1a2c;
+                            "
+                          >
+                            Document details
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style="
+                              font-size: 14px;
+                              padding-bottom: 4px;
+                              line-height: 21px;
+                              color: #333332;
+                            "
+                          >
+                            Title: <strong>{{docTitle}}</strong>
+                          </td>
+                        </tr>
+                        {{docLinkRow}}
+                      </table>
+                    </td>
+                    <td align="right" style="padding-left: 16px; vertical-align: top">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        style="background-color:{{totalIssueBg}}; border-radius:12px; padding:16px; width:200px;"
+                      >
+                        <tr>
+                          <td
+                            align="center"
+                            style="font-size:28px; font-weight:600; color:{{totalIssueColor}};"
+                          >
+                            {{totalIssues}}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="font-size: 14px; color: #333332">
+                            Total Issues
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Workflow Summary -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Workflow summary
+                </div>
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="font-size: 14px"
+                >
+                  <tr>
+                    <td style="padding: 6px 0; color: #cfd7d6; width: 130px">Status</td>
+                    <td style="padding: 6px 0">{{statusBadge}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #cfd7d6">Workflow ID</td>
+                    <td style="padding: 6px 0; font-family: monospace; font-size: 12px">
+                      {{workflowId}}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #cfd7d6">Started</td>
+                    <td style="padding: 6px 0">{{startedAt}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #cfd7d6">Completed</td>
+                    <td style="padding: 6px 0">{{completedAt}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #cfd7d6">Duration</td>
+                    <td style="padding: 6px 0; font-weight: 600">{{duration}}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Severity Summary -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Severity summary
+                </div>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="8">
+                  <tr>
+                    {{severityCells}}
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Category Breakdown -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Category breakdown
+                </div>
+                {{categoryContent}}
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Agents -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Agents
+                </div>
+                {{agentContent}}
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="font-size: 12px; color: #cfd7d6; text-align: center; padding-top: 24px">
+                <img
+                  src="https://cdn.markup.ai/markup-logo-horz-coral.png"
+                  width="160"
+                  alt="Logo Markup AI"
+                />
+                <p>&copy; 2026 Markup AI</p>
+                This report was automatically generated
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
