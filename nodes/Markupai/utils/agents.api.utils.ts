@@ -1,13 +1,16 @@
 import type { IExecuteFunctions, IHttpRequestOptions } from "n8n-workflow";
 import { getBaseUrl } from "./load.options";
-import type { AgentListResult, AgentMetadata, AgentRunRequest, AgentRunResponse } from "../Markupai.api.types";
+import type {
+  AgentListResult,
+  AgentMetadata,
+  AgentRunRequest,
+  AgentRunResponse,
+} from "../Markupai.api.types";
 
 const AGENTS_PATH = "agents";
 const WORKFLOWS_PATH = "agents/workflows";
 
-export async function listAllAgents(
-  this: IExecuteFunctions,
-): Promise<AgentMetadata[]> {
+export async function listAllAgents(this: IExecuteFunctions): Promise<AgentMetadata[]> {
   const baseUrl = getBaseUrl();
 
   const requestOptions: IHttpRequestOptions = {
@@ -23,15 +26,14 @@ export async function listAllAgents(
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr =
-    typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 
   if (response.statusCode >= 400) {
     return [];
   }
 
   const parsed = JSON.parse(bodyStr) as AgentListResult;
-  return parsed.agents ?? [];
+  return parsed.agents;
 }
 
 export async function runAgent(
@@ -56,8 +58,7 @@ export async function runAgent(
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr =
-    typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
   const parsed = JSON.parse(bodyStr) as AgentRunResponse;
 
   if (response.statusCode >= 400) {
@@ -86,7 +87,7 @@ export async function pollWorkflowUntilDone(
 
   while (Date.now() - start <= timeoutMs) {
     const status = await getWorkflowStatus.call(this, workflowId);
-    if (status.status && isTerminalStatus(status.status)) {
+    if (isTerminalStatus(status.status)) {
       return status;
     }
     await sleep(pollIntervalMs);
@@ -113,8 +114,7 @@ export async function getWorkflowStatus(
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr =
-    typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
   const parsed = JSON.parse(bodyStr) as AgentRunResponse;
 
   if (response.statusCode >= 400) {

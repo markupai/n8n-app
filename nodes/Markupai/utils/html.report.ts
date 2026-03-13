@@ -42,19 +42,13 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   running: { bg: "#e7eff8", text: "#2a5fa5" },
 };
 
-const ORCHESTRATOR_IDS = new Set([
-  "ag__48WjfPsyKCX",
-  "ag_cnct5nkhtfNk",
-]);
+const ORCHESTRATOR_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
 
 let cachedTemplate: string | null = null;
 
 function loadTemplate(): string {
   if (cachedTemplate) return cachedTemplate;
-  cachedTemplate = readFileSync(
-    resolve(__dirname, "report.template.html"),
-    "utf-8",
-  );
+  cachedTemplate = readFileSync(resolve(__dirname, "report.template.html"), "utf-8");
   return cachedTemplate;
 }
 
@@ -99,7 +93,7 @@ function formatDateTime(iso: string | undefined | null): string {
       hour12: false,
     });
   } catch {
-    return escapeHtml(String(iso));
+    return escapeHtml(iso);
   }
 }
 
@@ -160,9 +154,7 @@ export interface ReportInput {
 // Aggregation
 // ---------------------------------------------------------------------------
 
-function aggregateIssuesByAgent(
-  issues: unknown[],
-): Map<string, IssueCountsBySeverity> {
+function aggregateIssuesByAgent(issues: unknown[]): Map<string, IssueCountsBySeverity> {
   const byAgent = new Map<string, IssueCountsBySeverity>();
 
   for (const item of issues) {
@@ -187,14 +179,10 @@ function aggregateIssuesByAgent(
 }
 
 function formatKey(key: string): string {
-  return key
-    .replaceAll("_", " ")
-    .replaceAll(/\b\w/g, (c) => c.toUpperCase());
+  return key.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function aggregateIssuesByCategory(
-  issues: unknown[],
-): Map<string, IssueCountsBySeverity> {
+function aggregateIssuesByCategory(issues: unknown[]): Map<string, IssueCountsBySeverity> {
   const byCategory = new Map<string, IssueCountsBySeverity>();
 
   for (const item of issues) {
@@ -221,9 +209,14 @@ function aggregateIssuesByCategory(
 // Fragment renderers (email-safe table cells)
 // ---------------------------------------------------------------------------
 
-function renderSeverityCell(label: string, count: number, bgColor: string, textColor: string): string {
+function renderSeverityCell(
+  label: string,
+  count: number,
+  bgColor: string,
+  textColor: string,
+): string {
   return `<td style="background:${bgColor}; border-radius:8px; text-align:center; padding:12px; width:33.33%;">
-    <div style="font-size:18px; font-weight:700; color:${textColor};">${count}</div>
+    <div style="font-size:18px; font-weight:700; color:${textColor};">${String(count)}</div>
     <div style="font-size:14px;">${escapeHtml(label)}</div>
   </td>`;
 }
@@ -292,13 +285,11 @@ function renderCategoryContent(issuesByCategory: Map<string, IssueCountsBySeveri
     return `<div style="font-size:14px; color:${BRAND.sageAlt}; text-align:center; padding:16px 0;">No issues detected</div>`;
   }
 
-  const sorted = [...issuesByCategory.entries()].sort(
-    (a, b) => {
-      const totalA = a[1].high + a[1].medium + a[1].low;
-      const totalB = b[1].high + b[1].medium + b[1].low;
-      return totalB - totalA;
-    },
-  );
+  const sorted = [...issuesByCategory.entries()].sort((a, b) => {
+    const totalA = a[1].high + a[1].medium + a[1].low;
+    const totalB = b[1].high + b[1].medium + b[1].low;
+    return totalB - totalA;
+  });
 
   const cells = sorted.map(([category, counts]) => {
     const total = counts.high + counts.medium + counts.low;
@@ -312,7 +303,7 @@ function renderCategoryContent(issuesByCategory: Map<string, IssueCountsBySeveri
       String(counts.high),
       String(counts.medium),
       String(counts.low),
-      `${total} issue${pluralS}`,
+      `${String(total)} issue${pluralS}`,
       footerColor,
       "1",
     );
@@ -342,7 +333,7 @@ function renderAgentContent(
       String(counts?.high ?? 0),
       String(counts?.medium ?? 0),
       String(counts?.low ?? 0),
-      `${totalIssues} issue${pluralS}`,
+      `${String(totalIssues)} issue${pluralS}`,
       footerColor,
       "1",
     );

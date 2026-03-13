@@ -28,9 +28,9 @@ vi.mock("../../nodes/Markupai/utils/load.options", () => ({
 
 vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
   runAgent: vi.fn(),
-  listAllAgents: vi.fn().mockResolvedValue([
-    { id: "ag_content_analysis", name: "Content Analysis" },
-  ]),
+  listAllAgents: vi
+    .fn()
+    .mockResolvedValue([{ id: "ag_content_analysis", name: "Content Analysis" }]),
 }));
 
 const createRunResponse = () => ({
@@ -146,14 +146,12 @@ describe("Markupai", () => {
       vi.mocked(runAgent).mockResolvedValue(createRunResponse());
 
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(mockInputData);
-      mockExecuteFunctions.getNodeParameter = vi
-        .fn()
-        .mockImplementation((name: string) => {
-          if (name === "agents") return ["ag_content_analysis"];
-          if (name === "text") return "test content";
-          if (name === "additionalOptions") return {};
-          return undefined;
-        });
+      mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
+        if (name === "agents") return ["ag_content_analysis"];
+        if (name === "text") return "test content";
+        if (name === "additionalOptions") return {};
+        return undefined;
+      });
       if (mockExecuteFunctions.helpers) {
         mockExecuteFunctions.helpers.returnJsonArray = vi
           .fn()
@@ -178,14 +176,12 @@ describe("Markupai", () => {
     it("should handle multiple items", async () => {
       const twoItems: INodeExecutionData[] = [{ json: {} }, { json: {} }];
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
-      mockExecuteFunctions.getNodeParameter = vi
-        .fn()
-        .mockImplementation((name: string) => {
-          if (name === "agents") return ["ag_1"];
-          if (name === "text") return "content";
-          if (name === "additionalOptions") return {};
-          return undefined;
-        });
+      mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
+        if (name === "agents") return ["ag_1"];
+        if (name === "text") return "content";
+        if (name === "additionalOptions") return {};
+        return undefined;
+      });
 
       const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
 

@@ -10,9 +10,7 @@ export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
 }
 
-export async function loadAgents(
-  this: ILoadOptionsFunctions,
-): Promise<INodePropertyOptions[]> {
+export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
   const baseUrl = getBaseUrl();
 
   const httpRequestOptions: IHttpRequestOptions = {
@@ -29,8 +27,7 @@ export async function loadAgents(
   )) as { statusCode: number; body: unknown };
 
   if (response.statusCode !== 200) {
-    const bodyStr =
-      typeof response.body === "string" ? response.body : String(response.body);
+    const bodyStr = typeof response.body === "string" ? response.body : String(response.body);
     throw new Error("Error loading agents: " + bodyStr);
   }
 
