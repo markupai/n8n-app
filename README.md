@@ -67,14 +67,14 @@ To use this node, you'll need a Markup AI API account.
 
 The **Run Agent** operation supports the following configuration:
 
-| Option                           | Type              | Required | Default   | Description                                                                                          |
-| -------------------------------- | ----------------- | -------- | --------- | ---------------------------------------------------------------------------------------------------- |
-| **Agents**                       | Multi-select      | Yes      | -         | Select one or more agents to run. If multiple are selected, the node uses parallel execution.       |
-| **Text**                         | String (multiline) | Yes     | -         | Document text to analyze.                                                                            |
-| **Additional Options → Document Name** | String      | No       | `""`      | Friendly name of the source document.                                                                |
-| **Additional Options → Document URL**  | String      | No       | `""`      | URL or link to the source document.                                                                  |
-| **Additional Options → Domain IDs**    | String      | No       | `""`      | Comma-separated terminology domain IDs (`domain_a,domain_b`).                                       |
-| **Additional Options → Timeout (Ms)**  | Number      | No       | `120000`  | Maximum time to wait while polling workflow status before returning a timeout error.                 |
+| Option                                 | Type               | Required | Default  | Description                                                                                   |
+| -------------------------------------- | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------- |
+| **Agents**                             | Multi-select       | Yes      | -        | Select one or more agents to run. If multiple are selected, the node uses parallel execution. |
+| **Text**                               | String (multiline) | Yes      | -        | Document text to analyze.                                                                     |
+| **Additional Options → Document Name** | String             | No       | `""`     | Friendly name of the source document.                                                         |
+| **Additional Options → Document URL**  | String             | No       | `""`     | URL or link to the source document.                                                           |
+| **Additional Options → Domain IDs**    | String             | No       | `""`     | Comma-separated terminology domain IDs (`domain_a,domain_b`).                                 |
+| **Additional Options → Timeout (Ms)**  | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.          |
 
 ### Example Workflows
 
@@ -108,7 +108,6 @@ The **Run Agent** operation supports the following configuration:
 
 ## Resources
 
-- [Current Agents List](.docs/agents-list.md)
 - [Markup AI Website](https://markup.ai/)
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [n8n Documentation](https://docs.n8n.io/)
