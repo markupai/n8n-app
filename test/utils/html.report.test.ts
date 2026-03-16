@@ -115,7 +115,7 @@ describe("html.report", () => {
         result: { issues: [] },
       });
 
-      expect(html).toContain("Document State");
+      expect(html).toContain("Risk Document");
       expect(html).toMatch(/>\s*Low\s*</);
       expect(html).toContain("#e7f5e8");
       expect(html).toContain("#2d6a30");

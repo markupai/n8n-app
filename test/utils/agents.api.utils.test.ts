@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { IExecuteFunctions } from "n8n-workflow";
+import { sleep } from "n8n-workflow";
 import {
   runAgent,
   getWorkflowStatus,
   pollWorkflowUntilDone,
 } from "../../nodes/Markupai/utils/agents.api.utils";
 import type { AgentRunRequest, AgentRunResponse } from "../../nodes/Markupai/Markupai.api.types";
+import { getBaseUrl } from "../../nodes/Markupai/utils/load.options";
 
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
   getBaseUrl: vi.fn(() => new URL("https://api.markup.ai/")),
@@ -97,6 +99,28 @@ describe("agents.api.utils", () => {
         }),
       );
     });
+
+    it("joins run URL correctly when base URL includes a path without trailing slash", async () => {
+      vi.mocked(getBaseUrl).mockReturnValueOnce(new URL("https://api.markup.ai/api"));
+
+      const mockCall = vi.fn().mockResolvedValue({
+        statusCode: 202,
+        body: runResponse,
+      });
+      const mock = createMockExecuteFunctions({
+        helpers: { httpRequestWithAuthentication: { call: mockCall } },
+      });
+
+      await runAgent.call(mock, "ag_xxx", body);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        mock,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.markup.ai/api/agents/ag_xxx/run",
+        }),
+      );
+    });
   });
 
   describe("getWorkflowStatus", () => {
@@ -159,6 +183,28 @@ describe("agents.api.utils", () => {
         "markupaiApi",
         expect.objectContaining({
           url: "https://api.markup.ai/agents/workflows/wf_abc%2F123",
+        }),
+      );
+    });
+
+    it("joins workflow status URL correctly when base URL includes a path without trailing slash", async () => {
+      vi.mocked(getBaseUrl).mockReturnValueOnce(new URL("https://api.markup.ai/api"));
+
+      const mockCall = vi.fn().mockResolvedValue({
+        statusCode: 200,
+        body: statusResponse,
+      });
+      const mock = createMockExecuteFunctions({
+        helpers: { httpRequestWithAuthentication: { call: mockCall } },
+      });
+
+      await getWorkflowStatus.call(mock, "wf_123");
+
+      expect(mockCall).toHaveBeenCalledWith(
+        mock,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.markup.ai/api/agents/workflows/wf_123",
         }),
       );
     });
@@ -228,6 +274,31 @@ describe("agents.api.utils", () => {
       await expect(pollWorkflowUntilDone.call(mock, "wf_123", 100)).rejects.toThrow(
         /Workflow polling timeout/,
       );
+    });
+
+    it("sleeps only for remaining timeout when less than poll interval", async () => {
+      const running = {
+        workflow_id: "wf_123",
+        status: "running",
+        started_at: "2025-01-01T00:00:00Z",
+      };
+      const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: running });
+      const mock = createMockExecuteFunctions({
+        helpers: { httpRequestWithAuthentication: { call: mockCall } },
+      });
+      const nowSpy = vi
+        .spyOn(Date, "now")
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(80)
+        .mockReturnValueOnce(101);
+
+      await expect(pollWorkflowUntilDone.call(mock, "wf_123", 100)).rejects.toThrow(
+        /Workflow polling timeout/,
+      );
+
+      expect(vi.mocked(sleep)).toHaveBeenCalledWith(20);
+      nowSpy.mockRestore();
     });
   });
 });

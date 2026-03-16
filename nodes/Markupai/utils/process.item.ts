@@ -20,7 +20,7 @@ const PARALLEL_EXECUTOR_AGENT_ID = "ag_cnct5nkhtfNk";
 type AdditionalOptions = {
   documentName?: string;
   documentLink?: string;
-  domainIds?: string;
+  domainIds?: string[];
   timeout?: number;
 };
 
@@ -38,11 +38,8 @@ function buildRunRequest(
   if (additionalOptions.documentLink) {
     request.url = additionalOptions.documentLink;
   }
-  if (additionalOptions.domainIds) {
-    request.domain_ids = additionalOptions.domainIds
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
+  if (additionalOptions.domainIds?.length) {
+    request.domain_ids = additionalOptions.domainIds.filter(Boolean);
   }
 
   return request;

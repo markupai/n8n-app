@@ -211,7 +211,7 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({
             documentName: "doc.txt",
             documentLink: "https://example.com/doc",
-            domainIds: "d1, d2",
+            domainIds: ["d1", "d2"],
           }),
         });
 

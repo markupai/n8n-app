@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ILoadOptionsFunctions } from "n8n-workflow";
-import { getBaseUrl, loadAgents } from "../../nodes/Markupai/utils/load.options";
+import {
+  getBaseUrl,
+  loadAgents,
+  loadTerminologyDomains,
+} from "../../nodes/Markupai/utils/load.options";
 
 function createMockLoadOptionsFunctions(mock: {
   getCredentials: ReturnType<typeof vi.fn>;
@@ -84,6 +88,34 @@ describe("load.options", () => {
       ]);
     });
 
+    it("joins agents URL correctly when base URL includes a path without trailing slash", async () => {
+      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
+
+      const mockCall = vi.fn().mockResolvedValue({
+        body: agentsResponse,
+        statusCode: 200,
+      });
+
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: mockCall,
+          },
+        },
+      });
+
+      await loadAgents.call(loadOptionsFunction);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        loadOptionsFunction,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.dev.markup.ai/api/agents",
+        }),
+      );
+    });
+
     it("throws if the API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
@@ -111,6 +143,106 @@ describe("load.options", () => {
       });
 
       await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow();
+    });
+  });
+
+  describe("loadTerminologyDomains", () => {
+    const domainsPage1 = {
+      domains: [
+        { id: "d_1", name: "Marketing" },
+        { id: "d_2", name: "Legal" },
+      ],
+      total_count: 3,
+      page: 1,
+      page_size: 20,
+      total_pages: 2,
+    };
+    const domainsPage2 = {
+      domains: [
+        { id: "d_2", name: "Legal" },
+        { id: "d_3", name: "Product" },
+      ],
+      total_count: 3,
+      page: 2,
+      page_size: 20,
+      total_pages: 2,
+    };
+
+    it("fetches all pages and returns deduplicated domain options", async () => {
+      const mockCall = vi
+        .fn()
+        .mockResolvedValueOnce({
+          body: domainsPage1,
+          statusCode: 200,
+        })
+        .mockResolvedValueOnce({
+          body: domainsPage2,
+          statusCode: 200,
+        });
+
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: mockCall,
+          },
+        },
+      });
+
+      const result = await loadTerminologyDomains.call(loadOptionsFunction);
+
+      expect(mockCall).toHaveBeenCalledTimes(2);
+      expect(result).toEqual([
+        { name: "Legal", value: "d_2" },
+        { name: "Marketing", value: "d_1" },
+        { name: "Product", value: "d_3" },
+      ]);
+    });
+
+    it("joins terminology URL correctly when base URL includes a path without trailing slash", async () => {
+      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
+
+      const mockCall = vi.fn().mockResolvedValue({
+        body: domainsPage1,
+        statusCode: 200,
+      });
+
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: mockCall,
+          },
+        },
+      });
+
+      await loadTerminologyDomains.call(loadOptionsFunction);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        loadOptionsFunction,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.dev.markup.ai/api/v1/terminology/domains",
+        }),
+      );
+    });
+
+    it("throws if the terminology API returns an error status", async () => {
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: vi.fn().mockResolvedValue({
+              body: { error: "Bad Request" },
+              statusCode: 400,
+            }),
+          },
+        },
+      });
+
+      await expect(loadTerminologyDomains.call(loadOptionsFunction)).rejects.toThrow(
+        "Error loading terminology domains",
+      );
     });
   });
 });

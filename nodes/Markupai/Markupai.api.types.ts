@@ -18,6 +18,33 @@ export interface AgentListResult {
   total_pages: number;
 }
 
+export interface TerminologyDomain {
+  id: string;
+  name: string;
+}
+
+export interface TerminologyDomainListResult {
+  domains: TerminologyDomain[];
+  page: number;
+  page_size: number;
+  total_pages: number;
+  total_count: number;
+}
+
+export interface TerminologyTermSet {
+  id: string;
+  instructions: string;
+  domains: TerminologyDomain[];
+}
+
+export interface TerminologyTermSetListResult {
+  term_sets: TerminologyTermSet[];
+  page: number;
+  page_size: number;
+  total_pages: number;
+  total_count: number;
+}
+
 export interface AgentRunRequest {
   text: string;
   agents?: string[] | null;

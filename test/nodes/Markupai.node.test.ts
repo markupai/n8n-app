@@ -24,6 +24,7 @@ vi.mock("n8n-workflow", async () => {
 
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
   loadAgents: vi.fn(),
+  loadTerminologyDomains: vi.fn(),
 }));
 
 vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
@@ -124,7 +125,18 @@ describe("Markupai", () => {
       expect(names).toContain("documentLink");
       expect(names).toContain("domainIds");
       expect(names).toContain("timeout");
+      expect(names).not.toContain("terminologySearch");
       expect(names).not.toContain("waitForCompletion");
+
+      const domainIdsOption = options.find(
+        (o) => o.name === "domainIds" && "type" in o && "typeOptions" in o,
+      );
+      expect(domainIdsOption).toBeDefined();
+      if (!domainIdsOption || !("type" in domainIdsOption) || !("typeOptions" in domainIdsOption)) {
+        throw new Error("Domain IDs option not found");
+      }
+      expect(domainIdsOption.type).toBe("multiOptions");
+      expect(domainIdsOption.typeOptions?.loadOptionsMethod).toBe("loadTerminologyDomains");
 
       const timeoutOption = options.find(
         (o) => o.name === "timeout" && "type" in o && "default" in o,
@@ -139,8 +151,9 @@ describe("Markupai", () => {
   });
 
   describe("Methods", () => {
-    it("should have loadAgents in loadOptions", () => {
+    it("should have loadAgents and loadTerminologyDomains in loadOptions", () => {
       expect(markupai.methods.loadOptions.loadAgents).toBeDefined();
+      expect(markupai.methods.loadOptions.loadTerminologyDomains).toBeDefined();
     });
   });
 

@@ -6,10 +6,11 @@ import {
   NodeConnectionTypes,
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
-import { loadAgents } from "./utils/load.options";
+import { loadAgents, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 
 const LOAD_AGENTS = "loadAgents" as const;
+const LOAD_TERMINOLOGY_DOMAINS = "loadTerminologyDomains" as const;
 
 export class Markupai implements INodeType {
   description: INodeTypeDescription = {
@@ -131,9 +132,13 @@ export class Markupai implements INodeType {
           {
             displayName: "Domain IDs",
             name: "domainIds",
-            type: "string",
-            default: "",
-            description: "Terminology domain IDs (comma-separated)",
+            type: "multiOptions",
+            options: [],
+            default: [],
+            description: "Terminology domain IDs",
+            typeOptions: {
+              loadOptionsMethod: LOAD_TERMINOLOGY_DOMAINS,
+            },
           },
           {
             displayName: "Timeout (Ms)",
@@ -150,6 +155,7 @@ export class Markupai implements INodeType {
   methods = {
     loadOptions: {
       [LOAD_AGENTS]: loadAgents,
+      [LOAD_TERMINOLOGY_DOMAINS]: loadTerminologyDomains,
     },
   };
 
