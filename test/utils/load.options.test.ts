@@ -40,6 +40,11 @@ describe("load.options", () => {
   describe("loadAgents", () => {
     const agentsResponse = {
       agents: [
+        {
+          id: "ag_vYCPHsSQnnJj",
+          name: "style_agent",
+          description: "Checks document style guidance",
+        },
         { id: "ag_1", name: "terminology", description: "Checks terminology" },
         { id: "ag_2", name: "content_analysis", description: "Full content analysis" },
         { id: "ag_cnct5nkhtfNk", name: "parallel_executor", description: "Internal orchestrator" },
@@ -49,7 +54,7 @@ describe("load.options", () => {
           description: "Internal orchestrator",
         },
       ],
-      total: 4,
+      total: 5,
       page: 1,
       page_size: 100,
       total_pages: 1,
@@ -71,8 +76,11 @@ describe("load.options", () => {
       const result = await loadAgents.call(loadOptionsFunction);
 
       expect(result).toEqual([
-        { name: "terminology", value: "ag_1", description: "Checks terminology" },
-        { name: "content_analysis", value: "ag_2", description: "Full content analysis" },
+        {
+          name: "style_agent",
+          value: "ag_vYCPHsSQnnJj",
+          description: "Checks document style guidance",
+        },
       ]);
     });
 
