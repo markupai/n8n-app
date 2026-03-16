@@ -31,10 +31,10 @@ describe("html.report", () => {
         result: { issues: [] },
       });
 
-      expect(html).toContain("Terminology");
-      expect(html).toContain("Focus Agent");
-      expect(html).not.toContain("Generic Claims");
-      expect(html).not.toContain("Ai Voice Detector");
+      expect(html).toContain("Brand");
+      expect(html).toContain("Fluff");
+      expect(html).not.toContain("Claims");
+      expect(html).not.toContain("AI Voice");
       expect(html).not.toContain("Parallel Executor");
     });
 
@@ -108,18 +108,20 @@ describe("html.report", () => {
       expect(html).toContain("Untitled");
     });
 
-    it("shows green total when zero issues", () => {
+    it("shows low document state when no high/medium issues", () => {
       const html = buildIssuesHtmlReport({
         allAgents,
         selectedAgentIds: ["ag_1"],
         result: { issues: [] },
       });
 
+      expect(html).toContain("Document State");
+      expect(html).toMatch(/>\s*Low\s*</);
       expect(html).toContain("#e7f5e8");
       expect(html).toContain("#2d6a30");
     });
 
-    it("shows red total when high issues exist", () => {
+    it("shows high document state when high issues exist", () => {
       const html = buildIssuesHtmlReport({
         allAgents,
         selectedAgentIds: ["ag_1"],
@@ -128,7 +130,21 @@ describe("html.report", () => {
         },
       });
 
+      expect(html).toMatch(/>\s*High\s*</);
       expect(html).toContain("#fce8e7");
+    });
+
+    it("shows medium document state when medium exists and no high", () => {
+      const html = buildIssuesHtmlReport({
+        allAgents,
+        selectedAgentIds: ["ag_1"],
+        result: {
+          issues: [{ severity: "medium", agent: "terminology" }],
+        },
+      });
+
+      expect(html).toMatch(/>\s*Medium\s*</);
+      expect(html).toContain("#fef6e0");
     });
 
     it("returns valid HTML even with null result", () => {
@@ -139,7 +155,7 @@ describe("html.report", () => {
       });
 
       expect(html).toContain("Content Analysis Report");
-      expect(html).toContain("0");
+      expect(html).toContain("Low");
     });
 
     it("uses precomputed issueCounts when provided", () => {
@@ -155,7 +171,7 @@ describe("html.report", () => {
         },
       });
 
-      expect(html).toMatch(/>\s*7\s*</);
+      expect(html).toMatch(/>\s*High\s*</);
       expect(html).toMatch(/>\s*3\s*</);
       expect(html).toMatch(/>\s*2\s*</);
     });
@@ -200,55 +216,6 @@ describe("html.report", () => {
       expect(html).toContain("—");
     });
 
-    it("renders category breakdown with counts", () => {
-      const html = buildIssuesHtmlReport({
-        allAgents,
-        selectedAgentIds: ["ag_1"],
-        result: {
-          issues: [
-            { severity: "high", agent: "terminology", category: "Tone" },
-            { severity: "high", agent: "terminology", category: "Tone" },
-            { severity: "medium", agent: "terminology", category: "Clarity" },
-            { severity: "low", agent: "terminology", category: "Spelling and grammar" },
-          ],
-        },
-      });
-
-      expect(html).toContain("Category breakdown");
-      expect(html).toContain("Tone");
-      expect(html).toContain("Clarity");
-      expect(html).toContain("Spelling And Grammar");
-    });
-
-    it("shows no issues detected when category breakdown is empty", () => {
-      const html = buildIssuesHtmlReport({
-        allAgents,
-        selectedAgentIds: ["ag_1"],
-        result: { issues: [] },
-      });
-
-      expect(html).toContain("No issues detected");
-    });
-
-    it("sorts categories by total count descending", () => {
-      const html = buildIssuesHtmlReport({
-        allAgents,
-        selectedAgentIds: ["ag_1"],
-        result: {
-          issues: [
-            { severity: "high", agent: "terminology", category: "Clarity" },
-            { severity: "high", agent: "terminology", category: "Tone" },
-            { severity: "medium", agent: "terminology", category: "Tone" },
-            { severity: "low", agent: "terminology", category: "Tone" },
-          ],
-        },
-      });
-
-      const toneIdx = html.indexOf("Tone");
-      const clarityIdx = html.indexOf("Clarity");
-      expect(toneIdx).toBeLessThan(clarityIdx);
-    });
-
     it("does not render individual issues, explanations, or suggestions", () => {
       const html = buildIssuesHtmlReport({
         allAgents,
@@ -287,7 +254,7 @@ describe("html.report", () => {
       expect(html).toContain("2 issues");
     });
 
-    it("renders severity counts in category breakdown cards", () => {
+    it("does not render category breakdown section", () => {
       const html = buildIssuesHtmlReport({
         allAgents,
         selectedAgentIds: ["ag_1"],
@@ -300,11 +267,48 @@ describe("html.report", () => {
         },
       });
 
-      expect(html).toContain("3 issues");
-      expect(html).toContain("Tone");
-      expect(html).toContain("High");
-      expect(html).toContain("Medium");
-      expect(html).toContain("Low");
+      expect(html).not.toContain("Category breakdown");
+    });
+
+    it("organizes agents into screenshot-style groups", () => {
+      const html = buildIssuesHtmlReport({
+        allAgents,
+        selectedAgentIds: ["ag_1", "ag_2", "ag_3", "ag_4"],
+        result: {
+          issues: [
+            { severity: "high", agent: "terminology" },
+            { severity: "medium", agent: "generic_claims" },
+            { severity: "low", agent: "ai_voice_detector" },
+          ],
+        },
+      });
+
+      expect(html).toContain("Brand");
+      expect(html).toContain("Compliance");
+      expect(html).toContain("Content Integrity");
+      expect(html).not.toContain("Other Agents");
+      expect(html).toContain("Claims");
+      expect(html).toContain("AI Voice");
+      expect(html).toContain("Fluff");
+    });
+
+    it("keeps style variants grouped under Brand", () => {
+      const html = buildIssuesHtmlReport({
+        allAgents: [
+          ...allAgents,
+          { id: "ag_5", name: "style_guide" },
+          { id: "ag_6", name: "terminology_checker" },
+        ],
+        selectedAgentIds: ["ag_5", "ag_6"],
+        result: {
+          issues: [{ severity: "high", agent: "style_guide" }],
+        },
+      });
+
+      expect(html).toContain("Brand");
+      expect(html).toContain("Style Guide");
+      expect(html).toContain("Terminology Checker");
+      expect(html).not.toContain("Other Agents");
     });
 
     it("renders Markup AI footer", () => {
@@ -318,7 +322,7 @@ describe("html.report", () => {
       expect(html).toContain("Markup AI");
     });
 
-    it("capitalizes agent names with underscores replaced by spaces", () => {
+    it("maps focus_agent display name to Fluff", () => {
       const html = buildIssuesHtmlReport({
         allAgents,
         selectedAgentIds: ["ag_3"],
@@ -327,7 +331,7 @@ describe("html.report", () => {
         },
       });
 
-      expect(html).toContain("Focus Agent");
+      expect(html).toContain("Fluff");
       expect(html).not.toContain("focus_agent");
     });
 

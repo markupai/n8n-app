@@ -91,18 +91,56 @@
                             align="center"
                             style="font-size:28px; font-weight:600; color:{{totalIssueColor}};"
                           >
-                            {{totalIssues}}
+                            {{documentState}}
                           </td>
                         </tr>
                         <tr>
                           <td align="center" style="font-size: 14px; color: #333332">
-                            Total Issues
+                            Document State
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
                 </table>
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Severity Summary -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Severity summary
+                </div>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="8">
+                  <tr>
+                    {{severityCells}}
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Spacer -->
+            <tr>
+              <td style="padding-top: 24px"></td>
+            </tr>
+
+            <!-- Agents -->
+            <tr>
+              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
+                <div
+                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
+                >
+                  Agents
+                </div>
+                {{agentContent}}
               </td>
             </tr>
 
@@ -149,61 +187,6 @@
                     <td style="padding: 6px 0; font-weight: 600">{{duration}}</td>
                   </tr>
                 </table>
-              </td>
-            </tr>
-
-            <!-- Spacer -->
-            <tr>
-              <td style="padding-top: 24px"></td>
-            </tr>
-
-            <!-- Severity Summary -->
-            <tr>
-              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
-                <div
-                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
-                >
-                  Severity summary
-                </div>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="8">
-                  <tr>
-                    {{severityCells}}
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Spacer -->
-            <tr>
-              <td style="padding-top: 24px"></td>
-            </tr>
-
-            <!-- Category Breakdown -->
-            <tr>
-              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
-                <div
-                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
-                >
-                  Category breakdown
-                </div>
-                {{categoryContent}}
-              </td>
-            </tr>
-
-            <!-- Spacer -->
-            <tr>
-              <td style="padding-top: 24px"></td>
-            </tr>
-
-            <!-- Agents -->
-            <tr>
-              <td style="padding: 16px; border: 1px solid #d7dcdf; border-radius: 12px">
-                <div
-                  style="font-weight: 500; padding-bottom: 12px; font-size: 20px; color: #5d1a2c"
-                >
-                  Agents
-                </div>
-                {{agentContent}}
               </td>
             </tr>
 

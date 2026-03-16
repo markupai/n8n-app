@@ -1,6 +1,6 @@
 /**
  * Builds a statistics-focused HTML report: workflow metadata, severity summary,
- * category breakdown, and per-agent counts. No individual issues are rendered.
+ * and per-agent counts. No individual issues are rendered.
  *
  * The page layout lives in report.template.html (email-safe, table-based);
  * this module computes the data, renders the dynamic fragments, and injects
@@ -43,6 +43,51 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const ORCHESTRATOR_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
+type DocumentState = "High" | "Medium" | "Low";
+type AgentGroupKey = "ai_visibility" | "brand" | "compliance" | "content_integrity";
+
+const AGENT_GROUPS: Array<{ key: AgentGroupKey; title: string; members: Set<string> }> = [
+  {
+    key: "ai_visibility",
+    title: "AI Visibility",
+    members: new Set(["freshness", "snippet_readiness", "source_authority"]),
+  },
+  {
+    key: "brand",
+    title: "Brand",
+    members: new Set([
+      "style",
+      "style_agent",
+      "style_guide",
+      "writing_style",
+      "brand_style",
+      "terminology",
+      "terminology_checker",
+    ]),
+  },
+  {
+    key: "compliance",
+    title: "Compliance",
+    members: new Set(["claims", "generic_claims"]),
+  },
+  {
+    key: "content_integrity",
+    title: "Content Integrity",
+    members: new Set(["ai_voice", "ai_voice_detector", "focus_agent", "persona"]),
+  },
+];
+
+const AGENT_DISPLAY_NAMES: Record<string, string> = {
+  ai_voice: "AI Voice",
+  ai_voice_detector: "AI Voice",
+  claims: "Claims",
+  generic_claims: "Claims",
+  snippet_readiness: "Snippet Readiness",
+  source_authority: "Source Authority",
+  style_agent: "Style",
+  terminology: "Brand",
+  focus_agent: "Fluff",
+};
 
 let cachedTemplate: string | null = null;
 
@@ -115,16 +160,22 @@ function formatDuration(
   }
 }
 
-function getIssueCountBg(totalIssues: number, highCount: number): string {
-  if (totalIssues === 0) return "#e7f5e8";
-  if (highCount > 0) return SEVERITY_BG.high;
-  return SEVERITY_BG.medium;
+function getDocumentState(highCount: number, mediumCount: number): DocumentState {
+  if (highCount > 0) return "High";
+  if (mediumCount > 0) return "Medium";
+  return "Low";
 }
 
-function getIssueCountColor(totalIssues: number, highCount: number): string {
-  if (totalIssues === 0) return "#2d6a30";
-  if (highCount > 0) return BRAND.coral;
-  return SEVERITY_COLORS.medium;
+function getDocumentStateBg(state: DocumentState): string {
+  if (state === "High") return SEVERITY_BG.high;
+  if (state === "Medium") return SEVERITY_BG.medium;
+  return "#e7f5e8";
+}
+
+function getDocumentStateColor(state: DocumentState): string {
+  if (state === "High") return BRAND.coral;
+  if (state === "Medium") return SEVERITY_COLORS.medium;
+  return "#2d6a30";
 }
 
 // ---------------------------------------------------------------------------
@@ -182,27 +233,13 @@ function formatKey(key: string): string {
   return key.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function aggregateIssuesByCategory(issues: unknown[]): Map<string, IssueCountsBySeverity> {
-  const byCategory = new Map<string, IssueCountsBySeverity>();
+function normalizeAgentName(name: string): string {
+  return name.trim().toLowerCase().replaceAll("-", "_").replaceAll(" ", "_");
+}
 
-  for (const item of issues) {
-    const issue = item && typeof item === "object" ? (item as Record<string, unknown>) : null;
-    if (!issue) continue;
-
-    const severity = normalizeSeverity(issue.severity);
-    if (!severity) continue;
-
-    const category = typeof issue.category === "string" ? issue.category : "Uncategorized";
-
-    let counts = byCategory.get(category);
-    if (!counts) {
-      counts = { high: 0, medium: 0, low: 0 };
-      byCategory.set(category, counts);
-    }
-    counts[severity] += 1;
-  }
-
-  return byCategory;
+function getAgentDisplayName(name: string): string {
+  const normalized = normalizeAgentName(name);
+  return AGENT_DISPLAY_NAMES[normalized] ?? formatKey(name);
 }
 
 // ---------------------------------------------------------------------------
@@ -280,36 +317,63 @@ function buildCardGrid(cells: string[], columns: number): string {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows.join("")}</table>`;
 }
 
-function renderCategoryContent(issuesByCategory: Map<string, IssueCountsBySeverity>): string {
-  if (issuesByCategory.size === 0) {
-    return `<div style="font-size:14px; color:${BRAND.sageAlt}; text-align:center; padding:16px 0;">No issues detected</div>`;
+function renderAgentGroup(title: string, contentHtml: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding-bottom:12px;">
+    <tr>
+      <td style="font-size:16px; font-weight:600; color:${BRAND.burgundy}; padding:4px 4px 8px;">${escapeHtml(title)}</td>
+    </tr>
+    <tr>
+      <td>${contentHtml}</td>
+    </tr>
+  </table>`;
+}
+
+function renderAgentIssueCard(
+  agent: AgentMetadata,
+  issuesByAgent: Map<string, IssueCountsBySeverity>,
+): string {
+  const counts = issuesByAgent.get(agent.id) ?? issuesByAgent.get(agent.name) ?? null;
+  const totalIssues = counts ? counts.high + counts.medium + counts.low : 0;
+  const pluralS = totalIssues === 1 ? "" : "s";
+
+  let footerColor: string = "#2d6a30";
+  if (totalIssues > 0 && counts && counts.high > 0) footerColor = BRAND.coral;
+  else if (totalIssues > 0) footerColor = SEVERITY_COLORS.medium;
+
+  return renderCardCell(
+    getAgentDisplayName(agent.name),
+    String(counts?.high ?? 0),
+    String(counts?.medium ?? 0),
+    String(counts?.low ?? 0),
+    `${String(totalIssues)} issue${pluralS}`,
+    footerColor,
+    "1",
+  );
+}
+
+function getAgentGroupKey(agentName: string): AgentGroupKey | null {
+  const normalized = normalizeAgentName(agentName);
+  for (const group of AGENT_GROUPS) {
+    if (group.members.has(normalized)) return group.key;
   }
+  return null;
+}
 
-  const sorted = [...issuesByCategory.entries()].sort((a, b) => {
-    const totalA = a[1].high + a[1].medium + a[1].low;
-    const totalB = b[1].high + b[1].medium + b[1].low;
-    return totalB - totalA;
-  });
-
-  const cells = sorted.map(([category, counts]) => {
-    const total = counts.high + counts.medium + counts.low;
-    let footerColor = "#2d6a30";
-    if (counts.high > 0) footerColor = BRAND.coral;
-    else if (counts.medium > 0) footerColor = SEVERITY_COLORS.medium;
-    else if (counts.low > 0) footerColor = BRAND.rock;
-    const pluralS = total === 1 ? "" : "s";
-    return renderCardCell(
-      formatKey(category),
-      String(counts.high),
-      String(counts.medium),
-      String(counts.low),
-      `${String(total)} issue${pluralS}`,
-      footerColor,
-      "1",
-    );
-  });
-
-  return buildCardGrid(cells, 3);
+function buildAgentSections(
+  cellsByGroup: Map<AgentGroupKey, string[]>,
+  otherCells: string[],
+): string[] {
+  const groupedSections: string[] = [];
+  for (const group of AGENT_GROUPS) {
+    const cells = cellsByGroup.get(group.key) ?? [];
+    if (cells.length > 0) {
+      groupedSections.push(renderAgentGroup(group.title, buildCardGrid(cells, 3)));
+    }
+  }
+  if (otherCells.length > 0) {
+    groupedSections.push(renderAgentGroup("Other Agents", buildCardGrid(otherCells, 3)));
+  }
+  return groupedSections;
 }
 
 function renderAgentContent(
@@ -319,27 +383,30 @@ function renderAgentContent(
 ): string {
   const selectedAgents = displayAgents.filter((a) => selectedSet.has(a.id));
 
-  const cells = selectedAgents.map((agent) => {
-    const counts = issuesByAgent.get(agent.id) ?? issuesByAgent.get(agent.name) ?? null;
-    const totalIssues = counts ? counts.high + counts.medium + counts.low : 0;
+  const cellsByGroup = new Map<AgentGroupKey, string[]>();
+  for (const group of AGENT_GROUPS) {
+    cellsByGroup.set(group.key, []);
+  }
+  const otherCells: string[] = [];
 
-    const pluralS = totalIssues === 1 ? "" : "s";
-    let footerColor: string = "#2d6a30";
-    if (totalIssues > 0 && counts && counts.high > 0) footerColor = BRAND.coral;
-    else if (totalIssues > 0) footerColor = SEVERITY_COLORS.medium;
+  for (const agent of selectedAgents) {
+    const cell = renderAgentIssueCard(agent, issuesByAgent);
+    const groupKey = getAgentGroupKey(agent.name);
+    if (!groupKey) {
+      otherCells.push(cell);
+      continue;
+    }
+    const groupCells = cellsByGroup.get(groupKey);
+    if (groupCells) groupCells.push(cell);
+  }
 
-    return renderCardCell(
-      formatKey(agent.name),
-      String(counts?.high ?? 0),
-      String(counts?.medium ?? 0),
-      String(counts?.low ?? 0),
-      `${String(totalIssues)} issue${pluralS}`,
-      footerColor,
-      "1",
-    );
-  });
+  const groupedSections = buildAgentSections(cellsByGroup, otherCells);
 
-  return buildCardGrid(cells, 3);
+  if (groupedSections.length === 0) {
+    return `<div style="font-size:14px; color:${BRAND.sageAlt}; text-align:center; padding:16px 0;">No agents selected</div>`;
+  }
+
+  return groupedSections.join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -351,7 +418,6 @@ export function buildIssuesHtmlReport(input: ReportInput): string {
 
   const issues = Array.isArray(result?.issues) ? (result.issues as unknown[]) : [];
   const issuesByAgent = aggregateIssuesByAgent(issues);
-  const issuesByCategory = aggregateIssuesByCategory(issues);
   const severityTotals = input.issueCounts ?? getIssueCountsFromResult(result);
 
   const selectedSet = new Set(selectedAgentIds);
@@ -360,7 +426,7 @@ export function buildIssuesHtmlReport(input: ReportInput): string {
   const totalHigh = severityTotals.high;
   const totalMedium = severityTotals.medium;
   const totalLow = severityTotals.low;
-  const totalIssues = severityTotals.total;
+  const documentState = getDocumentState(totalHigh, totalMedium);
 
   const placeholders: Record<string, string> = {
     statusBadge: input.status ? renderStatusBadge(input.status) : "—",
@@ -372,15 +438,14 @@ export function buildIssuesHtmlReport(input: ReportInput): string {
     docLinkRow: documentUrl
       ? `<tr><td style="font-size:14px;"><a href="${escapeHtml(documentUrl)}" style="color:${BRAND.coral}; line-height:21px;">Open document</a></td></tr>`
       : "",
-    totalIssueBg: getIssueCountBg(totalIssues, totalHigh),
-    totalIssueColor: getIssueCountColor(totalIssues, totalHigh),
-    totalIssues: String(totalIssues),
+    totalIssueBg: getDocumentStateBg(documentState),
+    totalIssueColor: getDocumentStateColor(documentState),
+    documentState,
     severityCells: [
       renderSeverityCell("High", totalHigh, SEVERITY_BG.high, SEVERITY_COLORS.high),
       renderSeverityCell("Medium", totalMedium, SEVERITY_BG.medium, SEVERITY_COLORS.medium),
       renderSeverityCell("Low", totalLow, SEVERITY_BG.low, SEVERITY_COLORS.low),
     ].join(""),
-    categoryContent: renderCategoryContent(issuesByCategory),
     agentContent: renderAgentContent(displayAgents, selectedSet, issuesByAgent),
   };
 
