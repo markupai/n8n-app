@@ -203,10 +203,12 @@ describe("Markupai", () => {
       });
 
       const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
+      const { listAllAgents } = await import("../../nodes/Markupai/utils/agents.api.utils");
 
       expect(result[0]).toHaveLength(2);
       expect(result[0][0].pairedItem).toEqual({ item: 0 });
       expect(result[0][1].pairedItem).toEqual({ item: 1 });
+      expect(vi.mocked(listAllAgents)).toHaveBeenCalledTimes(1);
     });
 
     it("should throw when processMarkupaiItem throws and continueOnFail is false", async () => {

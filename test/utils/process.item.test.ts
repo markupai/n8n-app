@@ -84,6 +84,11 @@ function createGetNodeParameter(additionalOptions: Record<string, unknown> = {})
 describe("process.item", () => {
   let mockRunAgent: ReturnType<typeof vi.fn>;
   let mockPollWorkflowUntilDone: ReturnType<typeof vi.fn>;
+  const mockAllAgents = [
+    { id: "ag_content_analysis", name: "Content Analysis" },
+    { id: "ag_1", name: "terminology" },
+    { id: "ag_2", name: "generic_claims" },
+  ];
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -106,7 +111,11 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({}),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_content_analysis",
@@ -129,7 +138,7 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({ timeout: 60_000 }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
 
         expect(mockPollWorkflowUntilDone).toHaveBeenCalledWith("wf_123", 60_000);
       });
@@ -141,7 +150,11 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({}),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(mockRunAgent).toHaveBeenCalled();
         expect(mockPollWorkflowUntilDone).not.toHaveBeenCalled();
@@ -164,7 +177,11 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({}),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(result.json).toHaveProperty("html_report");
         const html = result.json.html_report as string;
@@ -192,7 +209,11 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({}),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(result.json).toMatchObject({
           issue_counts: {
@@ -215,7 +236,7 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_content_analysis",
@@ -240,7 +261,7 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_cnct5nkhtfNk",
@@ -258,13 +279,59 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({}),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 2);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          2,
+          mockAllAgents,
+        );
 
         expect(result.pairedItem).toEqual({ item: 2 });
       });
     });
 
     describe("Error handling", () => {
+      it("throws NodeOperationError when run response is terminal but not completed", async () => {
+        mockRunAgent.mockResolvedValue(
+          createAgentRunResponse({
+            status: "failed",
+            error: "Policy check failed",
+          }),
+        );
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: createGetNodeParameter({}),
+          continueOnFail: vi.fn().mockReturnValue(false),
+        });
+
+        await expect(
+          processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents),
+        ).rejects.toThrow(NodeOperationError);
+      });
+
+      it("returns error item when run response is terminal but not completed and continueOnFail is true", async () => {
+        mockRunAgent.mockResolvedValue(
+          createAgentRunResponse({
+            status: "timed_out",
+          }),
+        );
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: createGetNodeParameter({}),
+          continueOnFail: vi.fn().mockReturnValue(true),
+        });
+
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
+
+        expect(result).toEqual({
+          json: { error: "Workflow ended with status: timed_out" },
+          pairedItem: { item: 0 },
+        });
+      });
+
       it("returns error json when continueOnFail is true", async () => {
         mockRunAgent.mockRejectedValue(new Error("API request failed"));
 
@@ -273,7 +340,11 @@ describe("process.item", () => {
           continueOnFail: vi.fn().mockReturnValue(true),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(result).toEqual({
           json: { error: "API request failed" },
@@ -293,7 +364,11 @@ describe("process.item", () => {
           continueOnFail: vi.fn().mockReturnValue(true),
         });
 
-        const result = await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0);
+        const result = await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+        );
 
         expect(result.json).toHaveProperty("error", "Custom error description");
       });
@@ -307,7 +382,7 @@ describe("process.item", () => {
         });
 
         await expect(
-          processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0),
+          processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents),
         ).rejects.toThrow(NodeOperationError);
       });
 
@@ -320,7 +395,11 @@ describe("process.item", () => {
         });
 
         try {
-          await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 3);
+          await processMarkupaiItem.call(
+            mockExecuteFunctions as IExecuteFunctions,
+            3,
+            mockAllAgents,
+          );
           expect.fail("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(NodeOperationError);

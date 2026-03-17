@@ -33,13 +33,13 @@ export async function listAllAgents(this: IExecuteFunctions): Promise<AgentMetad
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-
-  if (response.statusCode >= 400) {
+  if (response.statusCode != 200) {
     return [];
   }
 
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
   const parsed = JSON.parse(bodyStr) as AgentListResult;
+
   return parsed.agents;
 }
 

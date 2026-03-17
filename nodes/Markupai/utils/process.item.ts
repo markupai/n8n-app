@@ -5,7 +5,7 @@ import {
   NodeApiError,
   NodeOperationError,
 } from "n8n-workflow";
-import { runAgent, pollWorkflowUntilDone, listAllAgents } from "./agents.api.utils";
+import { runAgent, pollWorkflowUntilDone } from "./agents.api.utils";
 import { buildIssuesHtmlReport } from "./html.report";
 import { getIssueCountsFromResult } from "./issue.counts";
 import type {
@@ -109,9 +109,22 @@ function createSuccessResponse(
   };
 }
 
+function assertCompletedStatus(response: AgentRunResponse): void {
+  if (response.status === "completed") {
+    return;
+  }
+
+  throw new Error(
+    response.error
+      ? `Workflow ${response.status}: ${response.error}`
+      : `Workflow ended with status: ${response.status}`,
+  );
+}
+
 export async function processMarkupaiItem(
   this: IExecuteFunctions,
   itemIndex: number,
+  allAgents: AgentMetadata[],
 ): Promise<INodeExecutionData> {
   try {
     const selectedAgents = this.getNodeParameter("agents", itemIndex) as string[];
@@ -129,13 +142,11 @@ export async function processMarkupaiItem(
       body.agents = selectedAgents.slice(0, 10);
     }
 
-    const [runResponse, allAgents] = await Promise.all([
-      runAgent.call(this, agentId, body),
-      listAllAgents.call(this),
-    ]);
+    const runResponse = await runAgent.call(this, agentId, body);
 
     const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
     if (terminalStatuses.includes(runResponse.status)) {
+      assertCompletedStatus(runResponse);
       return createSuccessResponse(
         runResponse,
         itemIndex,
@@ -151,6 +162,9 @@ export async function processMarkupaiItem(
       runResponse.workflow_id,
       pollTimeoutMs,
     );
+
+    assertCompletedStatus(finalResponse);
+
     return createSuccessResponse(
       finalResponse,
       itemIndex,

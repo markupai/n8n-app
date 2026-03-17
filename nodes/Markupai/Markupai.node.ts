@@ -6,6 +6,7 @@ import {
   NodeConnectionTypes,
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
+import { listAllAgents } from "./utils/agents.api.utils";
 import { loadAgents, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 
@@ -162,9 +163,10 @@ export class Markupai implements INodeType {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
     const returnData: INodeExecutionData[] = [];
+    const allAgents = await listAllAgents.call(this);
 
     for (let i = 0; i < items.length; i++) {
-      const result = await processMarkupaiItem.call(this, i);
+      const result = await processMarkupaiItem.call(this, i, allAgents);
       returnData.push(result);
     }
 
