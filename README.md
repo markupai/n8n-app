@@ -73,7 +73,7 @@ The **Run Agent** operation supports the following configuration:
 | **Text**                               | String (multiline) | Yes      | -        | Document text to analyze.                                                                     |
 | **Additional Options → Document Name** | String             | No       | `""`     | Friendly name of the source document.                                                         |
 | **Additional Options → Document URL**  | String             | No       | `""`     | URL or link to the source document.                                                           |
-| **Additional Options → Domain IDs**    | String             | No       | `""`     | Comma-separated terminology domain IDs (`domain_a,domain_b`).                                 |
+| **Additional Options → Domain IDs**    | Multi-select       | No       | `[]`     | Select one or more terminology domains (stored/sent as domain ID array).                      |
 | **Additional Options → Timeout (Ms)**  | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.          |
 
 ### Example Workflows
