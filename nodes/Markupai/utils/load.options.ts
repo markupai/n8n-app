@@ -11,6 +11,7 @@ import type {
 } from "../Markupai.api.types";
 
 const ORCHESTRATOR_AGENT_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
+const STYLE_AGENT_NAME = "style_agent";
 const DOMAINS_PATH = "v1/terminology/domains";
 const DOMAINS_PAGE_SIZE = 20;
 
@@ -119,6 +120,7 @@ export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodeProp
 
   return listResult.agents
     .filter((agent) => !ORCHESTRATOR_AGENT_IDS.has(agent.id))
+    .filter((agent) => agent.name === STYLE_AGENT_NAME)
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((agent) => ({
       name: agent.name,
