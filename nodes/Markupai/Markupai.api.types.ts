@@ -51,6 +51,9 @@ export interface AgentRunRequest {
   domain_ids?: string[] | null;
   url?: string | null;
   document_name?: string | null;
+  org_name?: string | null;
+  target_id?: string | null;
+  content_profile_id?: string | null;
   webhook_url?: string | null;
 }
 

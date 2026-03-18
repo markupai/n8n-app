@@ -7,6 +7,7 @@ import {
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
 import { listAllAgents } from "./utils/agents.api.utils";
+import { DOMAIN_IDS_AGENT_IDS, STYLE_OPTION_AGENT_IDS } from "./utils/agent.input.coverage";
 import { loadAgents, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 
@@ -67,15 +68,14 @@ export class Markupai implements INodeType {
         default: "runAgent",
       },
       {
-        displayName: "Agents",
+        displayName: "Agent",
         name: "agents",
-        type: "multiOptions",
+        type: "options",
         noDataExpression: true,
         required: true,
-        description:
-          "Select one or more agents to run. One agent runs alone; multiple agents run in parallel via the parallel executor (up to 10).",
+        description: "Select one agent to run",
         options: [],
-        default: [],
+        default: "",
         typeOptions: {
           loadOptionsMethod: LOAD_AGENTS,
         },
@@ -100,6 +100,66 @@ export class Markupai implements INodeType {
           show: {
             resource: ["agent"],
             operation: ["runAgent"],
+          },
+        },
+      },
+      {
+        displayName: "Domain IDs",
+        name: "domainIds",
+        type: "multiOptions",
+        options: [],
+        default: [],
+        description: "Terminology domain IDs",
+        typeOptions: {
+          loadOptionsMethod: LOAD_TERMINOLOGY_DOMAINS,
+        },
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: DOMAIN_IDS_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Org Name",
+        name: "orgName",
+        type: "string",
+        default: "",
+        description: "Organization name injected from context for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Target ID",
+        name: "targetId",
+        type: "string",
+        default: "",
+        description: "Language-service target ID for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Content Profile ID",
+        name: "contentProfileId",
+        type: "string",
+        default: "",
+        description: "Language-service content profile ID for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
           },
         },
       },
@@ -129,17 +189,6 @@ export class Markupai implements INodeType {
             type: "string",
             default: "",
             description: "URL or link to the source document",
-          },
-          {
-            displayName: "Domain IDs",
-            name: "domainIds",
-            type: "multiOptions",
-            options: [],
-            default: [],
-            description: "Terminology domain IDs",
-            typeOptions: {
-              loadOptionsMethod: LOAD_TERMINOLOGY_DOMAINS,
-            },
           },
           {
             displayName: "Timeout (Ms)",

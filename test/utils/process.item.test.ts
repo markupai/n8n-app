@@ -8,9 +8,9 @@ vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
   runAgent: vi.fn(),
   pollWorkflowUntilDone: vi.fn(),
   listAllAgents: vi.fn().mockResolvedValue([
-    { id: "ag_content_analysis", name: "Content Analysis" },
-    { id: "ag_1", name: "terminology" },
-    { id: "ag_2", name: "generic_claims" },
+    { id: "ag_WUijxT0DthMg", name: "terminology" },
+    { id: "ag_xQGQvFQMsspF", name: "generic_claims" },
+    { id: "ag_vYCPHsSQnnJj", name: "style_agent" },
   ]),
 }));
 
@@ -74,9 +74,19 @@ const createMockExecuteFunctions = (
 
 function createGetNodeParameter(additionalOptions: Record<string, unknown> = {}) {
   return vi.fn().mockImplementation((name: string) => {
-    if (name === "agents") return ["ag_content_analysis"];
+    if (name === "agents") return "ag_WUijxT0DthMg";
     if (name === "text") return "test content";
-    if (name === "additionalOptions") return additionalOptions;
+    if (name === "additionalOptions") {
+      return {
+        documentName: additionalOptions.documentName ?? "",
+        documentLink: additionalOptions.documentLink ?? "",
+        timeout: additionalOptions.timeout ?? 120_000,
+      };
+    }
+    if (name === "domainIds") return additionalOptions.domainIds ?? [];
+    if (name === "orgName") return additionalOptions.orgName ?? "";
+    if (name === "targetId") return additionalOptions.targetId ?? "";
+    if (name === "contentProfileId") return additionalOptions.contentProfileId ?? "";
     return undefined;
   });
 }
@@ -85,9 +95,9 @@ describe("process.item", () => {
   let mockRunAgent: ReturnType<typeof vi.fn>;
   let mockPollWorkflowUntilDone: ReturnType<typeof vi.fn>;
   const mockAllAgents = [
-    { id: "ag_content_analysis", name: "Content Analysis" },
-    { id: "ag_1", name: "terminology" },
-    { id: "ag_2", name: "generic_claims" },
+    { id: "ag_WUijxT0DthMg", name: "terminology" },
+    { id: "ag_xQGQvFQMsspF", name: "generic_claims" },
+    { id: "ag_vYCPHsSQnnJj", name: "style_agent" },
   ];
 
   beforeEach(async () => {
@@ -118,7 +128,7 @@ describe("process.item", () => {
         );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
-          "ag_content_analysis",
+          "ag_WUijxT0DthMg",
           expect.objectContaining({ text: "test content" }),
         );
         expect(mockPollWorkflowUntilDone).toHaveBeenCalledWith("wf_123", 120_000);
@@ -239,7 +249,7 @@ describe("process.item", () => {
         await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
 
         expect(mockRunAgent).toHaveBeenCalledWith(
-          "ag_content_analysis",
+          "ag_WUijxT0DthMg",
           expect.objectContaining({
             text: "test content",
             document_name: "doc.txt",
@@ -249,14 +259,15 @@ describe("process.item", () => {
         );
       });
 
-      it("uses parallel_executor and body.agents when multiple agents selected", async () => {
+      it("uses selected agent ID directly for runAgent", async () => {
         mockRunAgent.mockResolvedValue(createCompletedResponse());
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: vi.fn().mockImplementation((name: string) => {
-            if (name === "agents") return ["ag_1", "ag_2"];
+            if (name === "agents") return "ag_xQGQvFQMsspF";
             if (name === "text") return "test content";
             if (name === "additionalOptions") return {};
+            if (name === "domainIds") return [];
             return undefined;
           }),
         });
@@ -264,10 +275,61 @@ describe("process.item", () => {
         await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
 
         expect(mockRunAgent).toHaveBeenCalledWith(
-          "ag_cnct5nkhtfNk",
+          "ag_xQGQvFQMsspF",
           expect.objectContaining({
             text: "test content",
-            agents: ["ag_1", "ag_2"],
+          }),
+        );
+      });
+
+      it("passes style-agent additional inputs in snake_case request body", async () => {
+        mockRunAgent.mockResolvedValue(createCompletedResponse());
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: vi.fn().mockImplementation((name: string) => {
+            if (name === "agents") return "ag_vYCPHsSQnnJj";
+            if (name === "text") return "test content";
+            if (name === "additionalOptions") return {};
+            if (name === "domainIds") return [];
+            if (name === "orgName") return "Markup AI";
+            if (name === "targetId") return "target_123";
+            if (name === "contentProfileId") return "profile_456";
+            return undefined;
+          }),
+        });
+
+        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+
+        expect(mockRunAgent).toHaveBeenCalledWith(
+          "ag_vYCPHsSQnnJj",
+          expect.objectContaining({
+            text: "test content",
+            org_name: "Markup AI",
+            target_id: "target_123",
+            content_profile_id: "profile_456",
+          }),
+        );
+      });
+
+      it("does not pass unsupported agent-specific options for non-style agents", async () => {
+        mockRunAgent.mockResolvedValue(createCompletedResponse());
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: createGetNodeParameter({
+            orgName: "Markup AI",
+            targetId: "target_123",
+            contentProfileId: "profile_456",
+          }),
+        });
+
+        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+
+        expect(mockRunAgent).toHaveBeenCalledWith(
+          "ag_WUijxT0DthMg",
+          expect.not.objectContaining({
+            org_name: "Markup AI",
+            target_id: "target_123",
+            content_profile_id: "profile_456",
           }),
         );
       });

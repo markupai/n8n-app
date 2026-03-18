@@ -64,7 +64,7 @@ describe("load.options", () => {
       total_pages: 1,
     };
 
-    it("returns selectable agents from the API as options", async () => {
+    it("returns all non-orchestrator agents from the API as options", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
@@ -81,9 +81,19 @@ describe("load.options", () => {
 
       expect(result).toEqual([
         {
+          name: "content_analysis",
+          value: "ag_2",
+          description: "Full content analysis",
+        },
+        {
           name: "style_agent",
           value: "ag_vYCPHsSQnnJj",
           description: "Checks document style guidance",
+        },
+        {
+          name: "terminology",
+          value: "ag_1",
+          description: "Checks terminology",
         },
       ]);
     });

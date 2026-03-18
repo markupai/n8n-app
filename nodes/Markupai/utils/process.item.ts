@@ -5,6 +5,7 @@ import {
   NodeApiError,
   NodeOperationError,
 } from "n8n-workflow";
+import { AGENT_ADDITIONAL_OPTION_FIELDS, COMMON_OPTION_FIELDS } from "./agent.input.coverage";
 import { runAgent, pollWorkflowUntilDone } from "./agents.api.utils";
 import { buildIssuesHtmlReport } from "./html.report";
 import { getIssueCountsFromResult } from "./issue.counts";
@@ -15,31 +16,44 @@ import type {
   IssueCounts,
 } from "../Markupai.api.types";
 
-const PARALLEL_EXECUTOR_AGENT_ID = "ag_cnct5nkhtfNk";
-
 type AdditionalOptions = {
   documentName?: string;
   documentLink?: string;
   domainIds?: string[];
+  orgName?: string;
+  targetId?: string;
+  contentProfileId?: string;
   timeout?: number;
 };
 
 function buildRunRequest(
   this: IExecuteFunctions,
   itemIndex: number,
+  selectedAgentId: string,
   additionalOptions: AdditionalOptions,
 ): AgentRunRequest {
   const text = this.getNodeParameter("text", itemIndex) as string;
   const request: AgentRunRequest = { text };
+  const allowedOptionFields =
+    AGENT_ADDITIONAL_OPTION_FIELDS[selectedAgentId] ?? COMMON_OPTION_FIELDS;
 
-  if (additionalOptions.documentName) {
+  if (allowedOptionFields.includes("documentName") && additionalOptions.documentName) {
     request.document_name = additionalOptions.documentName;
   }
-  if (additionalOptions.documentLink) {
+  if (allowedOptionFields.includes("documentLink") && additionalOptions.documentLink) {
     request.url = additionalOptions.documentLink;
   }
-  if (additionalOptions.domainIds?.length) {
+  if (allowedOptionFields.includes("domainIds") && additionalOptions.domainIds?.length) {
     request.domain_ids = additionalOptions.domainIds.filter(Boolean);
+  }
+  if (allowedOptionFields.includes("orgName") && additionalOptions.orgName) {
+    request.org_name = additionalOptions.orgName;
+  }
+  if (allowedOptionFields.includes("targetId") && additionalOptions.targetId) {
+    request.target_id = additionalOptions.targetId;
+  }
+  if (allowedOptionFields.includes("contentProfileId") && additionalOptions.contentProfileId) {
+    request.content_profile_id = additionalOptions.contentProfileId;
   }
 
   return request;
@@ -127,22 +141,28 @@ export async function processMarkupaiItem(
   allAgents: AgentMetadata[],
 ): Promise<INodeExecutionData> {
   try {
-    const selectedAgents = this.getNodeParameter("agents", itemIndex) as string[];
-    if (selectedAgents.length === 0) {
-      throw new Error("Select at least one agent");
+    const selectedAgentId = this.getNodeParameter("agents", itemIndex) as string;
+    if (!selectedAgentId) {
+      throw new Error("Select one agent");
     }
 
-    const additionalOptions = (this.getNodeParameter("additionalOptions", itemIndex) ??
-      {}) as AdditionalOptions;
+    const commonOptions = (this.getNodeParameter("additionalOptions", itemIndex) ?? {}) as {
+      documentName?: string;
+      documentLink?: string;
+      timeout?: number;
+    };
+    const additionalOptions: AdditionalOptions = {
+      documentName: commonOptions.documentName,
+      documentLink: commonOptions.documentLink,
+      timeout: commonOptions.timeout,
+      domainIds: this.getNodeParameter("domainIds", itemIndex, []) as string[],
+      orgName: this.getNodeParameter("orgName", itemIndex, "") as string,
+      targetId: this.getNodeParameter("targetId", itemIndex, "") as string,
+      contentProfileId: this.getNodeParameter("contentProfileId", itemIndex, "") as string,
+    };
 
-    const body = buildRunRequest.call(this, itemIndex, additionalOptions);
-
-    const agentId = selectedAgents.length === 1 ? selectedAgents[0] : PARALLEL_EXECUTOR_AGENT_ID;
-    if (selectedAgents.length > 1) {
-      body.agents = selectedAgents.slice(0, 10);
-    }
-
-    const runResponse = await runAgent.call(this, agentId, body);
+    const body = buildRunRequest.call(this, itemIndex, selectedAgentId, additionalOptions);
+    const runResponse = await runAgent.call(this, selectedAgentId, body);
 
     const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
     if (terminalStatuses.includes(runResponse.status)) {
@@ -151,7 +171,7 @@ export async function processMarkupaiItem(
         runResponse,
         itemIndex,
         allAgents,
-        selectedAgents,
+        [selectedAgentId],
         additionalOptions,
       );
     }
@@ -169,7 +189,7 @@ export async function processMarkupaiItem(
       finalResponse,
       itemIndex,
       allAgents,
-      selectedAgents,
+      [selectedAgentId],
       additionalOptions,
     );
   } catch (error) {

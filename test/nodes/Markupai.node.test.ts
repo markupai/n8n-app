@@ -101,10 +101,10 @@ describe("Markupai", () => {
       expect(operationProp?.default).toBe("runAgent");
     });
 
-    it("should have agents (multiOptions) and text parameters with loadAgents", () => {
+    it("should have agent (options) and text parameters with loadAgents", () => {
       const properties = markupai.description.properties;
       const agentsProp = properties.find((p) => p.name === "agents");
-      expect(agentsProp?.type).toBe("multiOptions");
+      expect(agentsProp?.type).toBe("options");
       expect(agentsProp?.typeOptions?.loadOptionsMethod).toBe("loadAgents");
       expect(agentsProp?.required).toBe(true);
 
@@ -113,22 +113,32 @@ describe("Markupai", () => {
       expect(textProp?.required).toBe(true);
     });
 
-    it("should have additional options (documentName, documentLink, domainIds, timeout)", () => {
-      const additionalOptionsProp = markupai.description.properties.find(
-        (p) => p.name === "additionalOptions",
+    it("should expose Additional Options collection and top-level agent-specific fields", () => {
+      const properties = markupai.description.properties;
+      const propertyNames = properties.map((p) => p.name);
+      expect(propertyNames).toContain("additionalOptions");
+      expect(propertyNames).toContain("domainIds");
+      expect(propertyNames).toContain("orgName");
+      expect(propertyNames).toContain("targetId");
+      expect(propertyNames).toContain("contentProfileId");
+
+      const additionalOptionsProp = properties.find((p) => p.name === "additionalOptions");
+      expect(additionalOptionsProp).toBeDefined();
+      if (
+        !additionalOptionsProp ||
+        !("type" in additionalOptionsProp) ||
+        !("options" in additionalOptionsProp)
+      ) {
+        throw new Error("Additional Options property not found");
+      }
+      expect(additionalOptionsProp.type).toBe("collection");
+      const additionalOptions = additionalOptionsProp.options ?? [];
+      const additionalOptionNames = additionalOptions.map((o) => o.name);
+      expect(additionalOptionNames).toEqual(
+        expect.arrayContaining(["documentName", "documentLink", "timeout"]),
       );
-      expect(additionalOptionsProp?.type).toBe("collection");
 
-      const options = additionalOptionsProp?.options ?? [];
-      const names = options.map((o) => o.name);
-      expect(names).toContain("documentName");
-      expect(names).toContain("documentLink");
-      expect(names).toContain("domainIds");
-      expect(names).toContain("timeout");
-      expect(names).not.toContain("terminologySearch");
-      expect(names).not.toContain("waitForCompletion");
-
-      const domainIdsOption = options.find(
+      const domainIdsOption = properties.find(
         (o) => o.name === "domainIds" && "type" in o && "typeOptions" in o,
       );
       expect(domainIdsOption).toBeDefined();
@@ -138,7 +148,7 @@ describe("Markupai", () => {
       expect(domainIdsOption.type).toBe("multiOptions");
       expect(domainIdsOption.typeOptions?.loadOptionsMethod).toBe("loadTerminologyDomains");
 
-      const timeoutOption = options.find(
+      const timeoutOption = additionalOptions.find(
         (o) => o.name === "timeout" && "type" in o && "default" in o,
       );
       expect(timeoutOption).toBeDefined();
@@ -166,9 +176,10 @@ describe("Markupai", () => {
 
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(mockInputData);
       mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
-        if (name === "agents") return ["ag_content_analysis"];
+        if (name === "agents") return "ag_content_analysis";
         if (name === "text") return "test content";
         if (name === "additionalOptions") return {};
+        if (name === "domainIds") return [];
         return undefined;
       });
       if (mockExecuteFunctions.helpers) {
@@ -196,9 +207,10 @@ describe("Markupai", () => {
       const twoItems: INodeExecutionData[] = [{ json: {} }, { json: {} }];
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
       mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
-        if (name === "agents") return ["ag_1"];
+        if (name === "agents") return "ag_1";
         if (name === "text") return "content";
         if (name === "additionalOptions") return {};
+        if (name === "domainIds") return [];
         return undefined;
       });
 
