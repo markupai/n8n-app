@@ -32,8 +32,8 @@ function buildRunRequest(
   selectedAgentId: string,
   additionalOptions: AdditionalOptions,
 ): AgentRunRequest {
-  const text = this.getNodeParameter("text", itemIndex) as string;
-  const request: AgentRunRequest = { text };
+  const content = this.getNodeParameter("content", itemIndex) as string;
+  const request: AgentRunRequest = { text: content };
   const allowedOptionFields =
     AGENT_ADDITIONAL_OPTION_FIELDS[selectedAgentId] ?? COMMON_OPTION_FIELDS;
 

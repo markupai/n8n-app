@@ -87,23 +87,6 @@ export class Markupai implements INodeType {
         },
       },
       {
-        displayName: "Text",
-        name: "text",
-        type: "string",
-        typeOptions: {
-          rows: 10,
-        },
-        required: true,
-        default: "",
-        description: "Document text to analyze",
-        displayOptions: {
-          show: {
-            resource: ["agent"],
-            operation: ["runAgent"],
-          },
-        },
-      },
-      {
         displayName: "Domain IDs",
         name: "domainIds",
         type: "multiOptions",
@@ -160,6 +143,23 @@ export class Markupai implements INodeType {
             resource: ["agent"],
             operation: ["runAgent"],
             agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Content",
+        name: "content",
+        type: "string",
+        typeOptions: {
+          rows: 10,
+        },
+        required: true,
+        default: "",
+        description: "Document content to analyze",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
           },
         },
       },

@@ -101,16 +101,16 @@ describe("Markupai", () => {
       expect(operationProp?.default).toBe("runAgent");
     });
 
-    it("should have agent (options) and text parameters with loadAgents", () => {
+    it("should have agent (options) and content parameters with loadAgents", () => {
       const properties = markupai.description.properties;
       const agentsProp = properties.find((p) => p.name === "agents");
       expect(agentsProp?.type).toBe("options");
       expect(agentsProp?.typeOptions?.loadOptionsMethod).toBe("loadAgents");
       expect(agentsProp?.required).toBe(true);
 
-      const textProp = properties.find((p) => p.name === "text");
-      expect(textProp?.type).toBe("string");
-      expect(textProp?.required).toBe(true);
+      const contentProp = properties.find((p) => p.name === "content");
+      expect(contentProp?.type).toBe("string");
+      expect(contentProp?.required).toBe(true);
     });
 
     it("should expose Additional Options collection and top-level agent-specific fields", () => {
@@ -177,7 +177,7 @@ describe("Markupai", () => {
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(mockInputData);
       mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
         if (name === "agents") return "ag_content_analysis";
-        if (name === "text") return "test content";
+        if (name === "content") return "test content";
         if (name === "additionalOptions") return {};
         if (name === "domainIds") return [];
         return undefined;
@@ -208,7 +208,7 @@ describe("Markupai", () => {
       mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
       mockExecuteFunctions.getNodeParameter = vi.fn().mockImplementation((name: string) => {
         if (name === "agents") return "ag_1";
-        if (name === "text") return "content";
+        if (name === "content") return "content";
         if (name === "additionalOptions") return {};
         if (name === "domainIds") return [];
         return undefined;

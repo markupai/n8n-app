@@ -75,7 +75,7 @@ const createMockExecuteFunctions = (
 function createGetNodeParameter(additionalOptions: Record<string, unknown> = {}) {
   return vi.fn().mockImplementation((name: string) => {
     if (name === "agents") return "ag_WUijxT0DthMg";
-    if (name === "text") return "test content";
+    if (name === "content") return "test content";
     if (name === "additionalOptions") {
       return {
         documentName: additionalOptions.documentName ?? "",
@@ -265,7 +265,7 @@ describe("process.item", () => {
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: vi.fn().mockImplementation((name: string) => {
             if (name === "agents") return "ag_xQGQvFQMsspF";
-            if (name === "text") return "test content";
+            if (name === "content") return "test content";
             if (name === "additionalOptions") return {};
             if (name === "domainIds") return [];
             return undefined;
@@ -288,7 +288,7 @@ describe("process.item", () => {
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: vi.fn().mockImplementation((name: string) => {
             if (name === "agents") return "ag_vYCPHsSQnnJj";
-            if (name === "text") return "test content";
+            if (name === "content") return "test content";
             if (name === "additionalOptions") return {};
             if (name === "domainIds") return [];
             if (name === "orgName") return "Markup AI";
