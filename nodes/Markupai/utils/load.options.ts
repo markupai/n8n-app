@@ -1,56 +1,82 @@
 import type {
-  IExecuteFunctions,
   IHttpRequestOptions,
   ILoadOptionsFunctions,
   INodePropertyOptions,
 } from "n8n-workflow";
-import { LoggerProxy } from "n8n-workflow";
-import { StyleGuides } from "../Markupai.api.types";
 import { getBaseUrlString } from "../../../utils/common.utils";
+import type {
+  AgentListResult,
+  TerminologyDomain,
+  TerminologyDomainListResult,
+} from "../Markupai.api.types";
 
-type Constants = {
-  dialects: string[];
-  tones: string[];
-};
+const ORCHESTRATOR_AGENT_IDS = new Set(["ag__48WjfPsyKCX", "ag_cnct5nkhtfNk"]);
+const STYLE_AGENT_NAME = "style_agent";
+const DOMAINS_PATH = "v1/terminology/domains";
+const DOMAINS_PAGE_SIZE = 20;
 
-const DEFAULT_CONSTANTS = {
-  dialects: ["american_english", "british_english", "canadian_english"],
-  tones: [
-    "academic",
-    "confident",
-    "conversational",
-    "empathetic",
-    "engaging",
-    "friendly",
-    "professional",
-    "technical",
-  ],
-};
-
-const appendDefaultTone = (tones: string[]) => {
-  return ["None", ...tones];
-};
-
-const mapTones = (tones: string[]) => {
-  return appendDefaultTone(tones).map((tone) => ({
-    name: tone,
-    value: tone,
-  }));
-};
+function buildApiUrl(baseUrl: URL, path: string): string {
+  const normalizedBaseUrl = new URL(
+    baseUrl.toString().endsWith("/") ? baseUrl.toString() : `${baseUrl.toString()}/`,
+  );
+  return new URL(path, normalizedBaseUrl).toString();
+}
 
 export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
 }
 
-export async function loadStyleGuides(
-  this: ILoadOptionsFunctions,
-): Promise<INodePropertyOptions[]> {
-  try {
-    const baseUrl = getBaseUrl();
+function stringifyResponseBody(body: unknown): string {
+  if (typeof body === "string") {
+    return body;
+  }
+  if (typeof body === "object" && body !== null) {
+    return JSON.stringify(body);
+  }
+  return String(body);
+}
 
+function assertSuccessStatus(
+  response: { statusCode: number; body: unknown },
+  errorPrefix: string,
+): void {
+  if (response.statusCode === 200) {
+    return;
+  }
+
+  throw new Error(`${errorPrefix}: ${stringifyResponseBody(response.body)}`);
+}
+
+function addDomains(
+  domainsById: Map<string, TerminologyDomain>,
+  listResult: TerminologyDomainListResult,
+): void {
+  for (const domain of listResult.domains) {
+    if (!domain.id) continue;
+    domainsById.set(domain.id, {
+      id: domain.id,
+      name: domain.name,
+    });
+  }
+}
+
+async function fetchAllTerminologyDomains(
+  this: ILoadOptionsFunctions,
+): Promise<TerminologyDomain[]> {
+  const baseUrl = getBaseUrl();
+  const domainsById = new Map<string, TerminologyDomain>();
+
+  let page = 1;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
     const httpRequestOptions: IHttpRequestOptions = {
       method: "GET",
-      url: `${baseUrl.toString()}v1/style-guides`,
+      url: buildApiUrl(baseUrl, DOMAINS_PATH),
+      qs: {
+        page,
+        page_size: DOMAINS_PAGE_SIZE,
+      },
       returnFullResponse: true,
     };
 
@@ -60,75 +86,58 @@ export async function loadStyleGuides(
       httpRequestOptions,
     )) as { statusCode: number; body: unknown };
 
-    if (response.statusCode !== 200) {
-      const bodyStr = typeof response.body === "string" ? response.body : String(response.body);
-      throw new Error("Error loading style guides: " + bodyStr);
-    }
+    assertSuccessStatus(response, "Error loading terminology domains");
 
-    const styleGuides = response.body as StyleGuides;
+    const listResult = response.body as TerminologyDomainListResult;
+    addDomains(domainsById, listResult);
 
-    return styleGuides.map((styleGuide) => ({
-      name: styleGuide.name,
-      value: styleGuide.id,
-    }));
-  } catch (error) {
-    throw new Error("Error loading style guides", error as Error);
+    totalPages = Math.max(listResult.total_pages, 1);
+    page += 1;
   }
+
+  return Array.from(domainsById.values());
 }
 
-async function getConstants(this: ILoadOptionsFunctions | IExecuteFunctions): Promise<Constants> {
+export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
   const baseUrl = getBaseUrl();
 
-  const requestOptions: IHttpRequestOptions = {
+  const httpRequestOptions: IHttpRequestOptions = {
     method: "GET",
-    url: `${baseUrl.toString()}v1/internal/constants`,
+    url: buildApiUrl(baseUrl, "agents"),
+    qs: { page: 1, page_size: 100 },
     returnFullResponse: true,
   };
 
   const response = (await this.helpers.httpRequestWithAuthentication.call(
     this,
     "markupaiApi",
-    requestOptions,
+    httpRequestOptions,
   )) as { statusCode: number; body: unknown };
 
-  if (response.statusCode !== 200) {
-    const bodyStr =
-      typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-    const parsed = JSON.parse(bodyStr) as { error?: string };
-    throw new Error(parsed.error ?? "Unknown error");
-  }
+  assertSuccessStatus(response, "Error loading agents");
 
-  return response.body as Constants;
+  const listResult = response.body as AgentListResult;
+
+  return listResult.agents
+    .filter((agent) => !ORCHESTRATOR_AGENT_IDS.has(agent.id))
+    .filter((agent) => agent.name === STYLE_AGENT_NAME)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((agent) => ({
+      name: agent.name,
+      value: agent.id,
+      description: agent.description ?? undefined,
+    }));
 }
 
-export async function loadTones(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-  try {
-    const constants = await getConstants.call(this);
+export async function loadTerminologyDomains(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const domains = await fetchAllTerminologyDomains.call(this);
 
-    return mapTones(constants.tones);
-  } catch (error) {
-    LoggerProxy.error("Couldn't fetch tones from API, using default tones.", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return mapTones(DEFAULT_CONSTANTS.tones);
-  }
-}
-
-export async function loadDialects(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-  try {
-    const constants = await getConstants.call(this);
-
-    return constants.dialects.map((dialect: string) => ({
-      name: dialect,
-      value: dialect,
-    }));
-  } catch (error) {
-    LoggerProxy.error("Couldn't fetch dialects from API, using default dialects.", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return DEFAULT_CONSTANTS.dialects.map((dialect: string) => ({
-      name: dialect,
-      value: dialect,
-    }));
-  }
+  return domains
+    .map((domain) => ({
+      name: domain.name,
+      value: domain.id,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

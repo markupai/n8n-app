@@ -29,7 +29,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && gulp build:icons && gulp build:package",
+    "build": "tsc --project tsconfig.build.json && gulp build:icons && gulp build:templates && gulp build:package",
     "check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
     "cleanup": "./dev/cleanup.sh",
     "dev": "tsc --project tsconfig.build.json --watch",

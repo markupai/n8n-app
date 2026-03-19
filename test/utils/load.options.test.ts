@@ -1,22 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ILoadOptionsFunctions } from "n8n-workflow";
-import { LoggerProxy } from "n8n-workflow";
 import {
   getBaseUrl,
-  loadDialects,
-  loadStyleGuides,
-  loadTones,
+  loadAgents,
+  loadTerminologyDomains,
 } from "../../nodes/Markupai/utils/load.options";
-
-vi.mock("n8n-workflow", async () => {
-  const actual = await vi.importActual("n8n-workflow");
-  return {
-    ...actual,
-    LoggerProxy: {
-      error: vi.fn(),
-    },
-  };
-});
 
 function createMockLoadOptionsFunctions(mock: {
   getCredentials: ReturnType<typeof vi.fn>;
@@ -31,102 +19,106 @@ function createMockLoadOptionsFunctions(mock: {
 
 describe("load.options", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(LoggerProxy.error).mockClear();
+    delete process.env.MARKUP_AI_BASE_URL;
   });
 
   describe("getBaseUrl", () => {
-    beforeEach(() => {
-      // Clear environment variables before each test
-      delete process.env.MARKUP_AI_BASE_URL;
-      delete process.env.NODE_ENV;
-    });
-
     it("returns production URL by default", () => {
       const result = getBaseUrl();
-
-      expect(result.toString()).toBe("https://api.markup.ai/");
-    });
-
-    it("returns production URL when NODE_ENV is production", () => {
-      process.env.NODE_ENV = "production";
-
-      const result = getBaseUrl();
-
-      expect(result.toString()).toBe("https://api.markup.ai/");
-    });
-
-    it("returns production URL when NODE_ENV is not production (no env var set)", () => {
-      process.env.NODE_ENV = "development";
-
-      const result = getBaseUrl();
-
       expect(result.toString()).toBe("https://api.markup.ai/");
     });
 
     it("returns custom URL from MARKUP_AI_BASE_URL environment variable", () => {
       process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/";
-
       const result = getBaseUrl();
-
       expect(result.toString()).toBe("https://api.dev.markup.ai/");
     });
 
-    it("returns custom URL from MARKUP_AI_BASE_URL even when NODE_ENV is production", () => {
-      process.env.NODE_ENV = "production";
+    it("returns custom URL from MARKUP_AI_BASE_URL with trailing slash", () => {
       process.env.MARKUP_AI_BASE_URL = "https://custom.api.markup.ai/";
-
       const result = getBaseUrl();
-
       expect(result.toString()).toBe("https://custom.api.markup.ai/");
     });
   });
 
-  describe("loadStyleGuides", () => {
-    const styleGuidesResponse = [
-      { id: "1", name: "Style Guide 1" },
-      { id: "2", name: "Style Guide 2" },
-    ];
+  describe("loadAgents", () => {
+    const agentsResponse = {
+      agents: [
+        {
+          id: "ag_vYCPHsSQnnJj",
+          name: "style_agent",
+          description: "Checks document style guidance",
+        },
+        { id: "ag_1", name: "terminology", description: "Checks terminology" },
+        { id: "ag_2", name: "content_analysis", description: "Full content analysis" },
+        { id: "ag_cnct5nkhtfNk", name: "parallel_executor", description: "Internal orchestrator" },
+        {
+          id: "ag__48WjfPsyKCX",
+          name: "content_analysis_orchestrator",
+          description: "Internal orchestrator",
+        },
+      ],
+      total: 5,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    };
 
-    it("returns the style guides from the API", async () => {
+    it("returns only style_agent from the API as options", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
             call: vi.fn().mockResolvedValue({
-              body: styleGuidesResponse,
+              body: agentsResponse,
               statusCode: 200,
             }),
           },
         },
       });
 
-      const result = await loadStyleGuides.call(loadOptionsFunction);
+      const result = await loadAgents.call(loadOptionsFunction);
 
       expect(result).toEqual([
-        { name: "Style Guide 1", value: "1" },
-        { name: "Style Guide 2", value: "2" },
+        {
+          name: "style_agent",
+          value: "ag_vYCPHsSQnnJj",
+          description: "Checks document style guidance",
+        },
       ]);
     });
 
-    it("throws an error if the API key is not found", async () => {
+    it("joins agents URL correctly when base URL includes a path without trailing slash", async () => {
+      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
+
+      const mockCall = vi.fn().mockResolvedValue({
+        body: agentsResponse,
+        statusCode: 200,
+      });
+
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({}),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
-            call: vi.fn().mockRejectedValue(new Error("Credentials error")),
+            call: mockCall,
           },
         },
       });
 
-      await expect(loadStyleGuides.call(loadOptionsFunction)).rejects.toThrow(
-        "Error loading style guides",
+      await loadAgents.call(loadOptionsFunction);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        loadOptionsFunction,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.dev.markup.ai/api/agents",
+        }),
       );
     });
 
-    it("throws an error if the API returns an error", async () => {
+    it("throws if the API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
             call: vi.fn().mockResolvedValue({
@@ -137,117 +129,107 @@ describe("load.options", () => {
         },
       });
 
-      await expect(loadStyleGuides.call(loadOptionsFunction)).rejects.toThrow(
-        "Error loading style guides",
-      );
+      await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow("Error loading agents");
+    });
+
+    it("throws if the request fails", async () => {
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: vi.fn().mockRejectedValue(new Error("Network error")),
+          },
+        },
+      });
+
+      await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow();
     });
   });
 
-  describe("loadTones", () => {
-    const tonesResponse = { tones: ["tone_1", "tone_2"] };
-    it("returns the tones from the API", async () => {
+  describe("loadTerminologyDomains", () => {
+    const domainsPage1 = {
+      domains: [
+        { id: "d_1", name: "Marketing" },
+        { id: "d_2", name: "Legal" },
+      ],
+      total_count: 3,
+      page: 1,
+      page_size: 20,
+      total_pages: 2,
+    };
+    const domainsPage2 = {
+      domains: [
+        { id: "d_2", name: "Legal" },
+        { id: "d_3", name: "Product" },
+      ],
+      total_count: 3,
+      page: 2,
+      page_size: 20,
+      total_pages: 2,
+    };
+
+    it("fetches all pages and returns deduplicated domain options", async () => {
+      const mockCall = vi
+        .fn()
+        .mockResolvedValueOnce({
+          body: domainsPage1,
+          statusCode: 200,
+        })
+        .mockResolvedValueOnce({
+          body: domainsPage2,
+          statusCode: 200,
+        });
+
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
-            call: vi.fn().mockResolvedValue({
-              body: tonesResponse,
-              statusCode: 200,
-            }),
+            call: mockCall,
           },
         },
       });
 
-      const result = await loadTones.call(loadOptionsFunction);
+      const result = await loadTerminologyDomains.call(loadOptionsFunction);
 
+      expect(mockCall).toHaveBeenCalledTimes(2);
       expect(result).toEqual([
-        { name: "None", value: "None" },
-        { name: "tone_1", value: "tone_1" },
-        { name: "tone_2", value: "tone_2" },
+        { name: "Legal", value: "d_2" },
+        { name: "Marketing", value: "d_1" },
+        { name: "Product", value: "d_3" },
       ]);
     });
 
-    it("returns the default tones if the API returns an error", async () => {
+    it("joins terminology URL correctly when base URL includes a path without trailing slash", async () => {
+      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
+
+      const mockCall = vi.fn().mockResolvedValue({
+        body: domainsPage1,
+        statusCode: 200,
+      });
+
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
-            call: vi.fn().mockResolvedValue({
-              body: { error: "Bad Request" },
-              statusCode: 400,
-            }),
+            call: mockCall,
           },
         },
       });
 
-      const result = await loadTones.call(loadOptionsFunction);
+      await loadTerminologyDomains.call(loadOptionsFunction);
 
-      expect(result).toEqual([
-        { name: "None", value: "None" },
-        { name: "academic", value: "academic" },
-        { name: "confident", value: "confident" },
-        { name: "conversational", value: "conversational" },
-        { name: "empathetic", value: "empathetic" },
-        { name: "engaging", value: "engaging" },
-        { name: "friendly", value: "friendly" },
-        { name: "professional", value: "professional" },
-        { name: "technical", value: "technical" },
-      ]);
-
-      expect(LoggerProxy.error).toHaveBeenCalledWith(
-        "Couldn't fetch tones from API, using default tones.",
-        expect.objectContaining({ error: expect.any(String) as string }),
+      expect(mockCall).toHaveBeenCalledWith(
+        loadOptionsFunction,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.dev.markup.ai/api/v1/terminology/domains",
+        }),
       );
     });
 
-    it('includes "None" as the first option when API returns tones', async () => {
+    it("throws if the terminology API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
-        helpers: {
-          httpRequestWithAuthentication: {
-            call: vi.fn().mockResolvedValue({
-              body: { tones: ["tone_1", "tone_2"] },
-              statusCode: 200,
-            }),
-          },
-        },
-      });
-
-      const result = await loadTones.call(loadOptionsFunction);
-
-      expect(result).toEqual([
-        { name: "None", value: "None" },
-        { name: "tone_1", value: "tone_1" },
-        { name: "tone_2", value: "tone_2" },
-      ]);
-    });
-  });
-
-  describe("loadDialects", () => {
-    it("returns the dialects from the API", async () => {
-      const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
-        helpers: {
-          httpRequestWithAuthentication: {
-            call: vi.fn().mockResolvedValue({
-              body: { dialects: ["english_uk", "english_us"] },
-              statusCode: 200,
-            }),
-          },
-        },
-      });
-
-      const result = await loadDialects.call(loadOptionsFunction);
-
-      expect(result).toEqual([
-        { name: "english_uk", value: "english_uk" },
-        { name: "english_us", value: "english_us" },
-      ]);
-    });
-
-    it("returns the default dialects if the API returns an error", async () => {
-      const loadOptionsFunction = createMockLoadOptionsFunctions({
-        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key-123" }),
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
             call: vi.fn().mockResolvedValue({
@@ -258,17 +240,8 @@ describe("load.options", () => {
         },
       });
 
-      const result = await loadDialects.call(loadOptionsFunction);
-
-      expect(result).toEqual([
-        { name: "american_english", value: "american_english" },
-        { name: "british_english", value: "british_english" },
-        { name: "canadian_english", value: "canadian_english" },
-      ]);
-
-      expect(LoggerProxy.error).toHaveBeenCalledWith(
-        "Couldn't fetch dialects from API, using default dialects.",
-        expect.objectContaining({ error: expect.any(String) as string }),
+      await expect(loadTerminologyDomains.call(loadOptionsFunction)).rejects.toThrow(
+        "Error loading terminology domains",
       );
     });
   });

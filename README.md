@@ -4,7 +4,7 @@
 
 This is an n8n community node that integrates [Markup AI](https://markup.ai/) — a content guardian platform for ensuring brand-compliant, consistent, and engaging content.
 
-[Markup AI](https://markup.ai/) provides AI-powered content analysis, suggestions, and rewrites based on your organization's brand standards. Integrate content quality checks and automated improvements directly into your n8n workflows.
+[Markup AI](https://markup.ai/) provides AI-powered content analysis through specialized agents (for example terminology, claims, focus, and AI voice detection). Integrate agent-based quality checks and automated improvements directly into your n8n workflows.
 
 [Installation](#installation) · [Operations](#operations) · [Credentials](#credentials) · [Usage](#usage) · [Resources](#resources) · [Development](#development)
 
@@ -29,19 +29,23 @@ npm install @markupai/n8n-nodes-markupai
 
 ## Operations
 
-The Markup AI node supports the following operations:
+The Markup AI node currently supports one operation:
 
-### Style Check
+### Run Agent
 
-Analyze content for quality issues without making changes.
+Run one or more Markup AI agents on input text.
+
+- **Single agent:** Runs the selected agent directly.
+- **Multiple agents (up to 10):** Runs selected agents in parallel through the Markup AI parallel executor.
+- **Execution model:** Starts an async workflow and polls automatically until the workflow reaches a terminal state (`completed`, `failed`, `timed_out`, or `cancelled`) or timeout.
 
 **Returns:**
 
-- Quality, clarity, and grammar scores
-- Style guide compliance metrics
-- Tone analysis
-- Readability metrics
-- Detailed list of identified issues
+- `workflow_id`, `status`, `started_at`, `completed_at`, `duration_seconds`
+- `result` (agent output payload)
+- `issue_counts` (`total`, `high`, `medium`, `low` computed from `result.issues`)
+- `error` (when present)
+- `html_report` (rendered summary of issues and workflow metadata)
 
 ## Credentials
 
@@ -61,31 +65,31 @@ To use this node, you'll need a Markup AI API account.
 
 ### Configuration Options
 
-All operations support the following options:
+The **Run Agent** operation supports the following configuration:
 
-| Option                  | Type    | Default | Description                                 |
-| ----------------------- | ------- | ------- | ------------------------------------------- |
-| **Style Guide**         | String  | -       | The style guide to apply                    |
-| **Dialect**             | String  | -       | The dialect to be used for content analysis |
-| **Tone**                | String  | -       | The desired tone for content (optional)     |
-| **Wait for Completion** | Boolean | `true`  | Auto-poll for results                       |
-| **Polling Timeout**     | Number  | `60000` | Maximum wait time in milliseconds           |
-| **Polling Interval**    | Number  | `2000`  | Polling frequency in milliseconds           |
+| Option                                 | Type               | Required | Default  | Description                                                                                   |
+| -------------------------------------- | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------- |
+| **Agents**                             | Multi-select       | Yes      | -        | Select one or more agents to run. If multiple are selected, the node uses parallel execution. |
+| **Text**                               | String (multiline) | Yes      | -        | Document text to analyze.                                                                     |
+| **Additional Options → Document Name** | String             | No       | `""`     | Friendly name of the source document.                                                         |
+| **Additional Options → Document URL**  | String             | No       | `""`     | URL or link to the source document.                                                           |
+| **Additional Options → Domain IDs**    | Multi-select       | No       | `[]`     | Select one or more terminology domains (stored/sent as domain ID array).                      |
+| **Additional Options → Timeout (Ms)**  | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.          |
 
 ### Example Workflows
 
 #### Content Quality Gate
 
 1. Trigger: New document added to Google Drive
-2. **Markup AI** → Style Check: Analyze document content
-3. Condition: Check if quality score meets threshold
+2. **Markup AI** → Run Agent: Select one or more compliance-focused agents
+3. Condition: Check `status` and evaluate returned issues from `result`
 4. If passed: Approve and publish
 5. If failed: Send notification to content team
 
 #### Automated Content Improvement
 
 1. Trigger: Webhook receives content for publication
-2. **Markup AI** → Style Check: Analyze initial quality
+2. **Markup AI** → Run Agent: Analyze with selected agents (for example terminology + generic claims)
 3. Send improved version to CMS for publication
 
 ### Common Use Cases
@@ -104,7 +108,6 @@ All operations support the following options:
 
 ## Resources
 
-- [Markup AI Documentation](https://docs.markup.ai/)
 - [Markup AI Website](https://markup.ai/)
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [n8n Documentation](https://docs.n8n.io/)

@@ -6,18 +6,19 @@ import {
   NodeConnectionTypes,
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
-import { loadDialects, loadStyleGuides, loadTones } from "./utils/load.options";
+import { listAllAgents } from "./utils/agents.api.utils";
+import { DOMAIN_IDS_AGENT_IDS, STYLE_OPTION_AGENT_IDS } from "./utils/agent.input.coverage";
+import { loadAgents, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 
-const LOAD_STYLE_GUIDES = "loadStyleGuides" as const;
-const LOAD_TONES = "loadTones" as const;
-const LOAD_DIALECTS = "loadDialects" as const;
+const LOAD_AGENTS = "loadAgents" as const;
+const LOAD_TERMINOLOGY_DOMAINS = "loadTerminologyDomains" as const;
 
 export class Markupai implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Markup AI",
     name: "markupai",
-    description: "Markup AI Content Guardian",
+    description: "Run Markup AI agents for content analysis",
     icon: "file:markupai.svg",
     version: 1,
     defaults: {
@@ -40,11 +41,11 @@ export class Markupai implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: "Content",
-            value: "content",
+            name: "Agent",
+            value: "agent",
           },
         ],
-        default: "content",
+        default: "agent",
       },
       {
         displayName: "Operation",
@@ -53,18 +54,97 @@ export class Markupai implements INodeType {
         noDataExpression: true,
         displayOptions: {
           show: {
-            resource: ["content"],
+            resource: ["agent"],
           },
         },
         options: [
           {
-            name: "Style Check",
-            value: "styleCheck",
-            action: "Content style check",
-            description: "Check the content against your style and branding guidelines",
+            name: "Run Agent",
+            value: "runAgent",
+            action: "Run an agent",
+            description: "Run an agent on the given text",
           },
         ],
-        default: "styleCheck",
+        default: "runAgent",
+      },
+      {
+        displayName: "Agent",
+        name: "agents",
+        type: "options",
+        noDataExpression: true,
+        required: true,
+        description: "Select one agent to run",
+        options: [],
+        default: "",
+        typeOptions: {
+          loadOptionsMethod: LOAD_AGENTS,
+        },
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+          },
+        },
+      },
+      {
+        displayName: "Domain IDs",
+        name: "domainIds",
+        type: "multiOptions",
+        options: [],
+        default: [],
+        description: "Terminology domain IDs",
+        typeOptions: {
+          loadOptionsMethod: LOAD_TERMINOLOGY_DOMAINS,
+        },
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: DOMAIN_IDS_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Org Name",
+        name: "orgName",
+        type: "string",
+        default: "",
+        description: "Organization name injected from context for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Target ID",
+        name: "targetId",
+        type: "string",
+        default: "",
+        description: "Language-service target ID for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
+      },
+      {
+        displayName: "Content Profile ID",
+        name: "contentProfileId",
+        type: "string",
+        default: "",
+        description: "Language-service content profile ID for style checks",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
+            agents: STYLE_OPTION_AGENT_IDS,
+          },
+        },
       },
       {
         displayName: "Content",
@@ -75,49 +155,12 @@ export class Markupai implements INodeType {
         },
         required: true,
         default: "",
-      },
-      {
-        displayName: "Style Guide Name or ID",
-        name: "styleGuide",
-        type: "options",
-        noDataExpression: true,
-        description:
-          'Select style guide. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        options: [],
-        default: "",
-        typeOptions: {
-          loadOptionsMethod: LOAD_STYLE_GUIDES,
-        },
-      },
-      {
-        displayName: "Tone Name or ID",
-        name: "tone",
-        type: "options",
-        noDataExpression: true,
-        description:
-          'Select tone. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        options: [
-          {
-            name: "None",
-            value: "None",
+        description: "Document content to analyze",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
           },
-        ],
-        default: "None",
-        typeOptions: {
-          loadOptionsMethod: LOAD_TONES,
-        },
-      },
-      {
-        displayName: "Dialect Name or ID",
-        name: "dialect",
-        type: "options",
-        description:
-          'Select dialect. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-        noDataExpression: true,
-        options: [],
-        default: "",
-        typeOptions: {
-          loadOptionsMethod: LOAD_DIALECTS,
         },
       },
       {
@@ -126,46 +169,33 @@ export class Markupai implements INodeType {
         type: "collection",
         placeholder: "Add Option",
         default: {},
-        options: [
-          {
-            displayName: "Document Link",
-            name: "documentLink",
-            type: "string",
-            default: "",
-            description: "URL or link to the original document",
+        displayOptions: {
+          show: {
+            resource: ["agent"],
+            operation: ["runAgent"],
           },
+        },
+        options: [
           {
             displayName: "Document Name",
             name: "documentName",
             type: "string",
             default: "",
-            description: "Name of the document being checked",
+            description: "Name of the document being analyzed",
           },
           {
-            displayName: "Document Owner",
-            name: "documentOwner",
+            displayName: "Document URL",
+            name: "documentLink",
             type: "string",
             default: "",
-            description: "Name of the document owner",
+            description: "URL or link to the source document",
           },
           {
-            displayName: "Polling Timeout (Ms)",
-            name: "pollingTimeout",
+            displayName: "Timeout (Ms)",
+            name: "timeout",
             type: "number",
-            default: 60_000,
-            description: "Maximum time to wait for workflow completion in milliseconds",
-            displayOptions: {
-              show: {
-                waitForCompletion: [true],
-              },
-            },
-          },
-          {
-            displayName: "Wait For Completion",
-            name: "waitForCompletion",
-            type: "boolean",
-            default: true,
-            description: "Whether to wait for the workflow to complete before returning",
+            default: 120_000,
+            description: "Maximum time to wait for workflow completion when polling (milliseconds)",
           },
         ],
       },
@@ -174,19 +204,18 @@ export class Markupai implements INodeType {
 
   methods = {
     loadOptions: {
-      [LOAD_STYLE_GUIDES]: loadStyleGuides,
-      [LOAD_TONES]: loadTones,
-      [LOAD_DIALECTS]: loadDialects,
+      [LOAD_AGENTS]: loadAgents,
+      [LOAD_TERMINOLOGY_DOMAINS]: loadTerminologyDomains,
     },
   };
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
     const returnData: INodeExecutionData[] = [];
+    const allAgents = await listAllAgents.call(this);
 
     for (let i = 0; i < items.length; i++) {
-      const result = await processMarkupaiItem.call(this, i);
-
+      const result = await processMarkupaiItem.call(this, i, allAgents);
       returnData.push(result);
     }
 
