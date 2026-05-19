@@ -33,6 +33,7 @@
     "check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
     "cleanup": "./dev/cleanup.sh",
     "dev": "tsc --project tsconfig.build.json --watch",
+    "dev:node": "n8n-node dev",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "lint:check": "eslint --config eslint.config.js .",
@@ -40,7 +41,7 @@
     "lint:prepublish": "eslint --config eslint.config.prepublish.js \"nodes/**/*.ts\" \"credentials/**/*.ts\" package.json",
     "prepublishOnly": "npm run build && eslint --config eslint.config.prepublish.js \"nodes/**/*.ts\" \"credentials/**/*.ts\" package.json && npm run check:stable-version",
     "setup": "./dev/setup.sh",
-    "start": "n8n start",
+    "start": "n8n-node dev",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:debug": "node --inspect-brk node_modules/vitest/vitest.mjs run --no-file-parallelism",
@@ -50,15 +51,18 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.5",
-    "@types/node": "25.9.0",
+    "@eslint/js": "10.0.1",
+    "@n8n/node-cli": "0.30.1",
+    "@types/node": "22.19.19",
     "@vitest/coverage-v8": "4.1.6",
+    "eslint": "10.4.0",
     "eslint-plugin-n8n-nodes-base": "1.16.6",
     "globals": "17.6.0",
     "gulp": "5.0.1",
-    "n8n": "2.21.4",
+    "n8n-workflow": "2.21.1",
     "prettier": "3.8.3",
     "prettier-plugin-packagejson": "3.0.2",
-    "typescript": "6.0.3",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.58.2",
     "vitest": "4.1.6"
   },
@@ -66,7 +70,7 @@
     "n8n-workflow": "*"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=22.16"
   },
   "publishConfig": {
     "access": "public"
