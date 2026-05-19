@@ -47,6 +47,17 @@ function createMockNode() {
   return {} as never;
 }
 
+function makeIssue(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    agent: "style_agent",
+    severity: "high",
+    category: "Tone",
+    explanation: "Sample finding.",
+    position: { start: 0, end: 4, text: "This" },
+    ...overrides,
+  };
+}
+
 const createAgentRunResponse = (overrides: Partial<AgentRunResponse> = {}): AgentRunResponse => ({
   workflow_id: "wf_123",
   status: "running",
@@ -125,6 +136,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
@@ -148,7 +160,12 @@ describe("process.item", () => {
           getNodeParameter: createGetNodeParameter({ timeout: 60_000 }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+        await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+          false,
+        );
 
         expect(mockPollWorkflowUntilDone).toHaveBeenCalledWith("wf_123", 60_000);
       });
@@ -164,6 +181,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(mockRunAgent).toHaveBeenCalled();
@@ -171,33 +189,56 @@ describe("process.item", () => {
         expect(result.json).toMatchObject({ status: "completed", result: { issues: [] } });
       });
 
-      it("includes html_report with Document Analysis Report layout", async () => {
+      it("includes html_report with the new issue-level layout", async () => {
         mockRunAgent.mockResolvedValue(
           createCompletedResponse({
             result: {
               issues: [
-                { severity: "high", agent_id: "ag_content_analysis" },
-                { severity: "medium", agent_id: "ag_content_analysis" },
+                {
+                  severity: "high",
+                  agent: "style_agent",
+                  category: "Tone",
+                  explanation: "Use contractions to keep the tone conversational.",
+                  position: { start: 0, end: 4, text: "This" },
+                  suggestion: "It's",
+                  guideline_name: "Did you use contractions?",
+                  context_surface: "This product is amazing.",
+                },
+                {
+                  severity: "medium",
+                  agent: "style_agent",
+                  category: "Clarity",
+                  explanation: "Flesch-Kincaid grade level is high.",
+                  position: { start: 0, end: 4, text: "This" },
+                  guideline_name: "Flesch-Kincaid grade level",
+                  context_surface: "This product is amazing.",
+                },
               ],
             },
           }),
         );
 
         const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
+          getNodeParameter: createGetNodeParameter({ documentName: "Pricing page" }),
         });
 
         const result = await processMarkupaiItem.call(
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(result.json).toHaveProperty("html_report");
         const html = result.json.html_report as string;
         expect(html).toContain("Content Analysis Report");
-        expect(html).toContain("Severity summary");
-        expect(html).toContain("Agents");
+        expect(html).toContain("Risk Assessment");
+        expect(html).toContain("Severity breakdown");
+        expect(html).toContain("Issues found");
+        expect(html).toContain("Did you use contractions?");
+        expect(html).toContain("Pricing page");
+        // Non-numeric mode: per-goal scores and analysis index rows hidden.
+        expect(html).not.toContain("Scores by goal");
       });
 
       it("adds issue_counts to response json", async () => {
@@ -205,11 +246,11 @@ describe("process.item", () => {
           createCompletedResponse({
             result: {
               issues: [
-                { severity: "high", agent_id: "ag_content_analysis" },
-                { severity: "high", agent_id: "ag_content_analysis" },
-                { severity: "medium", agent_id: "ag_content_analysis" },
-                { severity: "low", agent_id: "ag_content_analysis" },
-                { severity: "not_a_valid_severity", agent_id: "ag_content_analysis" },
+                makeIssue({ severity: "high" }),
+                makeIssue({ severity: "high" }),
+                makeIssue({ severity: "medium" }),
+                makeIssue({ severity: "low" }),
+                makeIssue({ severity: "not_a_valid_severity" }),
               ],
             },
           }),
@@ -223,6 +264,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(result.json).toMatchObject({
@@ -246,7 +288,12 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+        await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+          false,
+        );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_WUijxT0DthMg",
@@ -272,7 +319,12 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+        await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+          false,
+        );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_xQGQvFQMsspF",
@@ -298,7 +350,12 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+        await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+          false,
+        );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_vYCPHsSQnnJj",
@@ -322,7 +379,12 @@ describe("process.item", () => {
           }),
         });
 
-        await processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents);
+        await processMarkupaiItem.call(
+          mockExecuteFunctions as IExecuteFunctions,
+          0,
+          mockAllAgents,
+          false,
+        );
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_WUijxT0DthMg",
@@ -345,6 +407,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           2,
           mockAllAgents,
+          false,
         );
 
         expect(result.pairedItem).toEqual({ item: 2 });
@@ -366,7 +429,12 @@ describe("process.item", () => {
         });
 
         await expect(
-          processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents),
+          processMarkupaiItem.call(
+            mockExecuteFunctions as IExecuteFunctions,
+            0,
+            mockAllAgents,
+            false,
+          ),
         ).rejects.toThrow(NodeOperationError);
       });
 
@@ -386,6 +454,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(result).toEqual({
@@ -406,6 +475,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(result).toEqual({
@@ -430,6 +500,7 @@ describe("process.item", () => {
           mockExecuteFunctions as IExecuteFunctions,
           0,
           mockAllAgents,
+          false,
         );
 
         expect(result.json).toHaveProperty("error", "Custom error description");
@@ -444,7 +515,12 @@ describe("process.item", () => {
         });
 
         await expect(
-          processMarkupaiItem.call(mockExecuteFunctions as IExecuteFunctions, 0, mockAllAgents),
+          processMarkupaiItem.call(
+            mockExecuteFunctions as IExecuteFunctions,
+            0,
+            mockAllAgents,
+            false,
+          ),
         ).rejects.toThrow(NodeOperationError);
       });
 
@@ -461,6 +537,7 @@ describe("process.item", () => {
             mockExecuteFunctions as IExecuteFunctions,
             3,
             mockAllAgents,
+            false,
           );
           expect.fail("Should have thrown");
         } catch (error) {

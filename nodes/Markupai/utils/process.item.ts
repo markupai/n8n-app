@@ -7,8 +7,8 @@ import {
 } from "n8n-workflow";
 import { AGENT_ADDITIONAL_OPTION_FIELDS, COMMON_OPTION_FIELDS } from "./agent.input.coverage";
 import { runAgent, pollWorkflowUntilDone } from "./agents.api.utils";
-import { buildIssuesHtmlReport } from "./html.report";
 import { getIssueCountsFromResult } from "./issue.counts";
+import { renderReport, type AgentResult } from "./report_template";
 import type {
   AgentMetadata,
   AgentRunRequest,
@@ -86,26 +86,41 @@ function createErrorResponse(error: unknown, itemIndex: number): INodeExecutionD
   };
 }
 
+function getSelectedAgentName(allAgents: AgentMetadata[], selectedAgentIds: string[]): string {
+  const selectedId = selectedAgentIds[0];
+  if (!selectedId) return "";
+  const match = allAgents.find((a) => a.id === selectedId);
+  return match?.name ?? "";
+}
+
 function createSuccessResponse(
   response: AgentRunResponse,
   itemIndex: number,
   allAgents: AgentMetadata[],
   selectedAgentIds: string[],
   additionalOptions: AdditionalOptions,
+  showNumericScores: boolean,
 ): INodeExecutionData {
   const issueCounts: IssueCounts = getIssueCountsFromResult(response.result);
-  const htmlReport = buildIssuesHtmlReport({
-    allAgents,
-    selectedAgentIds,
-    result: response.result ?? undefined,
-    issueCounts,
-    documentName: additionalOptions.documentName,
-    documentUrl: additionalOptions.documentLink,
-    workflowId: response.workflow_id,
-    status: response.status,
-    startedAt: response.started_at,
-    completedAt: response.completed_at ?? undefined,
-  });
+  const baseResult: Record<string, unknown> = response.result ?? {};
+  const resultForReport = {
+    ...baseResult,
+    issue_counts: issueCounts,
+  };
+
+  const reportData: AgentResult = {
+    type: "agent_run",
+    timestamp: response.completed_at ?? response.started_at,
+    workflow_id: response.workflow_id,
+    agent_name: getSelectedAgentName(allAgents, selectedAgentIds),
+    document_name: additionalOptions.documentName ?? null,
+    document_url: additionalOptions.documentLink ?? null,
+    result: resultForReport as unknown as AgentResult["result"],
+    success: response.status === "completed",
+  };
+
+  const htmlReport = renderReport(reportData, { showNumericScores });
+
   const json: Record<string, unknown> = {
     workflow_id: response.workflow_id,
     status: response.status,
@@ -139,6 +154,7 @@ export async function processMarkupaiItem(
   this: IExecuteFunctions,
   itemIndex: number,
   allAgents: AgentMetadata[],
+  showNumericScores: boolean,
 ): Promise<INodeExecutionData> {
   try {
     const selectedAgentId = this.getNodeParameter("agents", itemIndex) as string;
@@ -173,6 +189,7 @@ export async function processMarkupaiItem(
         allAgents,
         [selectedAgentId],
         additionalOptions,
+        showNumericScores,
       );
     }
 
@@ -191,6 +208,7 @@ export async function processMarkupaiItem(
       allAgents,
       [selectedAgentId],
       additionalOptions,
+      showNumericScores,
     );
   } catch (error) {
     if (this.continueOnFail()) {
