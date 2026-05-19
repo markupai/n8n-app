@@ -8,11 +8,13 @@ import {
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
 import { listAllAgents } from "./utils/agents.api.utils";
 import { DOMAIN_IDS_AGENT_IDS, STYLE_OPTION_AGENT_IDS } from "./utils/agent.input.coverage";
-import { loadAgents, loadTerminologyDomains } from "./utils/load.options";
+import { loadAgents, loadStyleAgentTargets, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
+import { assertStyleAgentEnabled, getStyleAgentConfig } from "./utils/style_agent_api";
 
 const LOAD_AGENTS = "loadAgents" as const;
 const LOAD_TERMINOLOGY_DOMAINS = "loadTerminologyDomains" as const;
+const LOAD_STYLE_AGENT_TARGETS = "loadStyleAgentTargets" as const;
 
 export class Markupai implements INodeType {
   description: INodeTypeDescription = {
@@ -119,11 +121,16 @@ export class Markupai implements INodeType {
         },
       },
       {
-        displayName: "Target ID",
+        displayName: "Target",
         name: "targetId",
-        type: "string",
+        type: "options",
+        options: [],
         default: "",
-        description: "Language-service target ID for style checks",
+        description:
+          "Configured style agent target. Content profile is auto-detected by Markup AI.",
+        typeOptions: {
+          loadOptionsMethod: LOAD_STYLE_AGENT_TARGETS,
+        },
         displayOptions: {
           show: {
             resource: ["agent"],
@@ -206,12 +213,17 @@ export class Markupai implements INodeType {
     loadOptions: {
       [LOAD_AGENTS]: loadAgents,
       [LOAD_TERMINOLOGY_DOMAINS]: loadTerminologyDomains,
+      [LOAD_STYLE_AGENT_TARGETS]: loadStyleAgentTargets,
     },
   };
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
     const returnData: INodeExecutionData[] = [];
+
+    const styleAgentConfig = await getStyleAgentConfig.call(this);
+    assertStyleAgentEnabled(styleAgentConfig);
+
     const allAgents = await listAllAgents.call(this);
 
     for (let i = 0; i < items.length; i++) {

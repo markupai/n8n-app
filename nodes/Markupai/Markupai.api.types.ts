@@ -73,3 +73,18 @@ export interface IssueCounts {
   medium: number;
   low: number;
 }
+
+export type StyleAgentMode = "enabled" | "enabled_terminology" | "disabled";
+
+export interface OrganizationConfigResponse {
+  is_acrolinx_classic: boolean;
+  style_agent: StyleAgentMode;
+  style_agent_numeric_scoring: boolean;
+}
+
+export interface StyleAgentTarget {
+  id: string;
+  display_name: string;
+  is_default: boolean;
+  enabled: boolean;
+}
