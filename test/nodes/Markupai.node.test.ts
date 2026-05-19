@@ -133,9 +133,11 @@ describe("Markupai", () => {
       const propertyNames = properties.map((p) => p.name);
       expect(propertyNames).toContain("additionalOptions");
       expect(propertyNames).toContain("domainIds");
-      expect(propertyNames).toContain("orgName");
       expect(propertyNames).toContain("targetId");
-      expect(propertyNames).toContain("contentProfileId");
+      // Removed in INT-530: org_name and content_profile_id are auto-detected
+      // from the API key; documentLink/Document URL is no longer supported.
+      expect(propertyNames).not.toContain("orgName");
+      expect(propertyNames).not.toContain("contentProfileId");
 
       const targetIdProp = properties.find((p) => p.name === "targetId");
       expect(targetIdProp?.type).toBe("options");
@@ -154,8 +156,9 @@ describe("Markupai", () => {
       const additionalOptions = additionalOptionsProp.options ?? [];
       const additionalOptionNames = additionalOptions.map((o) => o.name);
       expect(additionalOptionNames).toEqual(
-        expect.arrayContaining(["documentName", "documentLink", "timeout"]),
+        expect.arrayContaining(["documentName", "documentRef", "timeout"]),
       );
+      expect(additionalOptionNames).not.toContain("documentLink");
 
       const domainIdsOption = properties.find(
         (o) => o.name === "domainIds" && "type" in o && "typeOptions" in o,

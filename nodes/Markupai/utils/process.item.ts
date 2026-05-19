@@ -18,11 +18,9 @@ import type {
 
 type AdditionalOptions = {
   documentName?: string;
-  documentLink?: string;
+  documentRef?: string;
   domainIds?: string[];
-  orgName?: string;
   targetId?: string;
-  contentProfileId?: string;
   timeout?: number;
 };
 
@@ -40,20 +38,14 @@ function buildRunRequest(
   if (allowedOptionFields.includes("documentName") && additionalOptions.documentName) {
     request.document_name = additionalOptions.documentName;
   }
-  if (allowedOptionFields.includes("documentLink") && additionalOptions.documentLink) {
-    request.url = additionalOptions.documentLink;
+  if (allowedOptionFields.includes("documentRef") && additionalOptions.documentRef) {
+    request.document_ref = additionalOptions.documentRef;
   }
   if (allowedOptionFields.includes("domainIds") && additionalOptions.domainIds?.length) {
     request.domain_ids = additionalOptions.domainIds.filter(Boolean);
   }
-  if (allowedOptionFields.includes("orgName") && additionalOptions.orgName) {
-    request.org_name = additionalOptions.orgName;
-  }
   if (allowedOptionFields.includes("targetId") && additionalOptions.targetId) {
     request.target_id = additionalOptions.targetId;
-  }
-  if (allowedOptionFields.includes("contentProfileId") && additionalOptions.contentProfileId) {
-    request.content_profile_id = additionalOptions.contentProfileId;
   }
 
   return request;
@@ -108,13 +100,15 @@ function createSuccessResponse(
     issue_counts: issueCounts,
   };
 
+  const effectiveDocumentRef = additionalOptions.documentRef ?? response.document_ref ?? null;
+
   const reportData: AgentResult = {
     type: "agent_run",
     timestamp: response.completed_at ?? response.started_at,
     workflow_id: response.workflow_id,
     agent_name: getSelectedAgentName(allAgents, selectedAgentIds),
     document_name: additionalOptions.documentName ?? null,
-    document_url: additionalOptions.documentLink ?? null,
+    document_ref: effectiveDocumentRef,
     result: resultForReport as unknown as AgentResult["result"],
     success: response.status === "completed",
   };
@@ -124,11 +118,11 @@ function createSuccessResponse(
   const json: Record<string, unknown> = {
     workflow_id: response.workflow_id,
     status: response.status,
+    document_ref: effectiveDocumentRef,
     result: response.result,
     started_at: response.started_at,
     completed_at: response.completed_at,
     duration_seconds: response.duration_seconds,
-    error: response.error,
     issue_counts: issueCounts,
     html_report: htmlReport,
   };
@@ -143,11 +137,7 @@ function assertCompletedStatus(response: AgentRunResponse): void {
     return;
   }
 
-  throw new Error(
-    response.error
-      ? `Workflow ${response.status}: ${response.error}`
-      : `Workflow ended with status: ${response.status}`,
-  );
+  throw new Error(`Workflow ended with status: ${response.status}`);
 }
 
 export async function processMarkupaiItem(
@@ -164,17 +154,15 @@ export async function processMarkupaiItem(
 
     const commonOptions = (this.getNodeParameter("additionalOptions", itemIndex) ?? {}) as {
       documentName?: string;
-      documentLink?: string;
+      documentRef?: string;
       timeout?: number;
     };
     const additionalOptions: AdditionalOptions = {
       documentName: commonOptions.documentName,
-      documentLink: commonOptions.documentLink,
+      documentRef: commonOptions.documentRef,
       timeout: commonOptions.timeout,
       domainIds: this.getNodeParameter("domainIds", itemIndex, []) as string[],
-      orgName: this.getNodeParameter("orgName", itemIndex, "") as string,
       targetId: this.getNodeParameter("targetId", itemIndex, "") as string,
-      contentProfileId: this.getNodeParameter("contentProfileId", itemIndex, "") as string,
     };
 
     const body = buildRunRequest.call(this, itemIndex, selectedAgentId, additionalOptions);

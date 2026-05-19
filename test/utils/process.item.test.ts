@@ -90,14 +90,12 @@ function createGetNodeParameter(additionalOptions: Record<string, unknown> = {})
     if (name === "additionalOptions") {
       return {
         documentName: additionalOptions.documentName ?? "",
-        documentLink: additionalOptions.documentLink ?? "",
+        documentRef: additionalOptions.documentRef ?? "",
         timeout: additionalOptions.timeout ?? 120_000,
       };
     }
     if (name === "domainIds") return additionalOptions.domainIds ?? [];
-    if (name === "orgName") return additionalOptions.orgName ?? "";
     if (name === "targetId") return additionalOptions.targetId ?? "";
-    if (name === "contentProfileId") return additionalOptions.contentProfileId ?? "";
     return undefined;
   });
 }
@@ -277,13 +275,13 @@ describe("process.item", () => {
         });
       });
 
-      it("passes documentName, documentLink, domainIds in request body", async () => {
+      it("passes documentName, documentRef, domainIds in snake_case request body", async () => {
         mockRunAgent.mockResolvedValue(createCompletedResponse());
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createGetNodeParameter({
             documentName: "doc.txt",
-            documentLink: "https://example.com/doc",
+            documentRef: "cms-page-42",
             domainIds: ["d1", "d2"],
           }),
         });
@@ -295,15 +293,14 @@ describe("process.item", () => {
           false,
         );
 
-        expect(mockRunAgent).toHaveBeenCalledWith(
-          "ag_WUijxT0DthMg",
-          expect.objectContaining({
-            text: "test content",
-            document_name: "doc.txt",
-            url: "https://example.com/doc",
-            domain_ids: ["d1", "d2"],
-          }),
-        );
+        const body = mockRunAgent.mock.calls[0][1] as Record<string, unknown>;
+        expect(body).toMatchObject({
+          text: "test content",
+          document_name: "doc.txt",
+          document_ref: "cms-page-42",
+          domain_ids: ["d1", "d2"],
+        });
+        expect(body.url).toBeUndefined();
       });
 
       it("uses selected agent ID directly for runAgent", async () => {
@@ -334,18 +331,16 @@ describe("process.item", () => {
         );
       });
 
-      it("passes style-agent additional inputs in snake_case request body", async () => {
+      it("passes style-agent additional inputs in snake_case and drops auto-detected fields", async () => {
         mockRunAgent.mockResolvedValue(createCompletedResponse());
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: vi.fn().mockImplementation((name: string) => {
             if (name === "agents") return "ag_vYCPHsSQnnJj";
             if (name === "content") return "test content";
-            if (name === "additionalOptions") return {};
+            if (name === "additionalOptions") return { documentName: "Style doc" };
             if (name === "domainIds") return [];
-            if (name === "orgName") return "Markup AI";
             if (name === "targetId") return "target_123";
-            if (name === "contentProfileId") return "profile_456";
             return undefined;
           }),
         });
@@ -357,15 +352,16 @@ describe("process.item", () => {
           false,
         );
 
-        expect(mockRunAgent).toHaveBeenCalledWith(
-          "ag_vYCPHsSQnnJj",
-          expect.objectContaining({
-            text: "test content",
-            org_name: "Markup AI",
-            target_id: "target_123",
-            content_profile_id: "profile_456",
-          }),
-        );
+        const body = mockRunAgent.mock.calls[0][1] as Record<string, unknown>;
+        expect(body).toMatchObject({
+          text: "test content",
+          document_name: "Style doc",
+          target_id: "target_123",
+        });
+        // Auto-detected fields are never sent to the API.
+        expect(body.org_name).toBeUndefined();
+        expect(body.content_profile_id).toBeUndefined();
+        expect(body.url).toBeUndefined();
       });
 
       it("does not pass unsupported agent-specific options for non-style agents", async () => {
@@ -373,9 +369,7 @@ describe("process.item", () => {
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createGetNodeParameter({
-            orgName: "Markup AI",
             targetId: "target_123",
-            contentProfileId: "profile_456",
           }),
         });
 
@@ -388,11 +382,7 @@ describe("process.item", () => {
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_WUijxT0DthMg",
-          expect.not.objectContaining({
-            org_name: "Markup AI",
-            target_id: "target_123",
-            content_profile_id: "profile_456",
-          }),
+          expect.not.objectContaining({ target_id: "target_123" }),
         );
       });
 
@@ -419,7 +409,6 @@ describe("process.item", () => {
         mockRunAgent.mockResolvedValue(
           createAgentRunResponse({
             status: "failed",
-            error: "Policy check failed",
           }),
         );
 

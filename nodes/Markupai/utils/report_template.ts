@@ -55,7 +55,7 @@ export interface AgentResult {
   agent_name: string;
   // Caller-supplied document metadata, surfaced in the Workflow table.
   document_name?: string | null;
-  document_url?: string | null;
+  document_ref?: string | null;
   result: {
     issues: AgentIssue[];
     warnings?: unknown[];
@@ -423,13 +423,15 @@ function renderWorkflowRows(data: AgentResult): string {
   ];
 
   const docName = data.document_name?.trim() ?? "";
-  const docUrl = data.document_url?.trim() ?? "";
-  if (docName || docUrl) {
-    const linkText = esc(docName || docUrl);
-    const docCell = docUrl
-      ? `<a href="${esc(docUrl)}" style="color:${C.coral};text-decoration:none;">${linkText}</a>`
-      : linkText;
-    rows.push(["Document", docCell]);
+  if (docName) {
+    rows.push(["Document", esc(docName)]);
+  }
+  const docRef = data.document_ref?.trim() ?? "";
+  if (docRef) {
+    rows.push([
+      "Reference",
+      `<span style="font-family:Menlo,Consolas,monospace;font-size:11px;color:${C.saddle};word-break:break-all;">${esc(docRef)}</span>`,
+    ]);
   }
 
   rows.push(

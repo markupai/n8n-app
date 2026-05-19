@@ -7,20 +7,14 @@ import {
 describe("agent.input.coverage", () => {
   it("maps every non-orchestrator agent from api.json to additional option fields", () => {
     expect(AGENT_ADDITIONAL_OPTION_FIELDS).toEqual({
-      [AGENT_IDS.terminology]: ["documentName", "documentLink", "domainIds"],
-      [AGENT_IDS.genericClaims]: ["documentName", "documentLink"],
-      [AGENT_IDS.sourceAuthority]: ["documentName", "documentLink"],
-      [AGENT_IDS.freshness]: ["documentName", "documentLink"],
-      [AGENT_IDS.focusAgent]: ["documentName", "documentLink"],
-      [AGENT_IDS.aiVoiceDetector]: ["documentName", "documentLink", "domainIds"],
-      [AGENT_IDS.styleAgent]: [
-        "documentName",
-        "documentLink",
-        "orgName",
-        "targetId",
-        "contentProfileId",
-      ],
-      [AGENT_IDS.snippetReadiness]: ["documentName", "documentLink"],
+      [AGENT_IDS.terminology]: ["documentName", "documentRef", "domainIds"],
+      [AGENT_IDS.genericClaims]: ["documentName", "documentRef"],
+      [AGENT_IDS.sourceAuthority]: ["documentName", "documentRef"],
+      [AGENT_IDS.freshness]: ["documentName", "documentRef"],
+      [AGENT_IDS.focusAgent]: ["documentName", "documentRef"],
+      [AGENT_IDS.aiVoiceDetector]: ["documentName", "documentRef", "domainIds"],
+      [AGENT_IDS.styleAgent]: ["documentName", "documentRef", "targetId"],
+      [AGENT_IDS.snippetReadiness]: ["documentName", "documentRef"],
     });
   });
 });

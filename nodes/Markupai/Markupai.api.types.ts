@@ -51,20 +51,20 @@ export interface AgentRunRequest {
   domain_ids?: string[] | null;
   url?: string | null;
   document_name?: string | null;
-  org_name?: string | null;
+  document_ref?: string | null;
   target_id?: string | null;
-  content_profile_id?: string | null;
   webhook_url?: string | null;
 }
 
 export interface AgentRunResponse {
   workflow_id: string;
+  request_id?: string | null;
   status: WorkflowStatus;
+  document_ref?: string | null;
   result?: Record<string, unknown> | null;
   started_at: string;
   completed_at?: string | null;
   duration_seconds?: number | null;
-  error?: string | null;
 }
 
 export interface IssueCounts {

@@ -9,7 +9,7 @@ describe("renderReport", () => {
       workflow_id: "agw_L2Jjla1S6MftldxZo2AeNuWq",
       agent_name: "style_agent",
       document_name: "Pricing page",
-      document_url: "https://example.com/pricing",
+      document_ref: "cms-pricing-page-42",
       result: {
         issues: [
           {
@@ -52,8 +52,10 @@ describe("renderReport", () => {
     expect(html).toContain("Use a less colloquial word?");
     expect(html).toContain("Flesch-Kincaid grade level: 2");
     expect(html).toContain("Pricing page");
-    // The document name is rendered as a hyperlink when document_url is present.
-    expect(html).toContain('href="https://example.com/pricing"');
+    // Document name renders as plain text; the reference renders in a separate
+    // monospace row.
+    expect(html).toContain("cms-pricing-page-42");
+    expect(html).not.toContain('href="https://example.com/pricing"');
     // Non-numeric mode hides per-goal scores and analysis index rows.
     expect(html).not.toContain("Scores by goal");
     expect(html).not.toContain("Clarity index");
