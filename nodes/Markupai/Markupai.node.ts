@@ -223,11 +223,12 @@ export class Markupai implements INodeType {
 
     const styleAgentConfig = await getStyleAgentConfig.call(this);
     assertStyleAgentEnabled(styleAgentConfig);
+    const showNumericScores = styleAgentConfig.style_agent_numeric_scoring;
 
     const allAgents = await listAllAgents.call(this);
 
     for (let i = 0; i < items.length; i++) {
-      const result = await processMarkupaiItem.call(this, i, allAgents);
+      const result = await processMarkupaiItem.call(this, i, allAgents, showNumericScores);
       returnData.push(result);
     }
 
