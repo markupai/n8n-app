@@ -4,6 +4,7 @@ import type {
   INodePropertyOptions,
 } from "n8n-workflow";
 import { getBaseUrlString } from "../../../utils/common.utils";
+import { listStyleAgentTargets } from "./style_agent_api";
 import type {
   AgentListResult,
   TerminologyDomain,
@@ -140,4 +141,23 @@ export async function loadTerminologyDomains(
       value: domain.id,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function loadStyleAgentTargets(
+  this: ILoadOptionsFunctions,
+): Promise<INodePropertyOptions[]> {
+  const targets = await listStyleAgentTargets.call(this);
+
+  return targets
+    .map((target) => ({
+      name: target.display_name,
+      value: target.id,
+    }))
+    .sort((a, b) => {
+      const aIsDefault = targets.find((t) => t.id === a.value)?.is_default ?? false;
+      const bIsDefault = targets.find((t) => t.id === b.value)?.is_default ?? false;
+      if (aIsDefault && !bIsDefault) return -1;
+      if (!aIsDefault && bIsDefault) return 1;
+      return a.name.localeCompare(b.name);
+    });
 }

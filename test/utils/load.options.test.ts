@@ -3,6 +3,7 @@ import type { ILoadOptionsFunctions } from "n8n-workflow";
 import {
   getBaseUrl,
   loadAgents,
+  loadStyleAgentTargets,
   loadTerminologyDomains,
 } from "../../nodes/Markupai/utils/load.options";
 
@@ -242,6 +243,55 @@ describe("load.options", () => {
 
       await expect(loadTerminologyDomains.call(loadOptionsFunction)).rejects.toThrow(
         "Error loading terminology domains",
+      );
+    });
+  });
+
+  describe("loadStyleAgentTargets", () => {
+    const targetsResponse = [
+      { id: "tgt_main", display_name: "Main", is_default: true, enabled: true },
+      { id: "tgt_marketing", display_name: "Marketing", is_default: false, enabled: true },
+      { id: "tgt_dev", display_name: "Dev", is_default: false, enabled: true },
+      { id: "tgt_disabled", display_name: "Disabled SG", is_default: false, enabled: false },
+    ];
+
+    it("returns enabled targets with default first, then alphabetical", async () => {
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: vi.fn().mockResolvedValue({
+              body: targetsResponse,
+              statusCode: 200,
+            }),
+          },
+        },
+      });
+
+      const result = await loadStyleAgentTargets.call(loadOptionsFunction);
+
+      expect(result).toEqual([
+        { name: "Main", value: "tgt_main" },
+        { name: "Dev", value: "tgt_dev" },
+        { name: "Marketing", value: "tgt_marketing" },
+      ]);
+    });
+
+    it("throws if the targets API returns an error status", async () => {
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: vi.fn().mockResolvedValue({
+              body: { detail: "forbidden" },
+              statusCode: 403,
+            }),
+          },
+        },
+      });
+
+      await expect(loadStyleAgentTargets.call(loadOptionsFunction)).rejects.toThrow(
+        "Error loading style agent targets",
       );
     });
   });

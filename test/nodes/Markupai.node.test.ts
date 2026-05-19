@@ -25,6 +25,7 @@ vi.mock("n8n-workflow", async () => {
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
   loadAgents: vi.fn(),
   loadTerminologyDomains: vi.fn(),
+  loadStyleAgentTargets: vi.fn(),
 }));
 
 vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
@@ -33,6 +34,20 @@ vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
     .fn()
     .mockResolvedValue([{ id: "ag_content_analysis", name: "Content Analysis" }]),
 }));
+
+vi.mock("../../nodes/Markupai/utils/style_agent_api", async () => {
+  const actual = await vi.importActual<typeof import("../../nodes/Markupai/utils/style_agent_api")>(
+    "../../nodes/Markupai/utils/style_agent_api",
+  );
+  return {
+    ...actual,
+    getStyleAgentConfig: vi.fn().mockResolvedValue({
+      is_acrolinx_classic: false,
+      style_agent: "enabled",
+      style_agent_numeric_scoring: false,
+    }),
+  };
+});
 
 const createRunResponse = () => ({
   workflow_id: "wf_123",
@@ -122,6 +137,10 @@ describe("Markupai", () => {
       expect(propertyNames).toContain("targetId");
       expect(propertyNames).toContain("contentProfileId");
 
+      const targetIdProp = properties.find((p) => p.name === "targetId");
+      expect(targetIdProp?.type).toBe("options");
+      expect(targetIdProp?.typeOptions?.loadOptionsMethod).toBe("loadStyleAgentTargets");
+
       const additionalOptionsProp = properties.find((p) => p.name === "additionalOptions");
       expect(additionalOptionsProp).toBeDefined();
       if (
@@ -161,9 +180,10 @@ describe("Markupai", () => {
   });
 
   describe("Methods", () => {
-    it("should have loadAgents and loadTerminologyDomains in loadOptions", () => {
+    it("should have loadAgents, loadTerminologyDomains, and loadStyleAgentTargets in loadOptions", () => {
       expect(markupai.methods.loadOptions.loadAgents).toBeDefined();
       expect(markupai.methods.loadOptions.loadTerminologyDomains).toBeDefined();
+      expect(markupai.methods.loadOptions.loadStyleAgentTargets).toBeDefined();
     });
   });
 
@@ -231,6 +251,33 @@ describe("Markupai", () => {
       await expect(
         markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
       ).rejects.toThrow();
+    });
+
+    it("should throw a friendly error when style agent is disabled", async () => {
+      const { getStyleAgentConfig } = await import("../../nodes/Markupai/utils/style_agent_api");
+      vi.mocked(getStyleAgentConfig).mockResolvedValueOnce({
+        is_acrolinx_classic: false,
+        style_agent: "disabled",
+        style_agent_numeric_scoring: false,
+      });
+
+      await expect(
+        markupai.execute.call(mockExecuteFunctions as IExecuteFunctions),
+      ).rejects.toThrow(
+        "Style Agent is not enabled for your organization. Contact Markup AI support to enable it.",
+      );
+    });
+
+    it("should call style agent config gate once per execute regardless of item count", async () => {
+      const { getStyleAgentConfig } = await import("../../nodes/Markupai/utils/style_agent_api");
+      vi.mocked(getStyleAgentConfig).mockClear();
+
+      const threeItems: INodeExecutionData[] = [{ json: {} }, { json: {} }, { json: {} }];
+      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(threeItems);
+
+      await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
+
+      expect(vi.mocked(getStyleAgentConfig)).toHaveBeenCalledTimes(1);
     });
   });
 });
