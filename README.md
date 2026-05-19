@@ -33,19 +33,18 @@ The Markup AI node currently supports one operation:
 
 ### Run Agent
 
-Run one or more Markup AI agents on input text.
+Run the Markup AI Style Agent on input text.
 
-- **Single agent:** Runs the selected agent directly.
-- **Multiple agents (up to 10):** Runs selected agents in parallel through the Markup AI parallel executor.
-- **Execution model:** Starts an async workflow and polls automatically until the workflow reaches a terminal state (`completed`, `failed`, `timed_out`, or `cancelled`) or timeout.
+- **Execution model:** Calls `POST /agents/{id}/run` and polls `GET /agents/workflows/{id}` until the workflow reaches a terminal state (`completed`, `failed`, `timed_out`, or `cancelled`) or the configured timeout elapses.
+- **Gating:** The node fails fast if your organization has `style_agent: "disabled"` in `/style-agent/config`.
 
 **Returns:**
 
 - `workflow_id`, `status`, `started_at`, `completed_at`, `duration_seconds`
+- `document_ref` (echoed back from your input, when provided)
 - `result` (agent output payload)
 - `issue_counts` (`total`, `high`, `medium`, `low` computed from `result.issues`)
-- `error` (when present)
-- `html_report` (rendered summary of issues and workflow metadata)
+- `html_report` (rendered HTML report of issues and workflow metadata)
 
 ## Credentials
 
@@ -67,14 +66,16 @@ To use this node, you'll need a Markup AI API account.
 
 The **Run Agent** operation supports the following configuration:
 
-| Option                                 | Type               | Required | Default  | Description                                                                                   |
-| -------------------------------------- | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------- |
-| **Agents**                             | Multi-select       | Yes      | -        | Select one or more agents to run. If multiple are selected, the node uses parallel execution. |
-| **Text**                               | String (multiline) | Yes      | -        | Document text to analyze.                                                                     |
-| **Additional Options → Document Name** | String             | No       | `""`     | Friendly name of the source document.                                                         |
-| **Additional Options → Document URL**  | String             | No       | `""`     | URL or link to the source document.                                                           |
-| **Additional Options → Domain IDs**    | Multi-select       | No       | `[]`     | Select one or more terminology domains (stored/sent as domain ID array).                      |
-| **Additional Options → Timeout (Ms)**  | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.          |
+| Option                                      | Type               | Required | Default  | Description                                                                                                |
+| ------------------------------------------- | ------------------ | -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| **Agent**                                   | Single-select      | Yes      | -        | Select the agent to run. Currently only `style_agent` is exposed.                                          |
+| **Target**                                  | Single-select      | No       | -        | Style agent target (style guide). Loaded from `GET /style-agent/targets`. Defaults to your default target. |
+| **Content**                                 | String (multiline) | Yes      | -        | Document text to analyze.                                                                                  |
+| **Additional Options → Document Name**      | String             | No       | `""`     | Human-readable name of the document being analyzed.                                                        |
+| **Additional Options → Document Reference** | String             | No       | `""`     | Caller-supplied identifier (e.g. CMS page ID) echoed back in the result for tracking.                      |
+| **Additional Options → Timeout (Ms)**       | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.                       |
+
+Organization and content profile are auto-detected from the API key — there is no input for them.
 
 ### Example Workflows
 
@@ -119,36 +120,37 @@ Contributions are welcome! This section is for developers who want to contribute
 
 ### Prerequisites
 
-- Node.js >= 24
+- Node.js >= 22.16
 - npm
 - Basic familiarity with n8n and TypeScript
 
-### Quick Setup (Recommended)
+### Quick Start (Recommended)
 
-After cloning this repository, run the automated setup script:
-
-```bash
-npm run setup
-```
-
-This will:
-
-- Install dependencies (including n8n as a devDependency)
-- Build the code and create the dist folder
-- Link the package from the dist folder (avoiding node_modules conflicts)
-- Configure the n8n custom directory
-- Fix n8n config file permissions
-- Link the package for local development
-
-Then start n8n:
+After cloning this repository:
 
 ```bash
+npm install
 npm start
 ```
 
-This uses the local n8n installation from devDependencies — no global installation needed!
+That's it. `npm start` runs `n8n-node dev` (the official [`@n8n/node-cli`](https://github.com/n8n-io/n8n-nodes-starter) toolchain), which:
 
-**Note:** The setup links from the `dist` folder rather than the project root. This ensures that n8n only loads the compiled code without development dependencies, preventing module loading conflicts.
+- builds the node in watch mode (rebuilds automatically on file changes),
+- starts n8n in a subprocess with this node pre-loaded,
+- opens the editor at http://localhost:5678.
+
+You do **not** need n8n installed globally. The CLI bundles a compatible n8n version for you.
+
+The dev n8n stores its data in `~/.n8n-node-cli/.n8n/` (separate from any other n8n install you may have at `~/.n8n/`).
+
+**First-time SQLite fix:** If `npm start` errors with `SQLite package has not been found installed`, the sqlite3 native binding in the npx cache needs to be rebuilt for your Node version. One-shot fix:
+
+```bash
+cd ~/.npm/_npx/*/  # The CLI's npx cache for n8n
+npm rebuild sqlite3
+```
+
+Then re-run `npm start`.
 
 ### Environment Configuration
 
@@ -182,9 +184,9 @@ npm start
 
 **Note:** By default, the node uses the production API URL (`https://api.markup.ai/`). The environment variable is only needed for development or custom API endpoints. n8n automatically loads `.env` files from the current working directory, so no additional tools are required.
 
-### Manual Setup
+### Manual Setup (alternative)
 
-If you prefer to set things up manually:
+If you prefer to run an n8n instance you already have installed (e.g. global install, Docker, an existing `~/.n8n/`), use the `npm link` workflow:
 
 1. Install dependencies after cloning this repository
 
@@ -209,7 +211,6 @@ cd ..
 4. Create a `custom` directory inside n8n if it does not exist
 
 ```bash
-# In ~/.n8n directory run
 mkdir -p ~/.n8n/custom
 cd ~/.n8n/custom
 npm init -y
@@ -227,14 +228,9 @@ npm link @markupai/n8n-nodes-markupai
 chmod 600 ~/.n8n/config
 ```
 
-7. Start n8n
+7. Start your own n8n instance (e.g. `n8n start` if globally installed). You should now see Markup AI in the list of nodes.
 
-```bash
-# Back in your project directory
-npm start
-```
-
-You should now see Markup AI in the list of nodes. Happy hacking!
+`npm run setup` automates steps 1–6 of this flow.
 
 ### Making Changes
 
@@ -266,21 +262,29 @@ npm run test:watch
 
 ### Troubleshooting
 
-**Module loading errors**: If you see errors like `require(...).index is not a constructor`, make sure you've linked from the `dist` folder, not the project root. To fix:
+**`SQLite package has not been found installed` on `npm start`**: The sqlite3 native binding in the `@n8n/node-cli` npx cache wasn't built for your Node version. Rebuild it once:
+
+```bash
+cd ~/.npm/_npx/*/
+npm rebuild sqlite3
+```
+
+**Resetting the dev n8n instance**: If you want a clean slate (forget owner setup, credentials, workflows), nuke the dev user folder:
+
+```bash
+rm -rf ~/.n8n-node-cli/
+```
+
+The next `npm start` will prompt you to create the owner account again.
+
+**Module loading errors (manual setup only)**: If you're using the Manual Setup path and see errors like `require(...).index is not a constructor`, make sure you've linked from the `dist` folder, not the project root. To fix:
 
 ```bash
 npm run cleanup  # Remove old links
 npm run setup    # Set up correctly
 ```
 
-**Permissions errors**: If you see warnings about file permissions, run `chmod 600 ~/.n8n/config` to fix them.
-
-**Resetting the development environment**: If you need to start fresh:
-
-```bash
-npm run cleanup  # Removes all npm links
-npm run setup    # Sets up from scratch
-```
+**Permissions errors (manual setup only)**: If you see warnings about file permissions, run `chmod 600 ~/.n8n/config` to fix them.
 
 **Debugging setup issues**: If you encounter problems during setup, enable debug mode for detailed output:
 
