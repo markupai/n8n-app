@@ -99,4 +99,39 @@ describe("renderReport", () => {
     expect(html).toContain("Clarity index");
     expect(html).toContain("Flesch reading ease");
   });
+
+  it("renders a sane report when the API payload is missing issues/quality/analysis", () => {
+    const data = {
+      type: "agent_run",
+      timestamp: "2026-05-18T13:00:00.000Z",
+      workflow_id: "agw_minimal",
+      agent_name: "style_agent",
+      result: {} as unknown as AgentResult["result"],
+      success: true,
+    } as AgentResult;
+
+    const html = renderReport(data, { showNumericScores: true });
+
+    // Doesn't throw; empty-state branch is taken.
+    expect(html).toContain("Content Analysis Report");
+    expect(html).toContain("No issues found");
+    expect(html).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it("renders without crashing when result is undefined entirely", () => {
+    const data = {
+      type: "agent_run",
+      timestamp: "2026-05-18T13:00:00.000Z",
+      workflow_id: "agw_no_result",
+      agent_name: "style_agent",
+      result: undefined as unknown as AgentResult["result"],
+      success: false,
+    } as AgentResult;
+
+    const html = renderReport(data);
+
+    expect(html).toContain("Content Analysis Report");
+    expect(html).toContain("No issues found");
+    expect(html).not.toMatch(/\{\{\w+\}\}/);
+  });
 });

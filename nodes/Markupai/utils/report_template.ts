@@ -479,7 +479,7 @@ export const REPORT_TEMPLATE = `<!DOCTYPE html>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td valign="middle">
-          <img src="${CDN_LOGO}" width="120" height="auto" alt="Markup AI" style="display:block;border:0;outline:none;text-decoration:none;height:auto;">
+          <img src="${CDN_LOGO}" width="120" alt="Markup AI" style="display:block;border:0;outline:none;text-decoration:none;height:auto;">
         </td>
         <td valign="middle" align="right">
           <span style="display:inline-block;background-color:#ef4540;color:#ffffff;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;">{{agentLabel}}</span>
@@ -565,16 +565,21 @@ export const REPORT_TEMPLATE = `<!DOCTYPE html>
 
 export function renderReport(data: AgentResult, options: RenderOptions = {}): string {
   const opts: Required<RenderOptions> = { ...DEFAULT_OPTS, ...options };
-  const issues = data.result.issues;
+  // Guard against malformed payloads: API responses without an `issues`
+  // array, or with `quality`/`analysis` missing, must still render rather
+  // than crash the node. TS sees `data.result` as non-nullable, but at
+  // runtime n8n hands us whatever the agent API returned.
+  const result = (data as { result?: AgentResult["result"] }).result;
+  const issues: AgentIssue[] = Array.isArray(result?.issues) ? result.issues : [];
   const high = issues.filter((i) => i.severity === "high").length;
   const medium = issues.filter((i) => i.severity === "medium").length;
   const low = issues.filter((i) => i.severity === "low").length;
 
-  const quality = data.result.quality ?? null;
+  const quality = result?.quality ?? null;
   const status: QualityStatus =
     normalizeQualityStatus(quality?.status) ?? deriveStatusFromIssues(issues);
   const score = typeof quality?.score === "number" ? quality.score : null;
-  const goals = quality?.scoresByGoal ?? null;
+  const goals = Array.isArray(quality?.scoresByGoal) ? quality.scoresByGoal : null;
 
   const goalSection =
     opts.showNumericScores && goals && goals.length > 0
@@ -594,7 +599,7 @@ export function renderReport(data: AgentResult, options: RenderOptions = {}): st
     mediumCount: String(medium),
     lowCount: String(low),
     totalIssues: String(issues.length),
-    documentSection: renderDocumentSection(data.result.analysis ?? null, opts),
+    documentSection: renderDocumentSection(result?.analysis ?? null, opts),
     goalSection,
     issueGroups: issues.length
       ? renderIssueGroups(issues)
