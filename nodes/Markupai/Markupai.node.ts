@@ -107,20 +107,6 @@ export class Markupai implements INodeType {
         },
       },
       {
-        displayName: "Org Name",
-        name: "orgName",
-        type: "string",
-        default: "",
-        description: "Organization name injected from context for style checks",
-        displayOptions: {
-          show: {
-            resource: ["agent"],
-            operation: ["runAgent"],
-            agents: STYLE_OPTION_AGENT_IDS,
-          },
-        },
-      },
-      {
         displayName: "Target",
         name: "targetId",
         type: "options",
@@ -131,20 +117,6 @@ export class Markupai implements INodeType {
         typeOptions: {
           loadOptionsMethod: LOAD_STYLE_AGENT_TARGETS,
         },
-        displayOptions: {
-          show: {
-            resource: ["agent"],
-            operation: ["runAgent"],
-            agents: STYLE_OPTION_AGENT_IDS,
-          },
-        },
-      },
-      {
-        displayName: "Content Profile ID",
-        name: "contentProfileId",
-        type: "string",
-        default: "",
-        description: "Language-service content profile ID for style checks",
         displayOptions: {
           show: {
             resource: ["agent"],
@@ -188,14 +160,15 @@ export class Markupai implements INodeType {
             name: "documentName",
             type: "string",
             default: "",
-            description: "Name of the document being analyzed",
+            description: "Human-readable name of the document being analyzed",
           },
           {
-            displayName: "Document URL",
-            name: "documentLink",
+            displayName: "Document Reference",
+            name: "documentRef",
             type: "string",
             default: "",
-            description: "URL or link to the source document",
+            description:
+              "Caller-supplied identifier (for example a CMS page ID) echoed back in the result for tracking",
           },
           {
             displayName: "Timeout (Ms)",

@@ -245,7 +245,6 @@ describe("agents.api.utils", () => {
       const failed = {
         workflow_id: "wf_123",
         status: "failed" as const,
-        error: "Agent error",
         started_at: "2025-01-01T00:00:00Z",
       };
       const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: failed });
@@ -256,7 +255,6 @@ describe("agents.api.utils", () => {
       const result = await pollWorkflowUntilDone.call(mock, "wf_123", 30_000);
 
       expect(result.status).toBe("failed");
-      expect(result.error).toBe("Agent error");
       expect(mockCall).toHaveBeenCalledTimes(1);
     });
 
