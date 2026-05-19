@@ -38,13 +38,15 @@ Run the Markup AI Style Agent on input text.
 - **Execution model:** Calls `POST /agents/{id}/run` and polls `GET /agents/workflows/{id}` until the workflow reaches a terminal state (`completed`, `failed`, `timed_out`, or `cancelled`) or the configured timeout elapses.
 - **Gating:** The node fails fast if your organization has `style_agent: "disabled"` in `/style-agent/config`.
 
-**Returns:**
+**Returns (success):**
 
 - `workflow_id`, `status`, `started_at`, `completed_at`, `duration_seconds`
 - `document_ref` (echoed back from your input, when provided)
 - `result` (agent output payload)
 - `issue_counts` (`total`, `high`, `medium`, `low` computed from `result.issues`)
 - `html_report` (rendered HTML report of issues and workflow metadata)
+
+**Returns (failure with "Continue On Fail"):** When the node is configured with **Continue On Fail** and the run errors, the item output is simply `{ error: "<message>" }`. Without Continue On Fail, errors are thrown as n8n node-operation errors and the workflow stops.
 
 ## Credentials
 
@@ -143,10 +145,10 @@ You do **not** need n8n installed globally. The CLI bundles a compatible n8n ver
 
 The dev n8n stores its data in `~/.n8n-node-cli/.n8n/` (separate from any other n8n install you may have at `~/.n8n/`).
 
-**First-time SQLite fix:** If `npm start` errors with `SQLite package has not been found installed`, the sqlite3 native binding in the npx cache needs to be rebuilt for your Node version. One-shot fix:
+**First-time SQLite fix:** If `npm start` errors with `SQLite package has not been found installed`, the sqlite3 native binding in the npx cache needs to be rebuilt for your Node version. The `@n8n/node-cli` toolchain caches n8n under a hash-named directory; this one-liner finds it and rebuilds:
 
 ```bash
-cd ~/.npm/_npx/*/  # The CLI's npx cache for n8n
+cd "$(find ~/.npm/_npx -maxdepth 4 -type d -path '*/node_modules/n8n' -print -quit | xargs dirname | xargs dirname)"
 npm rebuild sqlite3
 ```
 
@@ -265,7 +267,7 @@ npm run test:watch
 **`SQLite package has not been found installed` on `npm start`**: The sqlite3 native binding in the `@n8n/node-cli` npx cache wasn't built for your Node version. Rebuild it once:
 
 ```bash
-cd ~/.npm/_npx/*/
+cd "$(find ~/.npm/_npx -maxdepth 4 -type d -path '*/node_modules/n8n' -print -quit | xargs dirname | xargs dirname)"
 npm rebuild sqlite3
 ```
 
