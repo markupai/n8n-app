@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Release channel"
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - stable
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify npm version (>= 11.5.1 required for trusted publishing)
+        run: npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lint check
+        run: npm run lint:check
+
+      - name: Run type check
+        run: npm run type-check
+
+      - name: Run format check
+        run: npm run format:check
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build (dev)
+        if: inputs.release_type == 'dev'
+        run: npm run build
+
+      - name: Build (stable, with prepublish checks)
+        if: inputs.release_type == 'stable'
+        run: npm run prepublishOnly
+
+      - name: Publish to NPM (dev)
+        if: inputs.release_type == 'dev'
+        run: npm publish --tag dev
+
+      - name: Publish to NPM (stable)
+        if: inputs.release_type == 'stable'
+        run: npm publish
+
+      - name: Push git tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "$TAG"
