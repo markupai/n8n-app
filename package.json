@@ -54,7 +54,7 @@
     "@eslint/js": "10.0.1",
     "@n8n/node-cli": "0.31.0",
     "@types/node": "25.9.1",
-    "@vitest/coverage-v8": "4.1.6",
+    "@vitest/coverage-v8": "4.1.7",
     "eslint": "10.4.0",
     "eslint-plugin-n8n-nodes-base": "1.16.6",
     "globals": "17.6.0",
@@ -64,7 +64,7 @@
     "prettier-plugin-packagejson": "3.0.2",
     "typescript": "6.0.3",
     "typescript-eslint": "8.58.2",
-    "vitest": "4.1.6"
+    "vitest": "4.1.7"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
