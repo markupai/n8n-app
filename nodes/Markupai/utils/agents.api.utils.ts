@@ -18,6 +18,27 @@ function buildApiUrl(baseUrl: URL, path: string): string {
   return new URL(path, normalizedBaseUrl).toString();
 }
 
+async function dispatch<T>(
+  context: IExecuteFunctions,
+  requestOptions: IHttpRequestOptions,
+): Promise<T> {
+  const response = (await context.helpers.httpRequestWithAuthentication.call(
+    context,
+    "markupaiApi",
+    requestOptions,
+  )) as { statusCode: number; body: unknown };
+
+  if (response.statusCode >= 400) {
+    throw buildNodeApiError(context.getNode(), response, {
+      method: requestOptions.method ?? "GET",
+      url: requestOptions.url,
+    });
+  }
+
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  return JSON.parse(bodyStr) as T;
+}
+
 export async function listAllAgents(this: IExecuteFunctions): Promise<AgentMetadata[]> {
   const baseUrl = getBaseUrl();
 
@@ -51,30 +72,14 @@ export async function runAgent(
 ): Promise<AgentRunResponse> {
   const baseUrl = getBaseUrl();
 
-  const requestOptions: IHttpRequestOptions = {
+  return dispatch<AgentRunResponse>(this, {
     method: "POST",
     url: buildApiUrl(baseUrl, `${AGENTS_PATH}/${encodeURIComponent(agentId)}/run`),
     qs: { wait: false },
     body: body as unknown as Record<string, unknown>,
     json: true,
     returnFullResponse: true,
-  };
-
-  const response = (await this.helpers.httpRequestWithAuthentication.call(
-    this,
-    "markupaiApi",
-    requestOptions,
-  )) as { statusCode: number; body: unknown };
-
-  if (response.statusCode >= 400) {
-    throw buildNodeApiError(this.getNode(), response, {
-      method: requestOptions.method ?? "POST",
-      url: requestOptions.url,
-    });
-  }
-
-  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-  return JSON.parse(bodyStr) as AgentRunResponse;
+  });
 }
 
 const TERMINAL_STATUSES = ["completed", "failed", "timed_out", "cancelled"] as const;
@@ -117,25 +122,9 @@ export async function getWorkflowStatus(
 ): Promise<AgentRunResponse> {
   const baseUrl = getBaseUrl();
 
-  const requestOptions: IHttpRequestOptions = {
+  return dispatch<AgentRunResponse>(this, {
     method: "GET",
     url: buildApiUrl(baseUrl, `${WORKFLOWS_PATH}/${encodeURIComponent(workflowId)}`),
     returnFullResponse: true,
-  };
-
-  const response = (await this.helpers.httpRequestWithAuthentication.call(
-    this,
-    "markupaiApi",
-    requestOptions,
-  )) as { statusCode: number; body: unknown };
-
-  if (response.statusCode >= 400) {
-    throw buildNodeApiError(this.getNode(), response, {
-      method: requestOptions.method ?? "GET",
-      url: requestOptions.url,
-    });
-  }
-
-  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-  return JSON.parse(bodyStr) as AgentRunResponse;
+  });
 }

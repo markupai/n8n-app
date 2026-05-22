@@ -6,6 +6,19 @@ interface HttpLikeResponse {
   body: unknown;
 }
 
+function toErrorResponse(body: unknown): JsonObject {
+  if (typeof body === "object" && body !== null) {
+    return body as JsonObject;
+  }
+  return { message: typeof body === "string" ? body : String(body) };
+}
+
+function describeBody(body: unknown): string | undefined {
+  if (body === null) return undefined;
+  if (typeof body === "string") return body;
+  return JSON.stringify(body);
+}
+
 /**
  * Build a NodeApiError from a non-2xx HTTP response so the n8n UI shows the
  * HTTP status, request URL, and response body. Use at any throw site that
@@ -16,18 +29,9 @@ export function buildNodeApiError(
   response: HttpLikeResponse,
   request: { method: string; url: string },
 ): NodeApiError {
-  const body = response.body;
-  const errorResponse: JsonObject =
-    typeof body === "object" && body !== null
-      ? (body as JsonObject)
-      : { message: typeof body === "string" ? body : String(body) };
-
-  const description =
-    typeof body === "string" ? body : body !== null ? JSON.stringify(body) : undefined;
-
-  return new NodeApiError(node, errorResponse, {
+  return new NodeApiError(node, toErrorResponse(response.body), {
     httpCode: String(response.statusCode),
     message: `${request.method} ${request.url} failed with status ${String(response.statusCode)}`,
-    description,
+    description: describeBody(response.body),
   });
 }
