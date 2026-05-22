@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { IExecuteFunctions } from "n8n-workflow";
-import { sleep } from "n8n-workflow";
+import type { IExecuteFunctions, INode } from "n8n-workflow";
+import { NodeApiError, sleep } from "n8n-workflow";
 import {
   runAgent,
   getWorkflowStatus,
@@ -18,12 +18,26 @@ vi.mock("n8n-workflow", async () => {
   return { ...actual, sleep: vi.fn().mockResolvedValue(undefined) };
 });
 
+function stubNode(): INode {
+  return {
+    id: "test-node",
+    name: "Markup AI",
+    type: "n8n-nodes-markupai.markupai",
+    typeVersion: 1,
+    position: [0, 0],
+    parameters: {},
+  };
+}
+
 function createMockExecuteFunctions(mock: {
   helpers: {
     httpRequestWithAuthentication: { call: ReturnType<typeof vi.fn> };
   };
 }): IExecuteFunctions {
-  return mock as unknown as IExecuteFunctions;
+  return {
+    ...mock,
+    getNode: () => stubNode(),
+  } as unknown as IExecuteFunctions;
 }
 
 describe("agents.api.utils", () => {
@@ -68,7 +82,7 @@ describe("agents.api.utils", () => {
       expect(requestOptions.body.text).toBe("Hello world");
     });
 
-    it("throws when API returns error status", async () => {
+    it("throws a NodeApiError with HTTP context when API returns error status", async () => {
       const mockCall = vi.fn().mockResolvedValue({
         statusCode: 422,
         body: { detail: "Invalid input" },
@@ -77,7 +91,9 @@ describe("agents.api.utils", () => {
         helpers: { httpRequestWithAuthentication: { call: mockCall } },
       });
 
-      await expect(runAgent.call(mock, "ag_xxx", body)).rejects.toThrow();
+      const promise = runAgent.call(mock, "ag_xxx", body);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "422" });
     });
 
     it("encodes agent id in URL", async () => {
@@ -155,7 +171,7 @@ describe("agents.api.utils", () => {
       );
     });
 
-    it("throws when API returns error status", async () => {
+    it("throws a NodeApiError with HTTP context when API returns error status", async () => {
       const mockCall = vi.fn().mockResolvedValue({
         statusCode: 404,
         body: { detail: "Workflow not found" },
@@ -164,7 +180,9 @@ describe("agents.api.utils", () => {
         helpers: { httpRequestWithAuthentication: { call: mockCall } },
       });
 
-      await expect(getWorkflowStatus.call(mock, "wf_missing")).rejects.toThrow();
+      const promise = getWorkflowStatus.call(mock, "wf_missing");
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "404" });
     });
 
     it("encodes workflow id in URL", async () => {

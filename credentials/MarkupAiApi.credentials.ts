@@ -2,6 +2,7 @@ import {
   IAuthenticateGeneric,
   ICredentialTestRequest,
   ICredentialType,
+  Icon,
   INodeProperties,
 } from "n8n-workflow";
 import { getBaseUrlString } from "../utils/common.utils";
@@ -12,6 +13,7 @@ export class MarkupAiApi implements ICredentialType {
   name = MARKUPAI_API_CREDENTIAL_NAME;
   displayName = "Markup AI API";
   documentationUrl = "https://docs.markup.ai/";
+  icon: Icon = "file:markupai.svg";
   properties: INodeProperties[] = [
     {
       displayName: "Markup AI API Key",

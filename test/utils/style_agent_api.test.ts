@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ILoadOptionsFunctions } from "n8n-workflow";
+import { describe, it, expect, vi } from "vitest";
+import { NodeApiError } from "n8n-workflow";
+import type { ILoadOptionsFunctions, INode } from "n8n-workflow";
 import {
   assertStyleAgentEnabled,
   getStyleAgentConfig,
@@ -11,9 +12,21 @@ import type {
   StyleAgentTarget,
 } from "../../nodes/Markupai/Markupai.api.types";
 
+function stubNode(): INode {
+  return {
+    id: "test-node",
+    name: "Markup AI",
+    type: "n8n-nodes-markupai.markupai",
+    typeVersion: 1,
+    position: [0, 0],
+    parameters: {},
+  };
+}
+
 function createMockContext(mockCall: ReturnType<typeof vi.fn>): ILoadOptionsFunctions {
   return {
     getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+    getNode: () => stubNode(),
     helpers: {
       httpRequestWithAuthentication: {
         call: mockCall,
@@ -23,10 +36,6 @@ function createMockContext(mockCall: ReturnType<typeof vi.fn>): ILoadOptionsFunc
 }
 
 describe("style_agent_api", () => {
-  beforeEach(() => {
-    delete process.env.MARKUP_AI_BASE_URL;
-  });
-
   describe("getStyleAgentConfig", () => {
     it("returns the parsed org config on 200", async () => {
       const config: OrganizationConfigResponse = {
@@ -50,15 +59,15 @@ describe("style_agent_api", () => {
       );
     });
 
-    it("throws on non-200 status", async () => {
+    it("throws a NodeApiError on non-200 status", async () => {
       const mockCall = vi
         .fn()
         .mockResolvedValue({ statusCode: 500, body: { detail: "server boom" } });
       const ctx = createMockContext(mockCall);
 
-      await expect(getStyleAgentConfig.call(ctx)).rejects.toThrow(
-        "Error loading style agent config",
-      );
+      const promise = getStyleAgentConfig.call(ctx);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "500" });
     });
   });
 
@@ -118,15 +127,15 @@ describe("style_agent_api", () => {
       expect(result).toEqual([]);
     });
 
-    it("throws on non-200 status", async () => {
+    it("throws a NodeApiError on non-200 status", async () => {
       const mockCall = vi
         .fn()
         .mockResolvedValue({ statusCode: 403, body: { detail: "forbidden" } });
       const ctx = createMockContext(mockCall);
 
-      await expect(listStyleAgentTargets.call(ctx)).rejects.toThrow(
-        "Error loading style agent targets",
-      );
+      const promise = listStyleAgentTargets.call(ctx);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "403" });
     });
   });
 });

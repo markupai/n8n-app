@@ -5,6 +5,7 @@ import type {
 } from "n8n-workflow";
 import { getBaseUrlString } from "../../../utils/common.utils";
 import { listStyleAgentTargets } from "./style_agent_api";
+import { assertOk } from "./api.errors";
 import type {
   AgentListResult,
   TerminologyDomain,
@@ -25,27 +26,6 @@ function buildApiUrl(baseUrl: URL, path: string): string {
 
 export function getBaseUrl(): URL {
   return new URL(getBaseUrlString());
-}
-
-function stringifyResponseBody(body: unknown): string {
-  if (typeof body === "string") {
-    return body;
-  }
-  if (typeof body === "object" && body !== null) {
-    return JSON.stringify(body);
-  }
-  return String(body);
-}
-
-function assertSuccessStatus(
-  response: { statusCode: number; body: unknown },
-  errorPrefix: string,
-): void {
-  if (response.statusCode === 200) {
-    return;
-  }
-
-  throw new Error(`${errorPrefix}: ${stringifyResponseBody(response.body)}`);
 }
 
 function addDomains(
@@ -87,7 +67,7 @@ async function fetchAllTerminologyDomains(
       httpRequestOptions,
     )) as { statusCode: number; body: unknown };
 
-    assertSuccessStatus(response, "Error loading terminology domains");
+    assertOk(this.getNode(), response, { method: "GET", url: httpRequestOptions.url });
 
     const listResult = response.body as TerminologyDomainListResult;
     addDomains(domainsById, listResult);
@@ -115,7 +95,7 @@ export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodeProp
     httpRequestOptions,
   )) as { statusCode: number; body: unknown };
 
-  assertSuccessStatus(response, "Error loading agents");
+  assertOk(this.getNode(), response, { method: "GET", url: httpRequestOptions.url });
 
   const listResult = response.body as AgentListResult;
 

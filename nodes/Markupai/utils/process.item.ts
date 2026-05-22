@@ -1,10 +1,4 @@
-import {
-  IDataObject,
-  IExecuteFunctions,
-  INodeExecutionData,
-  NodeApiError,
-  NodeOperationError,
-} from "n8n-workflow";
+import { IDataObject, IExecuteFunctions, INodeExecutionData } from "n8n-workflow";
 import { AGENT_ADDITIONAL_OPTION_FIELDS, COMMON_OPTION_FIELDS } from "./agent.input.coverage";
 import { runAgent, pollWorkflowUntilDone } from "./agents.api.utils";
 import { getIssueCountsFromResult } from "./issue.counts";
@@ -49,33 +43,6 @@ function buildRunRequest(
   }
 
   return request;
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof NodeApiError) {
-    return error.description || error.message;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
-}
-
-function getErrorDescription(error: unknown): string | undefined {
-  if (error instanceof NodeApiError) {
-    return error.description ?? undefined;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
-}
-
-function createErrorResponse(error: unknown, itemIndex: number): INodeExecutionData {
-  return {
-    json: { error: getErrorMessage(error) },
-    pairedItem: { item: itemIndex },
-  };
 }
 
 function getSelectedAgentName(allAgents: AgentMetadata[], selectedAgentIds: string[]): string {
@@ -140,76 +107,67 @@ function assertCompletedStatus(response: AgentRunResponse): void {
   throw new Error(`Workflow ended with status: ${response.status}`);
 }
 
+/**
+ * Run a single item through the selected Markup AI agent and return the
+ * formatted result. Throws on any failure; the n8n node's `execute()` is
+ * responsible for honoring `this.continueOnFail()` and wrapping unknown
+ * errors as `NodeOperationError`.
+ */
 export async function processMarkupaiItem(
   this: IExecuteFunctions,
   itemIndex: number,
   allAgents: AgentMetadata[],
   showNumericScores: boolean,
 ): Promise<INodeExecutionData> {
-  try {
-    const selectedAgentId = this.getNodeParameter("agents", itemIndex) as string;
-    if (!selectedAgentId) {
-      throw new Error("Select one agent");
-    }
+  const selectedAgentId = this.getNodeParameter("agents", itemIndex) as string;
+  if (!selectedAgentId) {
+    throw new Error("Select one agent");
+  }
 
-    const commonOptions = (this.getNodeParameter("additionalOptions", itemIndex) ?? {}) as {
-      documentName?: string;
-      documentRef?: string;
-      timeout?: number;
-    };
-    const additionalOptions: AdditionalOptions = {
-      documentName: commonOptions.documentName,
-      documentRef: commonOptions.documentRef,
-      timeout: commonOptions.timeout,
-      domainIds: this.getNodeParameter("domainIds", itemIndex, []) as string[],
-      targetId: this.getNodeParameter("targetId", itemIndex, "") as string,
-    };
+  const commonOptions = (this.getNodeParameter("additionalOptions", itemIndex) ?? {}) as {
+    documentName?: string;
+    documentRef?: string;
+    timeout?: number;
+  };
+  const additionalOptions: AdditionalOptions = {
+    documentName: commonOptions.documentName,
+    documentRef: commonOptions.documentRef,
+    timeout: commonOptions.timeout,
+    domainIds: this.getNodeParameter("domainIds", itemIndex, []) as string[],
+    targetId: this.getNodeParameter("targetId", itemIndex, "") as string,
+  };
 
-    const body = buildRunRequest.call(this, itemIndex, selectedAgentId, additionalOptions);
-    const runResponse = await runAgent.call(this, selectedAgentId, body);
+  const body = buildRunRequest.call(this, itemIndex, selectedAgentId, additionalOptions);
+  const runResponse = await runAgent.call(this, selectedAgentId, body);
 
-    const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
-    if (terminalStatuses.includes(runResponse.status)) {
-      assertCompletedStatus(runResponse);
-      return createSuccessResponse(
-        runResponse,
-        itemIndex,
-        allAgents,
-        [selectedAgentId],
-        additionalOptions,
-        showNumericScores,
-      );
-    }
-
-    const pollTimeoutMs = additionalOptions.timeout ?? 120_000;
-    const finalResponse = await pollWorkflowUntilDone.call(
-      this,
-      runResponse.workflow_id,
-      pollTimeoutMs,
-    );
-
-    assertCompletedStatus(finalResponse);
-
+  const terminalStatuses = ["completed", "failed", "timed_out", "cancelled"];
+  if (terminalStatuses.includes(runResponse.status)) {
+    assertCompletedStatus(runResponse);
     return createSuccessResponse(
-      finalResponse,
+      runResponse,
       itemIndex,
       allAgents,
       [selectedAgentId],
       additionalOptions,
       showNumericScores,
     );
-  } catch (error) {
-    if (this.continueOnFail()) {
-      return createErrorResponse(error, itemIndex);
-    }
-
-    throw new NodeOperationError(
-      this.getNode(),
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        description: getErrorDescription(error),
-        itemIndex,
-      },
-    );
   }
+
+  const pollTimeoutMs = additionalOptions.timeout ?? 120_000;
+  const finalResponse = await pollWorkflowUntilDone.call(
+    this,
+    runResponse.workflow_id,
+    pollTimeoutMs,
+  );
+
+  assertCompletedStatus(finalResponse);
+
+  return createSuccessResponse(
+    finalResponse,
+    itemIndex,
+    allAgents,
+    [selectedAgentId],
+    additionalOptions,
+    showNumericScores,
+  );
 }

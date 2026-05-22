@@ -154,38 +154,6 @@ npm rebuild sqlite3
 
 Then re-run `npm start`.
 
-### Environment Configuration
-
-For development, you can configure the API base URL using environment variables:
-
-**Option 1: Using a `.env` file**
-
-1. Copy the example environment file:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Edit `.env` and set your development API URL:
-
-   ```bash
-   MARKUP_AI_BASE_URL=https://api.dev.markup.ai/
-   ```
-
-3. Start n8n (it will automatically load the `.env` file):
-   ```bash
-   npm start
-   ```
-
-**Option 2: Export environment variable directly**
-
-```bash
-export MARKUP_AI_BASE_URL=https://api.dev.markup.ai/
-npm start
-```
-
-**Note:** By default, the node uses the production API URL (`https://api.markup.ai/`). The environment variable is only needed for development or custom API endpoints. n8n automatically loads `.env` files from the current working directory, so no additional tools are required.
-
 ### Manual Setup (alternative)
 
 If you prefer to run an n8n instance you already have installed (e.g. global install, Docker, an existing `~/.n8n/`), use the `npm link` workflow:

@@ -3,11 +3,14 @@ import {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  NodeApiError,
   NodeConnectionTypes,
+  NodeOperationError,
 } from "n8n-workflow";
 import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.credentials";
 import { listAllAgents } from "./utils/agents.api.utils";
 import { DOMAIN_IDS_AGENT_IDS, STYLE_OPTION_AGENT_IDS } from "./utils/agent.input.coverage";
+import { createErrorResponse, getErrorDescription } from "./utils/error.helpers";
 import { loadAgents, loadStyleAgentTargets, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 import { assertStyleAgentEnabled, getStyleAgentConfig } from "./utils/style_agent_api";
@@ -21,8 +24,10 @@ export class Markupai implements INodeType {
     displayName: "Markup AI",
     name: "markupai",
     description: "Run Markup AI agents for content analysis",
+    subtitle: '={{$parameter["operation"] + ": " + $parameter["agents"]}}',
     icon: "file:markupai.svg",
     version: 1,
+    usableAsTool: true,
     defaults: {
       name: "Markup AI",
     },
@@ -201,8 +206,28 @@ export class Markupai implements INodeType {
     const allAgents = await listAllAgents.call(this);
 
     for (let i = 0; i < items.length; i++) {
-      const result = await processMarkupaiItem.call(this, i, allAgents, showNumericScores);
-      returnData.push(result);
+      try {
+        const result = await processMarkupaiItem.call(this, i, allAgents, showNumericScores);
+        returnData.push(result);
+      } catch (error) {
+        if (this.continueOnFail()) {
+          returnData.push(createErrorResponse(error, i));
+          continue;
+        }
+        // Preserve NodeApiError so the n8n UI keeps HTTP status, URL, and response body.
+        if (error instanceof NodeApiError) {
+          const apiError = error;
+          throw apiError;
+        }
+        throw new NodeOperationError(
+          this.getNode(),
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            description: getErrorDescription(error),
+            itemIndex: i,
+          },
+        );
+      }
     }
 
     return [this.helpers.returnJsonArray(returnData)];

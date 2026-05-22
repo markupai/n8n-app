@@ -38,6 +38,12 @@ jobs:
       - name: Run Lint check
         run: npm run lint:check
 
+      - name: Run n8n community-node lint (catches restricted globals, etc.)
+        run: npm run lint:n8n
+
+      - name: Run n8n-node lint (official CLI from @n8n/node-cli)
+        run: npm run lint:n8n-cli
+
       - name: Run type check
         run: npm run type-check
 
@@ -62,6 +68,25 @@ jobs:
       - name: Publish to NPM (stable)
         if: inputs.release_type == 'stable'
         run: npm publish
+
+      - name: Wait for npm to surface the new version
+        if: inputs.release_type == 'stable'
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if npm view "@markupai/n8n-nodes-markupai@${VERSION}" version > /dev/null 2>&1; then
+              echo "Version ${VERSION} is live on npm"
+              exit 0
+            fi
+            echo "Waiting for ${VERSION} to surface on npm (attempt ${i}/10)..."
+            sleep 15
+          done
+          echo "Timed out waiting for npm propagation" >&2
+          exit 1
+
+      - name: Verify with @n8n/scan-community-package against published version
+        if: inputs.release_type == 'stable'
+        run: npx --yes @n8n/scan-community-package@latest "@markupai/n8n-nodes-markupai@$(node -p 'require(\"./package.json\").version')"
 
       - name: Push git tag
         env:
