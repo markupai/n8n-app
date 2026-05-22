@@ -513,6 +513,28 @@ describe("process.item", () => {
         ).rejects.toThrow(NodeOperationError);
       });
 
+      it("propagates NodeApiError unchanged when continueOnFail is false", async () => {
+        const nodeApiError = new NodeApiError(createMockNode(), {
+          message: "Bad request",
+          description: "request body invalid",
+        });
+        mockRunAgent.mockRejectedValue(nodeApiError);
+
+        const mockExecuteFunctions = createMockExecuteFunctions({
+          getNodeParameter: createGetNodeParameter({}),
+          continueOnFail: vi.fn().mockReturnValue(false),
+        });
+
+        await expect(
+          processMarkupaiItem.call(
+            mockExecuteFunctions as IExecuteFunctions,
+            0,
+            mockAllAgents,
+            false,
+          ),
+        ).rejects.toBe(nodeApiError);
+      });
+
       it("includes itemIndex in NodeOperationError", async () => {
         mockRunAgent.mockRejectedValue(new Error("API failed"));
 

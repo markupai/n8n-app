@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, IHttpRequestOptions } from "n8n-workflow";
 import { getBaseUrl } from "./load.options";
+import { buildNodeApiError } from "./api.errors";
 import type {
   AgentListResult,
   AgentMetadata,
@@ -65,15 +66,15 @@ export async function runAgent(
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-  const parsed = JSON.parse(bodyStr) as AgentRunResponse;
-
   if (response.statusCode >= 400) {
-    const err = parsed as { error?: string; detail?: string };
-    throw new Error(err.error ?? err.detail ?? bodyStr);
+    throw buildNodeApiError(this.getNode(), response, {
+      method: requestOptions.method ?? "POST",
+      url: requestOptions.url,
+    });
   }
 
-  return parsed;
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  return JSON.parse(bodyStr) as AgentRunResponse;
 }
 
 const TERMINAL_STATUSES = ["completed", "failed", "timed_out", "cancelled"] as const;
@@ -128,13 +129,13 @@ export async function getWorkflowStatus(
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
-  const parsed = JSON.parse(bodyStr) as AgentRunResponse;
-
   if (response.statusCode >= 400) {
-    const err = parsed as { error?: string; detail?: string };
-    throw new Error(err.error ?? err.detail ?? bodyStr);
+    throw buildNodeApiError(this.getNode(), response, {
+      method: requestOptions.method ?? "GET",
+      url: requestOptions.url,
+    });
   }
 
-  return parsed;
+  const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
+  return JSON.parse(bodyStr) as AgentRunResponse;
 }

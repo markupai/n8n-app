@@ -18,30 +18,13 @@ main() {
         exit 1
     fi
 
-    # Step 2: Setup .env file if it doesn't exist
-    log_info "\nStep 2: Setting up environment configuration"
-    if [[ -f ".env" ]]; then
-        log_success "✓ .env file already exists"
-    else
-        if [[ -f ".env.example" ]]; then
-            if cp ".env.example" ".env"; then
-                log_success "✓ Created .env file from .env.example"
-                log_info "You can edit .env to configure MARKUP_AI_BASE_URL for development"
-            else
-                log_warning "⚠ Could not create .env file"
-            fi
-        else
-            log_warning "⚠ .env.example not found, skipping .env setup"
-        fi
-    fi
-
-    # Step 3: Build the code
-    if ! exec_command_strict "Step 3: Building the code" "npm run build"; then
+    # Step 2: Build the code
+    if ! exec_command_strict "Step 2: Building the code" "npm run build"; then
         exit 1
     fi
 
-    # Step 4: Link the build from dist folder
-    log_info "\nStep 4: Linking the package from dist folder"
+    # Step 3: Link the build from dist folder
+    log_info "\nStep 3: Linking the package from dist folder"
     if exec_command_strict "Linking package from dist folder" "npm link" "dist"; then
         log_success "✓ Package linked from dist folder"
     else
@@ -52,8 +35,8 @@ main() {
         log_bright "  sudo npm link"
     fi
 
-    # Step 5: Setup custom directory in ~/.n8n
-    log_info "\nStep 5: Setting up n8n custom directory"
+    # Step 4: Setup custom directory in ~/.n8n
+    log_info "\nStep 4: Setting up n8n custom directory"
 
     # Create .n8n directory if it doesn't exist
     if [[ -d "$N8N_DIR" ]]; then
@@ -122,8 +105,6 @@ main() {
     log_bright "  npm start"
     
     log_info "This will use the local n8n from devDependencies."
-    log_info "n8n will automatically load the .env file if it exists."
-    log_info "Edit .env to set MARKUP_AI_BASE_URL for development (default: production URL)."
     log_success "You should now see Markup AI in the list of nodes."
     log_success "Happy hacking! 🚀"
     

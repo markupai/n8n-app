@@ -1,6 +1,6 @@
 {
   "name": "@markupai/n8n-nodes-markupai",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "n8n node for MarkupAI",
   "keywords": [
     "n8n-community-node-package",
@@ -29,7 +29,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && gulp build:icons && gulp build:templates && gulp build:package",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && gulp build:icons && gulp build:templates && gulp build:package",
     "check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
     "cleanup": "./dev/cleanup.sh",
     "dev": "tsc --project tsconfig.build.json --watch",
@@ -38,8 +38,9 @@
     "format:fix": "prettier . --write",
     "lint:check": "eslint --config eslint.config.js .",
     "lint:fix": "eslint --config eslint.config.js . --fix",
+    "lint:n8n": "eslint --config eslint.community-nodes.config.mjs \"nodes/**/*.ts\" \"credentials/**/*.ts\" \"utils/**/*.ts\"",
     "lint:prepublish": "eslint --config eslint.config.prepublish.js \"nodes/**/*.ts\" \"credentials/**/*.ts\" package.json",
-    "prepublishOnly": "npm run build && eslint --config eslint.config.prepublish.js \"nodes/**/*.ts\" \"credentials/**/*.ts\" package.json && npm run check:stable-version",
+    "prepublishOnly": "npm run build && eslint --config eslint.config.prepublish.js \"nodes/**/*.ts\" \"credentials/**/*.ts\" package.json && npm run lint:n8n && npm run check:stable-version",
     "setup": "./dev/setup.sh",
     "start": "n8n-node dev",
     "test": "vitest run",

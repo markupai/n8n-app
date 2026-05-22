@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, IHttpRequestOptions, ILoadOptionsFunctions } from "n8n-workflow";
 import { getBaseUrl } from "./load.options";
+import { buildNodeApiError } from "./api.errors";
 import type { OrganizationConfigResponse, StyleAgentTarget } from "../Markupai.api.types";
 
 const CONFIG_PATH = "style-agent/config";
@@ -19,25 +20,7 @@ function buildApiUrl(baseUrl: URL, path: string): string {
   return new URL(path, normalizedBaseUrl).toString();
 }
 
-function stringifyResponseBody(body: unknown): string {
-  if (typeof body === "string") return body;
-  if (typeof body === "object" && body !== null) return JSON.stringify(body);
-  return String(body);
-}
-
-function assertSuccessStatus(
-  response: { statusCode: number; body: unknown },
-  errorPrefix: string,
-): void {
-  if (response.statusCode === 200) return;
-  throw new Error(`${errorPrefix}: ${stringifyResponseBody(response.body)}`);
-}
-
-async function getJson<T>(
-  context: StyleAgentApiContext,
-  path: string,
-  errorPrefix: string,
-): Promise<T> {
+async function getJson<T>(context: StyleAgentApiContext, path: string): Promise<T> {
   const requestOptions: IHttpRequestOptions = {
     method: "GET",
     url: buildApiUrl(getBaseUrl(), path),
@@ -48,7 +31,14 @@ async function getJson<T>(
     "markupaiApi",
     requestOptions,
   )) as { statusCode: number; body: unknown };
-  assertSuccessStatus(response, errorPrefix);
+
+  if (response.statusCode !== 200) {
+    throw buildNodeApiError(context.getNode(), response, {
+      method: "GET",
+      url: requestOptions.url,
+    });
+  }
+
   const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
   return JSON.parse(bodyStr) as T;
 }
@@ -56,7 +46,7 @@ async function getJson<T>(
 export async function getStyleAgentConfig(
   this: StyleAgentApiContext,
 ): Promise<OrganizationConfigResponse> {
-  return getJson<OrganizationConfigResponse>(this, CONFIG_PATH, "Error loading style agent config");
+  return getJson<OrganizationConfigResponse>(this, CONFIG_PATH);
 }
 
 export function assertStyleAgentEnabled(config: OrganizationConfigResponse): void {
@@ -68,11 +58,7 @@ export function assertStyleAgentEnabled(config: OrganizationConfigResponse): voi
 export async function listStyleAgentTargets(
   this: StyleAgentApiContext,
 ): Promise<StyleAgentTarget[]> {
-  const targets = await getJson<StyleAgentTarget[] | null>(
-    this,
-    TARGETS_PATH,
-    "Error loading style agent targets",
-  );
+  const targets = await getJson<StyleAgentTarget[] | null>(this, TARGETS_PATH);
   if (!Array.isArray(targets)) return [];
   return targets.filter((target) => target.enabled);
 }

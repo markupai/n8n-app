@@ -203,6 +203,12 @@ export async function processMarkupaiItem(
       return createErrorResponse(error, itemIndex);
     }
 
+    // Preserve NodeApiError so the n8n UI keeps the HTTP status, URL, and response body.
+    if (error instanceof NodeApiError) {
+      const apiError = error;
+      throw apiError;
+    }
+
     throw new NodeOperationError(
       this.getNode(),
       error instanceof Error ? error : new Error(String(error)),

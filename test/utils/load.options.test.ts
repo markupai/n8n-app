@@ -1,11 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ILoadOptionsFunctions } from "n8n-workflow";
+import { describe, it, expect, vi } from "vitest";
+import { NodeApiError } from "n8n-workflow";
+import type { ILoadOptionsFunctions, INode } from "n8n-workflow";
 import {
   getBaseUrl,
   loadAgents,
   loadStyleAgentTargets,
   loadTerminologyDomains,
 } from "../../nodes/Markupai/utils/load.options";
+
+function stubNode(): INode {
+  return {
+    id: "test-node",
+    name: "Markup AI",
+    type: "n8n-nodes-markupai.markupai",
+    typeVersion: 1,
+    position: [0, 0],
+    parameters: {},
+  };
+}
 
 function createMockLoadOptionsFunctions(mock: {
   getCredentials: ReturnType<typeof vi.fn>;
@@ -15,30 +27,17 @@ function createMockLoadOptionsFunctions(mock: {
     };
   };
 }): ILoadOptionsFunctions {
-  return mock as unknown as ILoadOptionsFunctions;
+  return {
+    ...mock,
+    getNode: () => stubNode(),
+  } as unknown as ILoadOptionsFunctions;
 }
 
 describe("load.options", () => {
-  beforeEach(() => {
-    delete process.env.MARKUP_AI_BASE_URL;
-  });
-
   describe("getBaseUrl", () => {
-    it("returns production URL by default", () => {
+    it("returns production URL", () => {
       const result = getBaseUrl();
       expect(result.toString()).toBe("https://api.markup.ai/");
-    });
-
-    it("returns custom URL from MARKUP_AI_BASE_URL environment variable", () => {
-      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/";
-      const result = getBaseUrl();
-      expect(result.toString()).toBe("https://api.dev.markup.ai/");
-    });
-
-    it("returns custom URL from MARKUP_AI_BASE_URL with trailing slash", () => {
-      process.env.MARKUP_AI_BASE_URL = "https://custom.api.markup.ai/";
-      const result = getBaseUrl();
-      expect(result.toString()).toBe("https://custom.api.markup.ai/");
     });
   });
 
@@ -89,9 +88,7 @@ describe("load.options", () => {
       ]);
     });
 
-    it("joins agents URL correctly when base URL includes a path without trailing slash", async () => {
-      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
-
+    it("calls agents endpoint with the production base URL", async () => {
       const mockCall = vi.fn().mockResolvedValue({
         body: agentsResponse,
         statusCode: 200,
@@ -112,12 +109,12 @@ describe("load.options", () => {
         loadOptionsFunction,
         "markupaiApi",
         expect.objectContaining({
-          url: "https://api.dev.markup.ai/api/agents",
+          url: "https://api.markup.ai/agents",
         }),
       );
     });
 
-    it("throws if the API returns an error status", async () => {
+    it("throws a NodeApiError when the API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
@@ -130,7 +127,9 @@ describe("load.options", () => {
         },
       });
 
-      await expect(loadAgents.call(loadOptionsFunction)).rejects.toThrow("Error loading agents");
+      const promise = loadAgents.call(loadOptionsFunction);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "400" });
     });
 
     it("throws if the request fails", async () => {
@@ -200,9 +199,7 @@ describe("load.options", () => {
       ]);
     });
 
-    it("joins terminology URL correctly when base URL includes a path without trailing slash", async () => {
-      process.env.MARKUP_AI_BASE_URL = "https://api.dev.markup.ai/api";
-
+    it("calls terminology endpoint with the production base URL", async () => {
       const mockCall = vi.fn().mockResolvedValue({
         body: domainsPage1,
         statusCode: 200,
@@ -223,12 +220,12 @@ describe("load.options", () => {
         loadOptionsFunction,
         "markupaiApi",
         expect.objectContaining({
-          url: "https://api.dev.markup.ai/api/v1/terminology/domains",
+          url: "https://api.markup.ai/v1/terminology/domains",
         }),
       );
     });
 
-    it("throws if the terminology API returns an error status", async () => {
+    it("throws a NodeApiError when the terminology API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
@@ -241,9 +238,9 @@ describe("load.options", () => {
         },
       });
 
-      await expect(loadTerminologyDomains.call(loadOptionsFunction)).rejects.toThrow(
-        "Error loading terminology domains",
-      );
+      const promise = loadTerminologyDomains.call(loadOptionsFunction);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "400" });
     });
   });
 
@@ -277,7 +274,7 @@ describe("load.options", () => {
       ]);
     });
 
-    it("throws if the targets API returns an error status", async () => {
+    it("throws a NodeApiError when the targets API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
@@ -290,9 +287,9 @@ describe("load.options", () => {
         },
       });
 
-      await expect(loadStyleAgentTargets.call(loadOptionsFunction)).rejects.toThrow(
-        "Error loading style agent targets",
-      );
+      const promise = loadStyleAgentTargets.call(loadOptionsFunction);
+      await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+      await expect(promise).rejects.toMatchObject({ httpCode: "403" });
     });
   });
 });
