@@ -29,8 +29,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc --project tsconfig.build.json && gulp build:icons && gulp build:templates && gulp build:package",
-    "check:stable-version": "node -e \"const v=require('./package.json').version; if (!/^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(v)) { console.error('Refusing to publish prerelease version: ' + v); process.exit(1); }\"",
+    "build": "npm run clean && tsc --project tsconfig.build.json && gulp build:icons && gulp build:templates && gulp build:package",
+    "check:stable-version": "node scripts/check-stable-version.mjs",
+    "clean": "node scripts/clean-dist.mjs",
     "cleanup": "./dev/cleanup.sh",
     "dev": "tsc --project tsconfig.build.json --watch",
     "dev:node": "n8n-node dev",

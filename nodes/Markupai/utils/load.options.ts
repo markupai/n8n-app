@@ -5,7 +5,7 @@ import type {
 } from "n8n-workflow";
 import { getBaseUrlString } from "../../../utils/common.utils";
 import { listStyleAgentTargets } from "./style_agent_api";
-import { buildNodeApiError } from "./api.errors";
+import { assertOk } from "./api.errors";
 import type {
   AgentListResult,
   TerminologyDomain,
@@ -67,12 +67,7 @@ async function fetchAllTerminologyDomains(
       httpRequestOptions,
     )) as { statusCode: number; body: unknown };
 
-    if (response.statusCode !== 200) {
-      throw buildNodeApiError(this.getNode(), response, {
-        method: "GET",
-        url: httpRequestOptions.url,
-      });
-    }
+    assertOk(this.getNode(), response, { method: "GET", url: httpRequestOptions.url });
 
     const listResult = response.body as TerminologyDomainListResult;
     addDomains(domainsById, listResult);
@@ -100,12 +95,7 @@ export async function loadAgents(this: ILoadOptionsFunctions): Promise<INodeProp
     httpRequestOptions,
   )) as { statusCode: number; body: unknown };
 
-  if (response.statusCode !== 200) {
-    throw buildNodeApiError(this.getNode(), response, {
-      method: "GET",
-      url: httpRequestOptions.url,
-    });
-  }
+  assertOk(this.getNode(), response, { method: "GET", url: httpRequestOptions.url });
 
   const listResult = response.body as AgentListResult;
 

@@ -23,7 +23,7 @@ module.exports = [
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    ignores: ["coverage", "dist", "eslint.community-nodes.config.mjs"],
+    ignores: ["coverage", "dist", "eslint.community-nodes.config.mjs", "scripts"],
   },
   {
     files: ["eslint.config.js", "eslint.config.prepublish.js", "gulpfile.js"],

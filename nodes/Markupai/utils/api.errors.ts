@@ -35,3 +35,18 @@ export function buildNodeApiError(
     description: describeBody(response.body),
   });
 }
+
+/**
+ * Throw a NodeApiError when the response is not HTTP 200. Use at GET call
+ * sites that expect a single success status. Keeps the status check + throw
+ * in one place so adding new conditions (e.g. retry on 5xx) only happens
+ * once.
+ */
+export function assertOk(
+  node: INode,
+  response: HttpLikeResponse,
+  request: { method: string; url: string },
+): void {
+  if (response.statusCode === 200) return;
+  throw buildNodeApiError(node, response, request);
+}

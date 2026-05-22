@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, IHttpRequestOptions, ILoadOptionsFunctions } from "n8n-workflow";
 import { getBaseUrl } from "./load.options";
-import { buildNodeApiError } from "./api.errors";
+import { assertOk } from "./api.errors";
 import type { OrganizationConfigResponse, StyleAgentTarget } from "../Markupai.api.types";
 
 const CONFIG_PATH = "style-agent/config";
@@ -32,12 +32,7 @@ async function getJson<T>(context: StyleAgentApiContext, path: string): Promise<
     requestOptions,
   )) as { statusCode: number; body: unknown };
 
-  if (response.statusCode !== 200) {
-    throw buildNodeApiError(context.getNode(), response, {
-      method: "GET",
-      url: requestOptions.url,
-    });
-  }
+  assertOk(context.getNode(), response, { method: "GET", url: requestOptions.url });
 
   const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
   return JSON.parse(bodyStr) as T;
