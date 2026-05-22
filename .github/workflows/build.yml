@@ -37,6 +37,9 @@ jobs:
       - name: Run n8n community-node lint (catches restricted globals, etc.)
         run: npm run lint:n8n
 
+      - name: Run n8n-node lint (official CLI from @n8n/node-cli)
+        run: npm run lint:n8n-cli
+
       - name: Run type check
         run: npm run type-check
 
