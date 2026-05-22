@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IExecuteFunctions } from "n8n-workflow";
-import { NodeApiError, NodeOperationError } from "n8n-workflow";
 import { processMarkupaiItem } from "../../nodes/Markupai/utils/process.item";
 import type { AgentRunResponse } from "../../nodes/Markupai/Markupai.api.types";
 
@@ -13,39 +12,6 @@ vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
     { id: "ag_vYCPHsSQnnJj", name: "style_agent" },
   ]),
 }));
-
-vi.mock("n8n-workflow", async () => {
-  const actual = await vi.importActual("n8n-workflow");
-  return {
-    ...actual,
-    NodeApiError: class NodeApiError extends Error {
-      description?: string;
-      constructor(_: unknown, error: { message?: string; description?: string }) {
-        super(error.message || "Node API Error");
-        this.name = "NodeApiError";
-        this.description = error.description ?? error.message;
-      }
-    },
-    NodeOperationError: class NodeOperationError extends Error {
-      description?: string;
-      itemIndex?: number;
-      constructor(
-        node: unknown,
-        error: Error | { message?: string },
-        options?: { description?: string; itemIndex?: number },
-      ) {
-        super(error instanceof Error ? error.message : "Node Operation Error");
-        this.name = "NodeOperationError";
-        this.description = options?.description;
-        this.itemIndex = options?.itemIndex;
-      }
-    },
-  };
-});
-
-function createMockNode() {
-  return {} as never;
-}
 
 function makeIssue(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -405,7 +371,11 @@ describe("process.item", () => {
     });
 
     describe("Error handling", () => {
-      it("throws NodeOperationError when run response is terminal but not completed", async () => {
+      // processMarkupaiItem only runs the happy path now; honoring continueOnFail
+      // and wrapping unknown errors as NodeOperationError lives in execute().
+      // See test/nodes/Markupai.node.test.ts for those scenarios.
+
+      it("throws when the workflow ends with a non-completed terminal status", async () => {
         mockRunAgent.mockResolvedValue(
           createAgentRunResponse({
             status: "failed",
@@ -414,7 +384,6 @@ describe("process.item", () => {
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(false),
         });
 
         await expect(
@@ -424,83 +393,15 @@ describe("process.item", () => {
             mockAllAgents,
             false,
           ),
-        ).rejects.toThrow(NodeOperationError);
+        ).rejects.toThrow("Workflow ended with status: failed");
       });
 
-      it("returns error item when run response is terminal but not completed and continueOnFail is true", async () => {
-        mockRunAgent.mockResolvedValue(
-          createAgentRunResponse({
-            status: "timed_out",
-          }),
-        );
+      it("propagates upstream errors unchanged", async () => {
+        const apiFailure = new Error("API request failed");
+        mockRunAgent.mockRejectedValue(apiFailure);
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(true),
-        });
-
-        const result = await processMarkupaiItem.call(
-          mockExecuteFunctions as IExecuteFunctions,
-          0,
-          mockAllAgents,
-          false,
-        );
-
-        expect(result).toEqual({
-          json: { error: "Workflow ended with status: timed_out" },
-          pairedItem: { item: 0 },
-        });
-      });
-
-      it("returns error json when continueOnFail is true", async () => {
-        mockRunAgent.mockRejectedValue(new Error("API request failed"));
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(true),
-        });
-
-        const result = await processMarkupaiItem.call(
-          mockExecuteFunctions as IExecuteFunctions,
-          0,
-          mockAllAgents,
-          false,
-        );
-
-        expect(result).toEqual({
-          json: { error: "API request failed" },
-          pairedItem: { item: 0 },
-        });
-      });
-
-      it("uses NodeApiError description when continueOnFail is true", async () => {
-        const nodeApiError = new NodeApiError(createMockNode(), {
-          message: "API Error",
-          description: "Custom error description",
-        });
-        mockRunAgent.mockRejectedValue(nodeApiError);
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(true),
-        });
-
-        const result = await processMarkupaiItem.call(
-          mockExecuteFunctions as IExecuteFunctions,
-          0,
-          mockAllAgents,
-          false,
-        );
-
-        expect(result.json).toHaveProperty("error", "Custom error description");
-      });
-
-      it("throws NodeOperationError when continueOnFail is false", async () => {
-        mockRunAgent.mockRejectedValue(new Error("API request failed"));
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(false),
         });
 
         await expect(
@@ -510,51 +411,7 @@ describe("process.item", () => {
             mockAllAgents,
             false,
           ),
-        ).rejects.toThrow(NodeOperationError);
-      });
-
-      it("propagates NodeApiError unchanged when continueOnFail is false", async () => {
-        const nodeApiError = new NodeApiError(createMockNode(), {
-          message: "Bad request",
-          description: "request body invalid",
-        });
-        mockRunAgent.mockRejectedValue(nodeApiError);
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(false),
-        });
-
-        await expect(
-          processMarkupaiItem.call(
-            mockExecuteFunctions as IExecuteFunctions,
-            0,
-            mockAllAgents,
-            false,
-          ),
-        ).rejects.toBe(nodeApiError);
-      });
-
-      it("includes itemIndex in NodeOperationError", async () => {
-        mockRunAgent.mockRejectedValue(new Error("API failed"));
-
-        const mockExecuteFunctions = createMockExecuteFunctions({
-          getNodeParameter: createGetNodeParameter({}),
-          continueOnFail: vi.fn().mockReturnValue(false),
-        });
-
-        try {
-          await processMarkupaiItem.call(
-            mockExecuteFunctions as IExecuteFunctions,
-            3,
-            mockAllAgents,
-            false,
-          );
-          expect.fail("Should have thrown");
-        } catch (error) {
-          expect(error).toBeInstanceOf(NodeOperationError);
-          expect((error as NodeOperationError & { itemIndex?: number }).itemIndex).toBe(3);
-        }
+        ).rejects.toBe(apiFailure);
       });
     });
   });

@@ -256,6 +256,56 @@ describe("Markupai", () => {
       ).rejects.toThrow();
     });
 
+    it("should wrap unknown errors as NodeOperationError with itemIndex when continueOnFail is false", async () => {
+      const { NodeOperationError } = await import("n8n-workflow");
+      const { runAgent } = await import("../../nodes/Markupai/utils/agents.api.utils");
+      const twoItems: INodeExecutionData[] = [{ json: {} }, { json: {} }];
+      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
+      vi.mocked(runAgent)
+        .mockResolvedValueOnce(createRunResponse())
+        .mockRejectedValueOnce(new Error("API failed"));
+
+      try {
+        await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
+        expect.fail("Should have thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NodeOperationError);
+        const withContext = error as { context?: { itemIndex?: number } };
+        expect(withContext.context?.itemIndex).toBe(1);
+      }
+    });
+
+    it("should propagate NodeApiError unchanged when continueOnFail is false", async () => {
+      const { NodeApiError } = await import("n8n-workflow");
+      const { runAgent } = await import("../../nodes/Markupai/utils/agents.api.utils");
+      const apiError = new NodeApiError({} as never, {
+        message: "Bad request",
+        description: "request body invalid",
+      });
+      vi.mocked(runAgent).mockRejectedValue(apiError);
+
+      await expect(markupai.execute.call(mockExecuteFunctions as IExecuteFunctions)).rejects.toBe(
+        apiError,
+      );
+    });
+
+    it("should return error items for failures when continueOnFail is true", async () => {
+      const { runAgent } = await import("../../nodes/Markupai/utils/agents.api.utils");
+      mockExecuteFunctions.continueOnFail = vi.fn().mockReturnValue(true);
+      const twoItems: INodeExecutionData[] = [{ json: {} }, { json: {} }];
+      mockExecuteFunctions.getInputData = vi.fn().mockReturnValue(twoItems);
+      vi.mocked(runAgent)
+        .mockResolvedValueOnce(createRunResponse())
+        .mockRejectedValueOnce(new Error("API failed"));
+
+      const result = await markupai.execute.call(mockExecuteFunctions as IExecuteFunctions);
+
+      expect(result[0]).toHaveLength(2);
+      expect(result[0][0].json).toMatchObject({ status: "completed" });
+      expect(result[0][1].json).toEqual({ error: "API failed" });
+      expect(result[0][1].pairedItem).toEqual({ item: 1 });
+    });
+
     it("should throw a friendly error when style agent is disabled", async () => {
       const { getStyleAgentConfig } = await import("../../nodes/Markupai/utils/style_agent_api");
       vi.mocked(getStyleAgentConfig).mockResolvedValueOnce({
