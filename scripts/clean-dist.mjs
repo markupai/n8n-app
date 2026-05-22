@@ -8,9 +8,8 @@
  * Equivalent to `rm -rf dist` but cross-platform (works on Windows shells).
  */
 import { rmSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = resolve(repoRoot, "dist");
