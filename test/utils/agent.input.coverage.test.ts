@@ -13,7 +13,7 @@ describe("agent.input.coverage", () => {
       [AGENT_IDS.freshness]: ["documentName", "documentRef"],
       [AGENT_IDS.focusAgent]: ["documentName", "documentRef"],
       [AGENT_IDS.aiVoiceDetector]: ["documentName", "documentRef", "domainIds"],
-      [AGENT_IDS.styleAgent]: ["documentName", "documentRef", "targetId"],
+      [AGENT_IDS.styleAgent]: ["documentName", "documentRef", "styleGuideId"],
       [AGENT_IDS.snippetReadiness]: ["documentName", "documentRef"],
     });
   });

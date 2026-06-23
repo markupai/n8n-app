@@ -80,7 +80,7 @@ describe("renderReport", () => {
           ],
         },
         analysis: {
-          targetDisplayName: "Main",
+          styleGuideDisplayName: "Main",
           contentProfileDisplayName: "Marketing",
           words: 100,
           sentences: 8,
@@ -100,6 +100,53 @@ describe("renderReport", () => {
     expect(html).toContain("Scores by goal");
     expect(html).toContain("Clarity index");
     expect(html).toContain("Flesch reading ease");
+    // Style-guide display name renders under the new "Style Guide" row label.
+    expect(html).toContain("Style Guide");
+    expect(html).toContain("Main");
+  });
+
+  it("prefers styleGuideDisplayName over the deprecated targetDisplayName", () => {
+    const data: AgentResult = {
+      type: "agent_run",
+      timestamp: "2026-05-18T12:00:00.000Z",
+      workflow_id: "agw_sg_pref",
+      agent_name: "style_agent",
+      result: {
+        issues: [],
+        analysis: {
+          styleGuideDisplayName: "New Style Guide",
+          targetDisplayName: "Legacy Target",
+        },
+      },
+      success: true,
+    };
+
+    const html = renderReport(data, { showNumericScores: true });
+
+    expect(html).toContain("Style Guide");
+    expect(html).toContain("New Style Guide");
+    expect(html).not.toContain("Legacy Target");
+  });
+
+  it("falls back to the deprecated targetDisplayName when styleGuideDisplayName is absent", () => {
+    const data: AgentResult = {
+      type: "agent_run",
+      timestamp: "2026-05-18T12:00:00.000Z",
+      workflow_id: "agw_sg_fallback",
+      agent_name: "style_agent",
+      result: {
+        issues: [],
+        analysis: {
+          targetDisplayName: "Legacy Target",
+        },
+      },
+      success: true,
+    };
+
+    const html = renderReport(data, { showNumericScores: true });
+
+    expect(html).toContain("Style Guide");
+    expect(html).toContain("Legacy Target");
   });
 
   it("renders a sane report when the API payload is missing issues/quality/analysis", () => {

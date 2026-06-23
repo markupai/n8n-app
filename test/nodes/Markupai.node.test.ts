@@ -25,7 +25,7 @@ vi.mock("n8n-workflow", async () => {
 vi.mock("../../nodes/Markupai/utils/load.options", () => ({
   loadAgents: vi.fn(),
   loadTerminologyDomains: vi.fn(),
-  loadStyleAgentTargets: vi.fn(),
+  loadStyleGuides: vi.fn(),
 }));
 
 vi.mock("../../nodes/Markupai/utils/agents.api.utils", () => ({
@@ -133,15 +133,17 @@ describe("Markupai", () => {
       const propertyNames = properties.map((p) => p.name);
       expect(propertyNames).toContain("additionalOptions");
       expect(propertyNames).toContain("domainIds");
-      expect(propertyNames).toContain("targetId");
+      expect(propertyNames).toContain("styleGuideId");
       // Removed in INT-530: org_name and content_profile_id are auto-detected
       // from the API key; documentLink/Document URL is no longer supported.
       expect(propertyNames).not.toContain("orgName");
       expect(propertyNames).not.toContain("contentProfileId");
+      // Migrated in INT-588 from the deprecated target API to style guide.
+      expect(propertyNames).not.toContain("targetId");
 
-      const targetIdProp = properties.find((p) => p.name === "targetId");
-      expect(targetIdProp?.type).toBe("options");
-      expect(targetIdProp?.typeOptions?.loadOptionsMethod).toBe("loadStyleAgentTargets");
+      const styleGuideIdProp = properties.find((p) => p.name === "styleGuideId");
+      expect(styleGuideIdProp?.type).toBe("options");
+      expect(styleGuideIdProp?.typeOptions?.loadOptionsMethod).toBe("loadStyleGuides");
 
       const additionalOptionsProp = properties.find((p) => p.name === "additionalOptions");
       expect(additionalOptionsProp).toBeDefined();
@@ -183,10 +185,10 @@ describe("Markupai", () => {
   });
 
   describe("Methods", () => {
-    it("should have loadAgents, loadTerminologyDomains, and loadStyleAgentTargets in loadOptions", () => {
+    it("should have loadAgents, loadTerminologyDomains, and loadStyleGuides in loadOptions", () => {
       expect(markupai.methods.loadOptions.loadAgents).toBeDefined();
       expect(markupai.methods.loadOptions.loadTerminologyDomains).toBeDefined();
-      expect(markupai.methods.loadOptions.loadStyleAgentTargets).toBeDefined();
+      expect(markupai.methods.loadOptions.loadStyleGuides).toBeDefined();
     });
   });
 
