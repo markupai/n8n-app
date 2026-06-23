@@ -14,7 +14,7 @@ type AdditionalOptions = {
   documentName?: string;
   documentRef?: string;
   domainIds?: string[];
-  targetId?: string;
+  styleGuideId?: string;
   timeout?: number;
 };
 
@@ -38,8 +38,8 @@ function buildRunRequest(
   if (allowedOptionFields.includes("domainIds") && additionalOptions.domainIds?.length) {
     request.domain_ids = additionalOptions.domainIds.filter(Boolean);
   }
-  if (allowedOptionFields.includes("targetId") && additionalOptions.targetId) {
-    request.target_id = additionalOptions.targetId;
+  if (allowedOptionFields.includes("styleGuideId") && additionalOptions.styleGuideId) {
+    request.style_guide_id = additionalOptions.styleGuideId;
   }
 
   return request;
@@ -134,7 +134,7 @@ export async function processMarkupaiItem(
     documentRef: commonOptions.documentRef,
     timeout: commonOptions.timeout,
     domainIds: this.getNodeParameter("domainIds", itemIndex, []) as string[],
-    targetId: this.getNodeParameter("targetId", itemIndex, "") as string,
+    styleGuideId: this.getNodeParameter("styleGuideId", itemIndex, "") as string,
   };
 
   const body = buildRunRequest.call(this, itemIndex, selectedAgentId, additionalOptions);

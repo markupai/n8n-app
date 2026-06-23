@@ -4,7 +4,7 @@ import type { ILoadOptionsFunctions, INode } from "n8n-workflow";
 import {
   getBaseUrl,
   loadAgents,
-  loadStyleAgentTargets,
+  loadStyleGuides,
   loadTerminologyDomains,
 } from "../../nodes/Markupai/utils/load.options";
 
@@ -244,37 +244,63 @@ describe("load.options", () => {
     });
   });
 
-  describe("loadStyleAgentTargets", () => {
-    const targetsResponse = [
-      { id: "tgt_main", display_name: "Main", is_default: true, enabled: true },
-      { id: "tgt_marketing", display_name: "Marketing", is_default: false, enabled: true },
-      { id: "tgt_dev", display_name: "Dev", is_default: false, enabled: true },
-      { id: "tgt_disabled", display_name: "Disabled SG", is_default: false, enabled: false },
+  describe("loadStyleGuides", () => {
+    const styleGuidesResponse = [
+      { id: "sg_main", display_name: "Main", is_default: true, enabled: true },
+      { id: "sg_marketing", display_name: "Marketing", is_default: false, enabled: true },
+      { id: "sg_dev", display_name: "Dev", is_default: false, enabled: true },
+      { id: "sg_disabled", display_name: "Disabled SG", is_default: false, enabled: false },
     ];
 
-    it("returns enabled targets with default first, then alphabetical", async () => {
+    it("returns enabled style guides with default first, then alphabetical", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
           httpRequestWithAuthentication: {
             call: vi.fn().mockResolvedValue({
-              body: targetsResponse,
+              body: styleGuidesResponse,
               statusCode: 200,
             }),
           },
         },
       });
 
-      const result = await loadStyleAgentTargets.call(loadOptionsFunction);
+      const result = await loadStyleGuides.call(loadOptionsFunction);
 
       expect(result).toEqual([
-        { name: "Main", value: "tgt_main" },
-        { name: "Dev", value: "tgt_dev" },
-        { name: "Marketing", value: "tgt_marketing" },
+        { name: "Main", value: "sg_main" },
+        { name: "Dev", value: "sg_dev" },
+        { name: "Marketing", value: "sg_marketing" },
       ]);
     });
 
-    it("throws a NodeApiError when the targets API returns an error status", async () => {
+    it("calls the style-guides endpoint with the production base URL", async () => {
+      const mockCall = vi.fn().mockResolvedValue({
+        body: styleGuidesResponse,
+        statusCode: 200,
+      });
+
+      const loadOptionsFunction = createMockLoadOptionsFunctions({
+        getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
+        helpers: {
+          httpRequestWithAuthentication: {
+            call: mockCall,
+          },
+        },
+      });
+
+      await loadStyleGuides.call(loadOptionsFunction);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        loadOptionsFunction,
+        "markupaiApi",
+        expect.objectContaining({
+          url: "https://api.markup.ai/style-agent/style-guides",
+        }),
+      );
+    });
+
+    it("throws a NodeApiError when the style-guides API returns an error status", async () => {
       const loadOptionsFunction = createMockLoadOptionsFunctions({
         getCredentials: vi.fn().mockResolvedValue({ apiKey: "mocked-key" }),
         helpers: {
@@ -287,7 +313,7 @@ describe("load.options", () => {
         },
       });
 
-      const promise = loadStyleAgentTargets.call(loadOptionsFunction);
+      const promise = loadStyleGuides.call(loadOptionsFunction);
       await expect(promise).rejects.toBeInstanceOf(NodeApiError);
       await expect(promise).rejects.toMatchObject({ httpCode: "403" });
     });

@@ -52,7 +52,7 @@ export interface AgentRunRequest {
   url?: string | null;
   document_name?: string | null;
   document_ref?: string | null;
-  target_id?: string | null;
+  style_guide_id?: string | null;
   webhook_url?: string | null;
 }
 
@@ -82,7 +82,7 @@ export interface OrganizationConfigResponse {
   style_agent_numeric_scoring: boolean;
 }
 
-export interface StyleAgentTarget {
+export interface StyleGuide {
   id: string;
   display_name: string;
   is_default: boolean;

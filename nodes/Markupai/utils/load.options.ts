@@ -4,7 +4,7 @@ import type {
   INodePropertyOptions,
 } from "n8n-workflow";
 import { getBaseUrlString } from "../../../utils/common.utils";
-import { listStyleAgentTargets } from "./style_agent_api";
+import { listStyleGuides } from "./style_agent_api";
 import { assertOk } from "./api.errors";
 import type {
   AgentListResult,
@@ -123,19 +123,19 @@ export async function loadTerminologyDomains(
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function loadStyleAgentTargets(
+export async function loadStyleGuides(
   this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-  const targets = await listStyleAgentTargets.call(this);
+  const styleGuides = await listStyleGuides.call(this);
 
-  return targets
-    .map((target) => ({
-      name: target.display_name,
-      value: target.id,
+  return styleGuides
+    .map((styleGuide) => ({
+      name: styleGuide.display_name,
+      value: styleGuide.id,
     }))
     .sort((a, b) => {
-      const aIsDefault = targets.find((t) => t.id === a.value)?.is_default ?? false;
-      const bIsDefault = targets.find((t) => t.id === b.value)?.is_default ?? false;
+      const aIsDefault = styleGuides.find((sg) => sg.id === a.value)?.is_default ?? false;
+      const bIsDefault = styleGuides.find((sg) => sg.id === b.value)?.is_default ?? false;
       if (aIsDefault && !bIsDefault) return -1;
       if (!aIsDefault && bIsDefault) return 1;
       return a.name.localeCompare(b.name);

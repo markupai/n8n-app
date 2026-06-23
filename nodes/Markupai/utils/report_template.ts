@@ -60,8 +60,8 @@ export interface AgentResult {
     issues: AgentIssue[];
     warnings?: unknown[];
     // `quality` and `analysis` are nullable in the Cortex agent schema;
-    // for style_agent they're only populated when target_id /
-    // content_profile_id resolve a Language-Service target. Every field
+    // for style_agent they're only populated when style_guide_id /
+    // content_profile_id resolve a Language-Service style guide. Every field
     // inside `analysis` is independently nullable.
     quality?: {
       score?: number | null;
@@ -69,6 +69,12 @@ export interface AgentResult {
       scoresByGoal?: GoalScore[] | null;
     } | null;
     analysis?: {
+      // The API returns both the new style-guide fields and the legacy target
+      // fields during the migration transition; the renderer prefers the
+      // former and falls back to the latter (`targetId` / `targetDisplayName`
+      // are deprecated and read only as a transition-period fallback).
+      styleGuideId?: string | null;
+      styleGuideDisplayName?: string | null;
       targetId?: string | null;
       targetDisplayName?: string | null;
       contentProfileId?: string | null;
@@ -257,7 +263,10 @@ function renderDocumentSection(
 ): string {
   if (!a) return "";
   const rows: [string, string][] = [];
-  if (a.targetDisplayName) rows.push(["Target", esc(a.targetDisplayName)]);
+  // Prefer the new style-guide field; fall back to the deprecated target field
+  // while the API still returns both during the migration transition.
+  const styleGuideDisplayName = a.styleGuideDisplayName ?? a.targetDisplayName;
+  if (styleGuideDisplayName) rows.push(["Style Guide", esc(styleGuideDisplayName)]);
   if (a.contentProfileDisplayName) rows.push(["Content profile", esc(a.contentProfileDisplayName)]);
   if (typeof a.words === "number" && typeof a.sentences === "number") {
     rows.push([

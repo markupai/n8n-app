@@ -61,7 +61,7 @@ function createGetNodeParameter(additionalOptions: Record<string, unknown> = {})
       };
     }
     if (name === "domainIds") return additionalOptions.domainIds ?? [];
-    if (name === "targetId") return additionalOptions.targetId ?? "";
+    if (name === "styleGuideId") return additionalOptions.styleGuideId ?? "";
     return undefined;
   });
 }
@@ -306,7 +306,7 @@ describe("process.item", () => {
             if (name === "content") return "test content";
             if (name === "additionalOptions") return { documentName: "Style doc" };
             if (name === "domainIds") return [];
-            if (name === "targetId") return "target_123";
+            if (name === "styleGuideId") return "sg_123";
             return undefined;
           }),
         });
@@ -322,7 +322,7 @@ describe("process.item", () => {
         expect(body).toMatchObject({
           text: "test content",
           document_name: "Style doc",
-          target_id: "target_123",
+          style_guide_id: "sg_123",
         });
         // Auto-detected fields are never sent to the API.
         expect(body.org_name).toBeUndefined();
@@ -335,7 +335,7 @@ describe("process.item", () => {
 
         const mockExecuteFunctions = createMockExecuteFunctions({
           getNodeParameter: createGetNodeParameter({
-            targetId: "target_123",
+            styleGuideId: "sg_123",
           }),
         });
 
@@ -348,7 +348,7 @@ describe("process.item", () => {
 
         expect(mockRunAgent).toHaveBeenCalledWith(
           "ag_WUijxT0DthMg",
-          expect.not.objectContaining({ target_id: "target_123" }),
+          expect.not.objectContaining({ style_guide_id: "sg_123" }),
         );
       });
 

@@ -4,12 +4,12 @@ import type { ILoadOptionsFunctions, INode } from "n8n-workflow";
 import {
   assertStyleAgentEnabled,
   getStyleAgentConfig,
-  listStyleAgentTargets,
+  listStyleGuides,
   STYLE_AGENT_DISABLED_MESSAGE,
 } from "../../nodes/Markupai/utils/style_agent_api";
 import type {
   OrganizationConfigResponse,
-  StyleAgentTarget,
+  StyleGuide,
 } from "../../nodes/Markupai/Markupai.api.types";
 
 function stubNode(): INode {
@@ -103,26 +103,42 @@ describe("style_agent_api", () => {
     });
   });
 
-  describe("listStyleAgentTargets", () => {
-    it("returns only enabled targets, parsed as an array", async () => {
-      const apiTargets: StyleAgentTarget[] = [
-        { id: "tgt_1", display_name: "Main", is_default: true, enabled: true },
-        { id: "tgt_2", display_name: "Disabled SG", is_default: false, enabled: false },
-        { id: "tgt_3", display_name: "Marketing", is_default: false, enabled: true },
+  describe("listStyleGuides", () => {
+    it("returns only enabled style guides, parsed as an array", async () => {
+      const apiStyleGuides: StyleGuide[] = [
+        { id: "sg_1", display_name: "Main", is_default: true, enabled: true },
+        { id: "sg_2", display_name: "Disabled SG", is_default: false, enabled: false },
+        { id: "sg_3", display_name: "Marketing", is_default: false, enabled: true },
       ];
-      const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: apiTargets });
+      const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: apiStyleGuides });
       const ctx = createMockContext(mockCall);
 
-      const result = await listStyleAgentTargets.call(ctx);
+      const result = await listStyleGuides.call(ctx);
 
-      expect(result.map((t) => t.id)).toEqual(["tgt_1", "tgt_3"]);
+      expect(result.map((sg) => sg.id)).toEqual(["sg_1", "sg_3"]);
+    });
+
+    it("calls the style-guides endpoint", async () => {
+      const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: [] });
+      const ctx = createMockContext(mockCall);
+
+      await listStyleGuides.call(ctx);
+
+      expect(mockCall).toHaveBeenCalledWith(
+        ctx,
+        "markupaiApi",
+        expect.objectContaining({
+          method: "GET",
+          url: "https://api.markup.ai/style-agent/style-guides",
+        }),
+      );
     });
 
     it("returns empty array when API returns null body", async () => {
       const mockCall = vi.fn().mockResolvedValue({ statusCode: 200, body: null });
       const ctx = createMockContext(mockCall);
 
-      const result = await listStyleAgentTargets.call(ctx);
+      const result = await listStyleGuides.call(ctx);
 
       expect(result).toEqual([]);
     });
@@ -133,7 +149,7 @@ describe("style_agent_api", () => {
         .mockResolvedValue({ statusCode: 403, body: { detail: "forbidden" } });
       const ctx = createMockContext(mockCall);
 
-      const promise = listStyleAgentTargets.call(ctx);
+      const promise = listStyleGuides.call(ctx);
       await expect(promise).rejects.toBeInstanceOf(NodeApiError);
       await expect(promise).rejects.toMatchObject({ httpCode: "403" });
     });

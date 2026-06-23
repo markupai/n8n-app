@@ -11,13 +11,13 @@ import { MARKUPAI_API_CREDENTIAL_NAME } from "../../credentials/MarkupAiApi.cred
 import { listAllAgents } from "./utils/agents.api.utils";
 import { DOMAIN_IDS_AGENT_IDS, STYLE_OPTION_AGENT_IDS } from "./utils/agent.input.coverage";
 import { createErrorResponse, getErrorDescription } from "./utils/error.helpers";
-import { loadAgents, loadStyleAgentTargets, loadTerminologyDomains } from "./utils/load.options";
+import { loadAgents, loadStyleGuides, loadTerminologyDomains } from "./utils/load.options";
 import { processMarkupaiItem } from "./utils/process.item";
 import { assertStyleAgentEnabled, getStyleAgentConfig } from "./utils/style_agent_api";
 
 const LOAD_AGENTS = "loadAgents" as const;
 const LOAD_TERMINOLOGY_DOMAINS = "loadTerminologyDomains" as const;
-const LOAD_STYLE_AGENT_TARGETS = "loadStyleAgentTargets" as const;
+const LOAD_STYLE_GUIDES = "loadStyleGuides" as const;
 
 export class Markupai implements INodeType {
   description: INodeTypeDescription = {
@@ -112,15 +112,15 @@ export class Markupai implements INodeType {
         },
       },
       {
-        displayName: "Target",
-        name: "targetId",
+        displayName: "Style Guide",
+        name: "styleGuideId",
         type: "options",
         options: [],
         default: "",
         description:
-          "Configured style agent target. Content profile is auto-detected by Markup AI.",
+          "Configured style agent style guide. Content profile is auto-detected by Markup AI.",
         typeOptions: {
-          loadOptionsMethod: LOAD_STYLE_AGENT_TARGETS,
+          loadOptionsMethod: LOAD_STYLE_GUIDES,
         },
         displayOptions: {
           show: {
@@ -191,7 +191,7 @@ export class Markupai implements INodeType {
     loadOptions: {
       [LOAD_AGENTS]: loadAgents,
       [LOAD_TERMINOLOGY_DOMAINS]: loadTerminologyDomains,
-      [LOAD_STYLE_AGENT_TARGETS]: loadStyleAgentTargets,
+      [LOAD_STYLE_GUIDES]: loadStyleGuides,
     },
   };
 

@@ -9,7 +9,7 @@ export const AGENT_IDS = {
   snippetReadiness: "ag_5yM0oN4rStVx",
 } as const;
 
-export type AdditionalOptionField = "documentName" | "documentRef" | "domainIds" | "targetId";
+export type AdditionalOptionField = "documentName" | "documentRef" | "domainIds" | "styleGuideId";
 
 export const COMMON_OPTION_FIELDS = ["documentName", "documentRef"] as const;
 
@@ -26,7 +26,7 @@ export const AGENT_ADDITIONAL_OPTION_FIELDS: Readonly<
   [AGENT_IDS.freshness]: [...COMMON_OPTION_FIELDS],
   [AGENT_IDS.focusAgent]: [...COMMON_OPTION_FIELDS],
   [AGENT_IDS.aiVoiceDetector]: [...COMMON_OPTION_FIELDS, "domainIds"],
-  [AGENT_IDS.styleAgent]: [...COMMON_OPTION_FIELDS, "targetId"],
+  [AGENT_IDS.styleAgent]: [...COMMON_OPTION_FIELDS, "styleGuideId"],
   [AGENT_IDS.snippetReadiness]: [...COMMON_OPTION_FIELDS],
 };
 
@@ -35,5 +35,5 @@ export const DOMAIN_IDS_AGENT_IDS = Object.entries(AGENT_ADDITIONAL_OPTION_FIELD
   .map(([agentId]) => agentId);
 
 export const STYLE_OPTION_AGENT_IDS = Object.entries(AGENT_ADDITIONAL_OPTION_FIELDS)
-  .filter(([, fields]) => fields.includes("targetId"))
+  .filter(([, fields]) => fields.includes("styleGuideId"))
   .map(([agentId]) => agentId);

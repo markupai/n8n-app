@@ -68,14 +68,14 @@ To use this node, you'll need a Markup AI API account.
 
 The **Run Agent** operation supports the following configuration:
 
-| Option                                      | Type               | Required | Default  | Description                                                                                                |
-| ------------------------------------------- | ------------------ | -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| **Agent**                                   | Single-select      | Yes      | -        | Select the agent to run. Currently only `style_agent` is exposed.                                          |
-| **Target**                                  | Single-select      | No       | -        | Style agent target (style guide). Loaded from `GET /style-agent/targets`. Defaults to your default target. |
-| **Content**                                 | String (multiline) | Yes      | -        | Document text to analyze.                                                                                  |
-| **Additional Options → Document Name**      | String             | No       | `""`     | Human-readable name of the document being analyzed.                                                        |
-| **Additional Options → Document Reference** | String             | No       | `""`     | Caller-supplied identifier (e.g. CMS page ID) echoed back in the result for tracking.                      |
-| **Additional Options → Timeout (Ms)**       | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.                       |
+| Option                                      | Type               | Required | Default  | Description                                                                                                 |
+| ------------------------------------------- | ------------------ | -------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| **Agent**                                   | Single-select      | Yes      | -        | Select the agent to run. Currently only `style_agent` is exposed.                                           |
+| **Style Guide**                             | Single-select      | No       | -        | Style agent style guide. Loaded from `GET /style-agent/style-guides`. Defaults to your default style guide. |
+| **Content**                                 | String (multiline) | Yes      | -        | Document text to analyze.                                                                                   |
+| **Additional Options → Document Name**      | String             | No       | `""`     | Human-readable name of the document being analyzed.                                                         |
+| **Additional Options → Document Reference** | String             | No       | `""`     | Caller-supplied identifier (e.g. CMS page ID) echoed back in the result for tracking.                       |
+| **Additional Options → Timeout (Ms)**       | Number             | No       | `120000` | Maximum time to wait while polling workflow status before returning a timeout error.                        |
 
 Organization and content profile are auto-detected from the API key — there is no input for them.
 

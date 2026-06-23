@@ -1,10 +1,10 @@
 import type { IExecuteFunctions, IHttpRequestOptions, ILoadOptionsFunctions } from "n8n-workflow";
 import { getBaseUrl } from "./load.options";
 import { assertOk } from "./api.errors";
-import type { OrganizationConfigResponse, StyleAgentTarget } from "../Markupai.api.types";
+import type { OrganizationConfigResponse, StyleGuide } from "../Markupai.api.types";
 
 const CONFIG_PATH = "style-agent/config";
-const TARGETS_PATH = "style-agent/targets";
+const STYLE_GUIDES_PATH = "style-agent/style-guides";
 
 export const STYLE_AGENT_DISABLED_MESSAGE =
   "Style Agent is not enabled for your organization. Contact Markup AI support to enable it.";
@@ -50,10 +50,8 @@ export function assertStyleAgentEnabled(config: OrganizationConfigResponse): voi
   }
 }
 
-export async function listStyleAgentTargets(
-  this: StyleAgentApiContext,
-): Promise<StyleAgentTarget[]> {
-  const targets = await getJson<StyleAgentTarget[] | null>(this, TARGETS_PATH);
-  if (!Array.isArray(targets)) return [];
-  return targets.filter((target) => target.enabled);
+export async function listStyleGuides(this: StyleAgentApiContext): Promise<StyleGuide[]> {
+  const styleGuides = await getJson<StyleGuide[] | null>(this, STYLE_GUIDES_PATH);
+  if (!Array.isArray(styleGuides)) return [];
+  return styleGuides.filter((styleGuide) => styleGuide.enabled);
 }
