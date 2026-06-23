@@ -61,7 +61,7 @@
     "@vitest/coverage-v8": "4.1.9",
     "eslint": "10.5.0",
     "eslint-plugin-n8n-nodes-base": "1.16.7",
-    "globals": "17.6.0",
+    "globals": "17.7.0",
     "gulp": "5.0.1",
     "n8n-workflow": "2.27.1",
     "prettier": "3.8.4",
