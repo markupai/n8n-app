@@ -54,7 +54,7 @@
     "type-check": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.5",
+    "@eslint/eslintrc": "3.3.6",
     "@eslint/js": "10.0.1",
     "@n8n/node-cli": "0.31.0",
     "@types/node": "26.1.1",
