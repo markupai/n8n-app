@@ -59,7 +59,7 @@
     "@n8n/node-cli": "0.31.0",
     "@types/node": "26.1.1",
     "@vitest/coverage-v8": "4.1.10",
-    "eslint": "10.6.0",
+    "eslint": "10.7.0",
     "eslint-plugin-n8n-nodes-base": "1.16.7",
     "globals": "17.7.0",
     "gulp": "5.0.1",
